@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcafa0cd73f12d945b72db31f15b592b, type: 3}
   m_Name: STI_Clutch
   m_EditorClassIdentifier: Assembly-CSharp::ClutchData
-  maxTorqueCapacity: 450
+  maxTorqueCapacity: 600
   lockThreshold: 2
