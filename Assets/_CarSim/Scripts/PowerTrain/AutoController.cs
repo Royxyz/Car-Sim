@@ -24,9 +24,8 @@ public class AutoController
         if (powerTrain == null || logicData == null) return;
 
         HandleShiftingLogic(dt);
-        HandleClutchLogic();
+        HandleClutchLogic(dt); 
     }
-
     private void HandleShiftingLogic(float dt)
     {
         if (isShifting)
@@ -75,7 +74,7 @@ public class AutoController
         pendingGearChange = 0;
     }
 
-    private void HandleClutchLogic()
+    private void HandleClutchLogic(float dt)
     {
         if (isShifting)
         {
@@ -92,7 +91,7 @@ public class AutoController
         }
         else if (currentGear > 1)
         {
-            powerTrain.clutch.engagement = 1f;
+            powerTrain.clutch.engagement = Mathf.MoveTowards(powerTrain.clutch.engagement, 1f, dt * 5f);
         }
         else
         {

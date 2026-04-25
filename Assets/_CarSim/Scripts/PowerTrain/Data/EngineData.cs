@@ -17,6 +17,21 @@ public class EngineData : ScriptableObject
     
     [Tooltip("Mechanical friction that increases with RPM (e.g., piston rings, bearings)")]
     public float dynamicFriction = 0.05f;
+
+    [Header("Intake & Forced Induction")]
+    [Tooltip("Time in seconds for the Drive-by-Wire system to go from 0% to 100% throttle.")]
+    public float throttleSmoothing = 0.08f; 
+    
+    public bool isTurbocharged = true;
+    
+    [Tooltip("Turbo lag in seconds at low RPMs (slow exhaust flow).")]
+    public float turboSpoolTimeAtIdle = 1.5f; 
+    
+    [Tooltip("Turbo lag in seconds at Redline (fast exhaust flow).")]
+    public float turboSpoolTimeAtRedline = 0.15f; 
+    
+    [Tooltip("How fast the blow-off valve dumps pressure when lifting off the gas.")]
+    public float blowOffTime = 0.1f;
     
 
     public float idleRPM = 800f;
