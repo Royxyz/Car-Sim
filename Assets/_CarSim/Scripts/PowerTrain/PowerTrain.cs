@@ -22,31 +22,60 @@ public class PowerTrain
         float engineRadPerSec = engineRPM * (Mathf.PI / 30f);
         float transRadPerSec = transmissionInputRPM * (Mathf.PI / 30f);
 
-        float engineGeneratedTorque = engine._engineData.GetGeneratedTorque(engineRPM, throttle);
+        float actualThrottle = throttle;
+        if (engineRPM >= engine._engineData.redlineRPM)
+        {
+            actualThrottle = 0f; 
+        }
+
+        float engineGeneratedTorque = engine._engineData.GetGeneratedTorque(engineRPM, actualThrottle);
         float engineInternalLoss = engine._engineData.GetLossTorque(engineRPM);
         float engineNetTorque = engineGeneratedTorque - engineInternalLoss;
 
         float reflectedLoad = transmission.GetReflectedLoadTorque(wheelLoadTorque);
         float reflectedInertia = transmission.GetReflectedInertia(wheelInertia);
 
-        if (clutch.engagement >= 1f && Mathf.Abs(engineRadPerSec - transRadPerSec) < clutch.clutchData.lockThreshold)
+        // --- CLUTCH PHYSICS ---
+        float slipVelocity = engineRadPerSec - transRadPerSec;
+        bool speedsMatch = Mathf.Abs(slipVelocity) < clutch.clutchData.lockThreshold;
+        float currentMaxCapacity = clutch.engagement * clutch.clutchData.maxTorqueCapacity;
+
+        // How much torque is needed to keep them locked?
+        float requiredReactionTorque = clutch.CalculateReactionTorque(engine._engineData.engineInertia, engineNetTorque, reflectedInertia, reflectedLoad);
+
+        // Can it lock? (Speeds must match AND the clutch must be gripping hard enough to hold the load)
+        if (clutch.engagement > 0.01f && speedsMatch && Mathf.Abs(requiredReactionTorque) <= currentMaxCapacity)
         {
+            clutch.isLocked = true;
             float totalInertia = engine._engineData.engineInertia + reflectedInertia;
-            float netSystemTorque = engineNetTorque - reflectedLoad;
-            float acceleration = netSystemTorque / totalInertia;
+            float acceleration = (engineNetTorque - reflectedLoad) / totalInertia;
 
             engineRadPerSec += acceleration * dt;
-            transRadPerSec = engineRadPerSec;
+            transRadPerSec = engineRadPerSec; 
         }
         else
         {
-            float clutchTorque = clutch.CalculateClutchTorque(engineRadPerSec, transRadPerSec);
+            clutch.isLocked = false;
+            float clutchTorque = clutch.CalculateSlippingTorque(engineRadPerSec, transRadPerSec);
 
-            float engineAccel = (engineNetTorque - clutchTorque) / engine._engineData.engineInertia;
-            float transAccel = (clutchTorque - reflectedLoad) / reflectedInertia;
+            // Anti-chatter math: Prevent the slipping torque from reversing the slip direction in a single substep
+            float maxTorqueToZeroSlip = Mathf.Abs(slipVelocity) * (engine._engineData.engineInertia * reflectedInertia) / ((engine._engineData.engineInertia + reflectedInertia) * dt);
+            
+            if (Mathf.Abs(clutchTorque) > maxTorqueToZeroSlip)
+            {
+                // Snap them together perfectly at the zero-slip boundary so static friction can easily catch it next frame
+                clutchTorque = Mathf.Sign(slipVelocity) * maxTorqueToZeroSlip;
+                engineRadPerSec -= (clutchTorque / engine._engineData.engineInertia) * dt;
+                transRadPerSec = engineRadPerSec; 
+            }
+            else
+            {
+                float engineAccel = (engineNetTorque - clutchTorque) / engine._engineData.engineInertia;
+                float transAccel = (clutchTorque - reflectedLoad) / reflectedInertia;
 
-            engineRadPerSec += engineAccel * dt;
-            transRadPerSec += transAccel * dt;
+                engineRadPerSec += engineAccel * dt;
+                transRadPerSec += transAccel * dt;
+            }
         }
 
         engineRPM = Mathf.Max(0f, engineRadPerSec * (30f / Mathf.PI));
@@ -58,7 +87,11 @@ public class PowerTrain
         float engineRadPerSec = engineRPM * (Mathf.PI / 30f);
         float transRadPerSec = transmissionInputRPM * (Mathf.PI / 30f);
         
-        float clutchTorque = clutch.CalculateClutchTorque(engineRadPerSec, transRadPerSec);
+        float clutchTorque = clutch.CalculateSlippingTorque(engineRadPerSec, transRadPerSec);
+        if (clutch.isLocked)
+        {
+             clutchTorque = engine._engineData.GetGeneratedTorque(engineRPM, 1f); 
+        }
         return transmission.GetOutputTorque(clutchTorque);
     }
 }

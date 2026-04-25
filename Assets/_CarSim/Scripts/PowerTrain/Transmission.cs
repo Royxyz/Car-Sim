@@ -51,6 +51,8 @@ public class Transmission
     public float GetReflectedInertia(float outputInertia)
     {
         float ratio = GetTotalRatio();
-        return (outputInertia * ratio * ratio) + transmissionData.transmissionInertia;
+        if (Mathf.Abs(ratio) < 0.001f) return transmissionData.transmissionInertia; 
+        
+        return (outputInertia / (ratio * ratio)) + transmissionData.transmissionInertia;
     }
 }
