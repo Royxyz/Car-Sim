@@ -12,13 +12,11 @@ public class Engine
         _engineData.Initialize();
     }
     
-    public float CalculateNetTorque(float throttlepostion, float currentRPM, float loadTorque)
+    public float CalculateNetTorque(float throttlePosition, float currentRPM, float loadTorque)
     {
-        return _engineData.GetGeneratedTorque(currentRPM, throttlepostion) - 
-                _engineData.GetLossTorque(currentRPM, throttlepostion) - loadTorque;
+        return _engineData.GetGeneratedTorque(currentRPM, throttlePosition) - 
+                _engineData.GetLossTorque(currentRPM) - loadTorque;
         
     }
-
-
 
 }

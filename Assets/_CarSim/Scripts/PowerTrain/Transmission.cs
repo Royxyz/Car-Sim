@@ -1,23 +1,56 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewTransmissionData", menuName = "Vehicle Physics/Transmission Data")]
-public class TransmissionData : ScriptableObject
+[System.Serializable]
+public class Transmission
 {
-    [Header("Gearing")]
-    [Tooltip("Array representing the gear ratio (N) for each forward gear.")]
-    public float[] forwardGears = { 3.1f, 1.8f, 1.3f, 1.0f, 0.8f };
-    
-    [Tooltip("The gear ratio for reverse. Usually around the same absolute ratio as 1st gear.")]
-    public float reverseGear = 3.2f;
-    
-    [Tooltip("The differential ratio. Total multiplier is currentGear * finalDrive.")]
-    public float finalDrive = 3.73f;
+    [SerializeField] public TransmissionData transmissionData;
 
-    [Header("Physical Characteristics")]
-    [Tooltip("A multiplier representing drivetrain power loss, usually between 0.85 and 0.95.")]
-    [Range(0f, 1f)]
-    public float efficiency = 0.90f;
+    public int currentGear { get; private set; } = 0;
 
-    [Tooltip("The rotational mass of the gearbox internals, used when calculating lumped mass.")]
-    public float transmissionInertia = 0.15f;
+    public void ShiftUp()
+    {
+        if (currentGear < transmissionData.forwardGears.Length)
+        {
+            currentGear++;
+        }
+    }
+
+    public void ShiftDown()
+    {
+        if (currentGear > -1)
+        {
+            currentGear--;
+        }
+    }
+
+    public float GetTotalRatio()
+    {
+        if (currentGear == 0) return 0f;
+
+        float ratio = currentGear == -1 
+            ? transmissionData.reverseGear 
+            : transmissionData.forwardGears[currentGear - 1];
+
+        return ratio * transmissionData.finalDrive;
+    }
+
+    public float GetOutputTorque(float inputTorque)
+    {
+        float ratio = GetTotalRatio();
+        return inputTorque * ratio * transmissionData.efficiency;
+    }
+
+    public float GetReflectedLoadTorque(float outputLoadTorque)
+    {
+        float ratio = GetTotalRatio();
+        if (Mathf.Abs(ratio) < 0.001f) return 0f;
+
+        return outputLoadTorque / (ratio * transmissionData.efficiency);
+    }
+
+    public float GetReflectedInertia(float outputInertia)
+    {
+        float ratio = GetTotalRatio();
+        return (outputInertia * ratio * ratio) + transmissionData.transmissionInertia;
+    }
 }
