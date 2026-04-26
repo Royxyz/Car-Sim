@@ -29,7 +29,9 @@ public class Wheel
         float speedThreshold = 0.1f;
         float absForward = Mathf.Max(Mathf.Abs(forwardSpeed), speedThreshold);
 
-        longitudinalSlip = (wheelLinearSpeed - forwardSpeed) / absForward;
+        float slipDampener = Mathf.Clamp01(absForward / 2.0f); // Fades in grip between 0 and 2 m/s
+        slipAngle = Mathf.Atan2(lateralSpeed, absForward) * slipDampener;
+        longitudinalSlip = ((wheelLinearSpeed - forwardSpeed) / absForward) * slipDampener;
 
         if (Mathf.Abs(forwardSpeed) > speedThreshold)
         {
