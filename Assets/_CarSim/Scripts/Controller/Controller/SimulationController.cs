@@ -81,7 +81,11 @@ public class SimulationController : MonoBehaviour
 
         antiRollBar.ApplyAntiRollBars(corners, rb);
 
-        for (int i = 0; i < 4; i++) cornerStates[i].accumulatedForce = Vector3.zero;
+        for (int i = 0; i < 4; i++) 
+        {
+            cornerStates[i].accumulatedSuspForce = Vector3.zero;
+            cornerStates[i].accumulatedGripForce = Vector3.zero;
+        }
 
         for (int step = 0; step < subSteps; step++)
         {
@@ -218,19 +222,24 @@ public class SimulationController : MonoBehaviour
     }
 
     private void ApplyAccumulatedForces()
-    {
-        for (int i = 0; i < 4; i++)
         {
-            Vector3 avgSusp = cornerStates[i].accumulatedSuspForce / subSteps;
-            Vector3 avgGrip = cornerStates[i].accumulatedGripForce / subSteps;  
-            
-            if (avgGrip.magnitude > 0.01f && avgSusp.magnitude > 0.01f)
+            for (int i = 0; i < 4; i++)
             {
-                rb.AddForceAtPosition(avgSusp, corners[i].suspensionMountPoint.position);
-                rb.AddForceAtPosition(avgGrip, cornerStates[i].contactPoint);
+                Vector3 avgSusp = cornerStates[i].accumulatedSuspForce / subSteps;
+                Vector3 avgGrip = cornerStates[i].accumulatedGripForce / subSteps;  
+                
+                // [FIX 2] Apply them independently! Suspension shouldn't rely on tire friction to work.
+                if (avgSusp.magnitude > 0.01f)
+                {
+                    rb.AddForceAtPosition(avgSusp, corners[i].suspensionMountPoint.position);
+                }
+                
+                if (avgGrip.magnitude > 0.01f)
+                {
+                    rb.AddForceAtPosition(avgGrip, cornerStates[i].contactPoint);
+                }
             }
         }
-    }
 
     private void ApplyAerodynamics()
     {

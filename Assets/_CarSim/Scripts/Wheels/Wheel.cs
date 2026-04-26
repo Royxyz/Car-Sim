@@ -21,27 +21,22 @@ public class Wheel
     }
 
     public void CalculateSlips(Vector3 contactPatchLocalVelocity)
-    {
-        float forwardSpeed = contactPatchLocalVelocity.z;
-        float lateralSpeed = contactPatchLocalVelocity.x;
-        float wheelLinearSpeed = angularVelocity * wheelData.radius;
-
-        float speedThreshold = 0.1f;
-        float absForward = Mathf.Max(Mathf.Abs(forwardSpeed), speedThreshold);
-
-        float slipDampener = Mathf.Clamp01(absForward / 2.0f); // Fades in grip between 0 and 2 m/s
-        slipAngle = Mathf.Atan2(lateralSpeed, absForward) * slipDampener;
-        longitudinalSlip = ((wheelLinearSpeed - forwardSpeed) / absForward) * slipDampener;
-
-        if (Mathf.Abs(forwardSpeed) > speedThreshold)
         {
-            slipAngle = Mathf.Atan2(lateralSpeed, Mathf.Abs(forwardSpeed));
+            float forwardSpeed = contactPatchLocalVelocity.z;
+            float lateralSpeed = contactPatchLocalVelocity.x;
+            float wheelLinearSpeed = angularVelocity * wheelData.radius;
+
+            float speedThreshold = 0.1f;
+            float absForward = Mathf.Max(Mathf.Abs(forwardSpeed), speedThreshold);
+
+            // Fades in grip smoothly at low speeds
+            float slipDampener = Mathf.Clamp01(absForward / 2.0f); 
+            
+            slipAngle = Mathf.Atan2(lateralSpeed, absForward) * slipDampener;
+            longitudinalSlip = ((wheelLinearSpeed - forwardSpeed) / absForward) * slipDampener;
+            
+            // Do NOT add the if/else block here. Let the dampener do its job.
         }
-        else
-        {
-            slipAngle = Mathf.Atan2(lateralSpeed, speedThreshold);
-        }
-    }
 
     public void UpdatePhysics(float driveTorque, float brakeTorque, float tireGripTorque, float dt)
     {

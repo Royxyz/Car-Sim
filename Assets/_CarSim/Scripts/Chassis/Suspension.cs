@@ -19,47 +19,40 @@ public class Suspension
     }
 
     public float CalculateForce(bool isGrounded, float hitDistance, float suspensionCompressionVelocity)
-    {
-        this.isGrounded = isGrounded;
-        
-        // Target is hit distance if grounded, otherwise max droop
-        this.currentLength = isGrounded ? hitDistance : suspData.restLength + suspData.maxTravel;
-        this.currentLength = Mathf.Clamp(currentLength, suspData.restLength - suspData.maxTravel, suspData.restLength + suspData.maxTravel);
-
-        if (!isGrounded) 
         {
-            currentNormalLoad = 0f;
-            return 0f;
-        }
+            this.isGrounded = isGrounded;
+            this.currentLength = isGrounded ? hitDistance : suspData.restLength + suspData.maxTravel;
+            this.currentLength = Mathf.Clamp(currentLength, suspData.restLength - suspData.maxTravel, suspData.restLength + suspData.maxTravel);
 
-        float compression = suspData.restLength - currentLength;
+            if (!isGrounded) 
+            {
+                currentNormalLoad = 0f;
+                return 0f;
+            }
 
-        // If the spring is completely stretched out, it applies no force
-        if (compression < -suspData.maxTravel) 
-        {
-            currentNormalLoad = 0f;
-            return 0f;
-        }
+            float compression = suspData.restLength - currentLength;
+            if (compression < -suspData.maxTravel) return 0f;
 
-        float springForce = compression * suspData.springStiffness;
-        
-        // Smooth, physics-based damping
-        float dampingForce = 0f;
-        if (suspensionCompressionVelocity > 0f) 
-        {
-            dampingForce = suspensionCompressionVelocity * suspData.bumpDamping;
-        }
-        else 
-        {
-            dampingForce = suspensionCompressionVelocity * suspData.reboundDamping;
-        }
+            float springForce = compression * suspData.springStiffness;
+            float dampingForce = 0f;
 
-        float totalForce = springForce + dampingForce;
-        
-        // Tires can only push up on the chassis, not pull it down
-        currentNormalLoad = Mathf.Max(0f, totalForce); 
-        return currentNormalLoad;
-    }
+            if (suspensionCompressionVelocity > 0f) 
+            {
+                dampingForce = suspensionCompressionVelocity * suspData.bumpDamping;
+            }
+            else 
+            {
+                dampingForce = suspensionCompressionVelocity * suspData.reboundDamping;
+                
+                // THE FIX: Never let rebound damping pull the tire completely off the ground
+                // We cap the negative damping force to 80% of the positive spring force
+                dampingForce = Mathf.Max(dampingForce, -springForce * 0.8f); 
+            }
+
+            float totalForce = springForce + dampingForce;
+            currentNormalLoad = Mathf.Max(0f, totalForce); 
+            return currentNormalLoad;
+        }
 
     public Vector3 GetWheelVisualPosition(Vector3 suspensionMountPoint, Vector3 downVector)
     {
