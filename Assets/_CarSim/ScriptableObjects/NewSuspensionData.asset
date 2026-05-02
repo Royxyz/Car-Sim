@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SuspensionData
   restLength: 0.5
   maxTravel: 0.2
-  springStiffness: 35000
+  springStiffness: 20000
   bumpDamping: 3500
   reboundDamping: 4000

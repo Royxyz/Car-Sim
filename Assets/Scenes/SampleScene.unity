@@ -396,7 +396,8 @@ GameObject:
   - component: {fileID: 763516693}
   - component: {fileID: 763516692}
   - component: {fileID: 763516696}
-  m_Layer: 0
+  - component: {fileID: 763516697}
+  m_Layer: 3
   m_Name: Car
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -495,6 +496,9 @@ MonoBehaviour:
     tire:
       tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
   subSteps: 15
+  trackMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!114 &763516693
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -569,6 +573,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TelemetryLogger
   recordDuration: 15
   fileName: CarTelemetry.csv
+--- !u!65 &763516697
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763516691}
+  m_Material: {fileID: 13400000, guid: 8720e83da73cfa84f985aff644132611, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.6059911, y: 0.45116663, z: 3.55159}
+  m_Center: {x: -0.04700446, y: 0.22309756, z: -0.22420502}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -643,7 +668,7 @@ Transform:
   m_GameObject: {fileID: 1258309718}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.75, y: -0.2, z: 1.25}
+  m_LocalPosition: {x: -0.75, y: -0.8, z: 1.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -787,7 +812,7 @@ Transform:
   m_GameObject: {fileID: 1482606541}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.75, y: -0.2, z: 1.25}
+  m_LocalPosition: {x: 0.75, y: -0.8, z: 1.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -818,7 +843,7 @@ Transform:
   m_GameObject: {fileID: 1539956296}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.75, y: -0.2, z: -1.25}
+  m_LocalPosition: {x: -0.75, y: -0.8, z: -1.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -849,7 +874,7 @@ Transform:
   m_GameObject: {fileID: 1742416154}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.75, y: -0.2, z: -1.25}
+  m_LocalPosition: {x: 0.75, y: -0.8, z: -1.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -913,7 +938,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 050587e2a40da6f47ae8a5eb3f5de111, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

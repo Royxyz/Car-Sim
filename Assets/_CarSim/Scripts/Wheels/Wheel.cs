@@ -8,7 +8,6 @@ public class Wheel
     public float angularVelocity { get; private set; }
     public float rotationAngle { get; private set; }
     
-    // New Data Properties
     public float longitudinalSlip { get; private set; }
     public float slipAngle { get; private set; }
 
@@ -21,22 +20,21 @@ public class Wheel
     }
 
     public void CalculateSlips(Vector3 contactPatchLocalVelocity)
-        {
-            float forwardSpeed = contactPatchLocalVelocity.z;
-            float lateralSpeed = contactPatchLocalVelocity.x;
-            float wheelLinearSpeed = angularVelocity * wheelData.radius;
+    {
+        float forwardSpeed = contactPatchLocalVelocity.z;
+        float lateralSpeed = contactPatchLocalVelocity.x;
+        float wheelLinearSpeed = angularVelocity * wheelData.radius;
 
-            float speedThreshold = 0.1f;
-            float absForward = Mathf.Max(Mathf.Abs(forwardSpeed), speedThreshold);
+        // Increase threshold slightly to give the virtual chassis room to breathe at 0mph
+        float speedThreshold = 2.0f; 
+        float absForward = Mathf.Max(Mathf.Abs(forwardSpeed), speedThreshold);
 
-            // Fades in grip smoothly at low speeds
-            float slipDampener = Mathf.Clamp01(absForward / 2.0f); 
-            
-            slipAngle = Mathf.Atan2(lateralSpeed, absForward) * slipDampener;
-            longitudinalSlip = ((wheelLinearSpeed - forwardSpeed) / absForward) * slipDampener;
-            
-            // Do NOT add the if/else block here. Let the dampener do its job.
-        }
+        // SmoothStep is mathematically softer than a hard Clamp01
+        float slipDampener = Mathf.SmoothStep(0f, 1f, Mathf.Abs(forwardSpeed) / 3.0f); 
+        
+        slipAngle = Mathf.Atan2(lateralSpeed, absForward) * slipDampener;
+        longitudinalSlip = ((wheelLinearSpeed - forwardSpeed) / absForward) * slipDampener;
+    }
 
     public void UpdatePhysics(float driveTorque, float brakeTorque, float tireGripTorque, float dt)
     {
