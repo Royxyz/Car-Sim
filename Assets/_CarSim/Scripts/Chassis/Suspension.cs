@@ -30,11 +30,17 @@ public class Suspension
         }
 
         float compression = suspData.restLength - currentLength;
-        if (compression < -suspData.maxTravel) return 0f;
+        if (compression < -suspData.maxTravel) return 0f; 
 
         float springForce = compression * suspData.springStiffness;
-        float dampingForce = 0f;
 
+        if (compression > suspData.bumpStopEngagement)
+        {
+            float bumpStopCompression = compression - suspData.bumpStopEngagement;
+            springForce += bumpStopCompression * suspData.bumpStopStiffness; 
+        }
+
+        float dampingForce = 0f;
         if (suspensionCompressionVelocity > 0f) 
         {
             dampingForce = suspensionCompressionVelocity * suspData.bumpDamping;
@@ -43,18 +49,6 @@ public class Suspension
         {
             dampingForce = suspensionCompressionVelocity * suspData.reboundDamping;
             dampingForce = Mathf.Max(dampingForce, -springForce * 0.8f); 
-        }
-
-        if (compression > suspData.maxTravel)
-        {
-            float excess = compression - suspData.maxTravel;
-            excess = Mathf.Min(excess, 0.15f); 
-            
-            springForce += excess * suspData.springStiffness * 3f; 
-            if (suspensionCompressionVelocity > 0f) 
-            {
-                dampingForce += suspensionCompressionVelocity * suspData.bumpDamping * 1.5f; 
-            }
         }
 
         float totalForce = springForce + dampingForce;

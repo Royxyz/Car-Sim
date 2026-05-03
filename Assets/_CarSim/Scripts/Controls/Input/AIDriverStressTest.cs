@@ -3,10 +3,16 @@ using UnityEngine;
 public class AIDriverStressTest : MonoBehaviour, IVehicleInput
 {
     [Header("Test Configuration")]
-    public float targetLaunchSpeedKmh = 110f;
-    public float slalomSpeedKmh = 60f;
-    public float slalomDuration = 5f;
-    public float slalomFrequency = 3f;
+    public float targetLaunchSpeedKmh = 120f; 
+    public float slalomSpeedKmh = 80f; 
+    public float slalomDuration = 6f;
+    public float slalomFrequency = 2.5f;
+    public float topSpeedRunDuration = 8f; 
+
+    [Header("AI Control Parameters")]
+    [Tooltip("Proportional gain for high-speed straight-line steering correction. Too high = wobbles. Too low = drifts.")]
+    public float steeringKp = 0.03f; 
+    private float targetHeading;
 
     [Header("Dependencies")]
     public AdvancedTelemetryLogger telemetryLogger;
@@ -20,8 +26,8 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
     public bool ShiftUp { get; private set; }
     public bool ShiftDown { get; private set; }
 
-    private enum TestState { Idle, Launching, PanicBraking, ReLaunching, Slalom, Finished }
-    private TestState currentState = TestState.Idle;
+    public enum TestState { Idle, Launching, PanicBraking, ReLaunching, Slalom, TopSpeedRun, Finished }
+    public TestState currentState { get; private set; } = TestState.Idle;
     
     // --- Benchmark Tracking ---
     private float stateTimer = 0f;
@@ -42,7 +48,7 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
     private void Start()
     {
         ResetInputs();
-        Brake = 1f; // Hold brakes at idle
+        Brake = 1f; 
     }
 
     private void Update()
@@ -58,6 +64,10 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
     private void StartStressTest()
     {
         Debug.Log("<color=green><b>[Benchmark]</b> Test Initiated: Stage 1 - 0-100 LAUNCH</color>");
+        
+        // Lock in the starting heading for the Kp controller
+        targetHeading = carRb.rotation.eulerAngles.y;
+        
         currentState = TestState.Launching;
         launchStartTime = Time.time;
         
@@ -72,9 +82,9 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                 break;
 
             case TestState.Launching:
-                Throttle = 1f; Brake = 0f; Steering = 0f;
+                Throttle = 1f; Brake = 0f; 
+                MaintainHeading(); // Replaces Steering = 0f;
 
-                // Track 0-100 Time
                 if (!reached100 && currentSpeedKmh >= 100f)
                 {
                     timeTo100Kmh = Time.time - launchStartTime;
@@ -82,7 +92,6 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                     Debug.Log($"<color=cyan><b>[Benchmark]</b> 0-100 km/h: {timeTo100Kmh:F2} seconds</color>");
                 }
 
-                // Push slightly past 100 before braking
                 if (currentSpeedKmh >= targetLaunchSpeedKmh)
                 {
                     Debug.Log("<color=yellow><b>[Benchmark]</b> Stage 2 - 100-0 PANIC BRAKING</color>");
@@ -92,9 +101,10 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                 break;
 
             case TestState.PanicBraking:
-                Throttle = 0f; Brake = 1f; Steering = 0f; // Slam brakes
+                Throttle = 0f; Brake = 1f; 
+                MaintainHeading(); 
 
-                if (currentSpeedKmh <= 1f) // Essentially stopped
+                if (currentSpeedKmh <= 2f) 
                 {
                     brakingDistance = Vector3.Distance(brakingStartPosition, carRb.position);
                     Debug.Log($"<color=cyan><b>[Benchmark]</b> Braking Distance: {brakingDistance:F1} meters</color>");
@@ -105,7 +115,8 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                 break;
 
             case TestState.ReLaunching:
-                Throttle = 0.8f; Brake = 0f; Steering = 0f;
+                Throttle = 0.8f; Brake = 0f; 
+                MaintainHeading();
 
                 if (currentSpeedKmh >= slalomSpeedKmh)
                 {
@@ -116,13 +127,27 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                 break;
 
             case TestState.Slalom:
-                Throttle = 0.35f; Brake = 0f; // Modulate to maintain speed
+                Throttle = 0.6f; Brake = 0f; 
                 stateTimer += Time.deltaTime;
                 
-                // Aggressive sine wave steering
                 Steering = Mathf.Sin(stateTimer * slalomFrequency);
 
                 if (stateTimer >= slalomDuration)
+                {
+                    Debug.Log("<color=magenta><b>[Benchmark]</b> Stage 5 - TOP SPEED AERO RUN</color>");
+                    // Update target heading so the AI goes straight from wherever the slalom spit it out
+                    targetHeading = carRb.rotation.eulerAngles.y; 
+                    currentState = TestState.TopSpeedRun;
+                    stateTimer = 0f;
+                }
+                break;
+
+            case TestState.TopSpeedRun:
+                Throttle = 1f; Brake = 0f; 
+                MaintainHeading();
+                stateTimer += Time.deltaTime;
+
+                if (stateTimer >= topSpeedRunDuration)
                 {
                     Debug.Log("<color=red><b>[Benchmark]</b> Test Complete. Generating Report.</color>");
                     currentState = TestState.Finished;
@@ -135,6 +160,18 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                 Throttle = 0f; Brake = 1f; Steering = 0f;
                 break;
         }
+    }
+
+    // The Kp Feedback Loop
+    private void MaintainHeading()
+    {
+        float currentHeading = carRb.rotation.eulerAngles.y;
+        
+        // DeltaAngle automatically handles the 360 to 0 degree wrap-around
+        float error = Mathf.DeltaAngle(currentHeading, targetHeading);
+        
+        // Calculate proportional steering input and clamp it between -1 (Left) and 1 (Right)
+        Steering = Mathf.Clamp(error * steeringKp, -1f, 1f);
     }
 
     private void ResetInputs()

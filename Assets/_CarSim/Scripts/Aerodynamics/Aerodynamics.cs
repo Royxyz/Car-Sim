@@ -5,24 +5,30 @@ public class Aerodynamics
 {
     [SerializeField] public AeroData aeroData;
 
-    public Vector3 CalculateAerodynamicForces(Vector3 localVelocity)
+    public Vector3 CalculateAerodynamicForces(Vector3 carVelocityWorld, Transform carTransform, Vector3 ambientWindWorld = default)
     {
-        float speedForward = localVelocity.z;
-        float speedLateral = localVelocity.x;
+        Vector3 airVelocityWorld = carVelocityWorld - ambientWindWorld;
+        Vector3 localAirVelocity = carTransform.InverseTransformDirection(airVelocityWorld);
 
-        float forwardDragForce = 0.5f * aeroData.airDensity * aeroData.frontalArea * aeroData.dragCoefficientFront * (speedForward * speedForward);
-        forwardDragForce *= -Mathf.Sign(speedForward);
+        float speedSquare = localAirVelocity.sqrMagnitude;
+        if (speedSquare < 0.1f) return Vector3.zero;
 
-        float lateralDragForce = 0.5f * aeroData.airDensity * aeroData.sideArea * aeroData.dragCoefficientSide * (speedLateral * speedLateral);
-        lateralDragForce *= -Mathf.Sign(speedLateral);
+        float dynamicPressure = 0.5f * aeroData.airDensity * speedSquare;
+        float aoa = Mathf.Atan2(localAirVelocity.y, localAirVelocity.z) * Mathf.Rad2Deg; 
+        float slipAngle = Mathf.Atan2(localAirVelocity.x, localAirVelocity.z) * Mathf.Rad2Deg;
 
-        float downforce = 0.5f * aeroData.airDensity * aeroData.topArea * aeroData.downforceCoefficient * (speedForward * speedForward);
+        float cL = aeroData.downforceVsAoA.Evaluate(aoa);
+        float cD = aeroData.dragVsAoA.Evaluate(aoa);
+        float cS = aeroData.sideforceVsSlipAngle.Evaluate(slipAngle);
+
+
+        float downforce = dynamicPressure * aeroData.topArea * cL;
         
-        if (speedForward < 0f)
-        {
-            downforce = 0f; 
-        }
+        float drag = dynamicPressure * aeroData.frontalArea * cD;
+        drag *= Mathf.Sign(localAirVelocity.z);
 
-        return new Vector3(lateralDragForce, -downforce, forwardDragForce);
+        float sideForce = dynamicPressure * aeroData.sideArea * cS;
+
+        return new Vector3(-sideForce, -downforce, -drag);
     }
 }

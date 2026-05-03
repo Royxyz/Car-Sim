@@ -15,4 +15,8 @@ public class TireData : ScriptableObject
     public float latC = 1.9f;
     public float latD = 1f;
     public float latE = 0.97f;
+
+    [Header("Structural Limits")]
+    [Tooltip("The maximum normal load (N) the tire can physically handle before the contact patch deforms and grip stops scaling.")]
+    public float maxLoadCapacity = 12000f; 
 }
