@@ -6,6 +6,8 @@ public class SimulationController : MonoBehaviour
     [Header("Core Components")]
     public Rigidbody rb;
     private IVehicleInput vehicleInput; 
+    
+    private Transform cachedRoot; 
 
     [Header("Vehicle Systems")]
     public ChassisData chassisData;    
@@ -47,6 +49,8 @@ public class SimulationController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        
+        cachedRoot = transform.root;
 
         vehicleInput = GetComponent<IVehicleInput>();
 
@@ -84,7 +88,7 @@ public class SimulationController : MonoBehaviour
         {
             if (corners[i] != null) 
             {
-                corners[i].Initialize();
+                corners[i].Initialize(rb.mass);
                 localMountPositions[i] = transform.InverseTransformPoint(corners[i].suspensionMountPoint.position) - rb.centerOfMass;
                 localMountUps[i] = transform.InverseTransformDirection(corners[i].suspensionMountPoint.up);
             }
@@ -99,6 +103,26 @@ public class SimulationController : MonoBehaviour
         float subDt = frameDt / subSteps;
 
         HandleDriverInputs();
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (corners[i] != null)
+            {
+                Vector3 mountWorldPos = rb.position + (rb.rotation * localMountPositions[i]);
+                Vector3 mountUp = rb.rotation * localMountUps[i];
+                
+                float maxSuspensionLength = corners[i].suspension.suspData.targetRideHeight + corners[i].suspension.suspData.droopTravel;
+
+                corners[i].contact.EvaluateContact(
+                    cachedRoot, 
+                    mountWorldPos, 
+                    mountUp, 
+                    maxSuspensionLength, 
+                    corners[i].wheel.wheelData.radius, 
+                    trackMask
+                );
+            }
+        }
 
         vChassis.position = rb.position + rb.rotation * rb.centerOfMass;
         vChassis.rotation = rb.rotation;
@@ -213,7 +237,7 @@ public class SimulationController : MonoBehaviour
         );
         
         vChassis.angularVelocity += (vChassis.rotation * localAngAccel) * dt;
-        vChassis.angularVelocity *= (1.0f - (3.0f * dt)); 
+        //vChassis.angularVelocity *= (1.0f - (3.0f * dt)); 
 
         Quaternion qVel = new Quaternion(vChassis.angularVelocity.x, vChassis.angularVelocity.y, vChassis.angularVelocity.z, 0f) * vChassis.rotation;
         vChassis.rotation.x += 0.5f * qVel.x * dt;
@@ -229,14 +253,6 @@ public class SimulationController : MonoBehaviour
     private void ProcessCornerPhysics(int index, Vector3 mountPos, Vector3 mountUp, Vector3 mountVel, float driveTorque, float dt, ref Vector3 stepForce, ref Vector3 stepTorque, Vector3 radiusFromCoM)
     {
         WheelAssembly corner = corners[index];
-
-        corner.contact.EvaluateContact(
-            this.transform.root, mountPos, mountUp, 
-            corner.suspension.suspData.restLength, 
-            corner.suspension.suspData.maxTravel, 
-            corner.wheel.wheelData.radius, 
-            trackMask
-        );
 
         float compressionVelocity = Vector3.Dot(mountVel, -mountUp);
 
@@ -289,5 +305,56 @@ public class SimulationController : MonoBehaviour
         Vector3 aeroForcesWorld = transform.TransformDirection(aeroForcesLocal);
         Vector3 centerOfPressureWorld = transform.TransformPoint(aerodynamics.aeroData.centerOfPressureOffset);
         rb.AddForceAtPosition(aeroForcesWorld, centerOfPressureWorld);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (corners == null || corners.Length != 4 || rb == null) return;
+
+        foreach (var corner in corners)
+        {
+            if (corner == null || corner.suspensionMountPoint == null || corner.suspension.suspData == null) continue;
+
+            Vector3 mountPos = corner.suspensionMountPoint.position;
+            Vector3 mountUp = corner.suspensionMountPoint.up;
+            
+            // NEW MATH: Max extension is Ride Height + Droop
+            float maxSuspensionLength = corner.suspension.suspData.targetRideHeight + corner.suspension.suspData.droopTravel;
+
+            // 1. Draw the Suspension Travel Path (Yellow line)
+            Gizmos.color = Color.yellow;
+            Vector3 maxDropPos = mountPos - (mountUp * maxSuspensionLength);
+            Gizmos.DrawLine(mountPos, maxDropPos);
+
+            // 2. Draw the SphereCast Hit/Airborne State
+            if (corner.contact != null && corner.wheel != null && corner.wheel.wheelData != null)
+            {
+                if (corner.contact.isGrounded)
+                {
+                    // Green sphere at the exact contact point
+                    Gizmos.color = Color.green;
+                    Gizmos.DrawSphere(corner.contact.contactPoint, 0.05f);
+
+                    // Draw the sweeping volume of the tire bottom (Cyan wire sphere)
+                    Gizmos.color = Color.cyan;
+                    
+                    float sweepDistance = corner.contact.hitDistance + corner.wheel.wheelData.radius + corner.contact.rayOriginOffset;
+                    Vector3 sphereCenter = (mountPos + (mountUp * corner.contact.rayOriginOffset)) - (mountUp * sweepDistance);
+                    Gizmos.DrawWireSphere(sphereCenter, corner.contact.castRadius);
+
+                    // Draw the Contact Normal (Red line pushing away from ground)
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawRay(corner.contact.contactPoint, corner.contact.contactNormal * 0.5f);
+                }
+                else
+                {
+                    // Red wire sphere at max droop to show where the tire is looking for the ground
+                    Gizmos.color = Color.red;
+                    float sweepDistance = maxSuspensionLength + corner.wheel.wheelData.radius + corner.contact.rayOriginOffset;
+                    Vector3 sphereCenter = (mountPos + (mountUp * corner.contact.rayOriginOffset)) - (mountUp * sweepDistance);
+                    Gizmos.DrawWireSphere(sphereCenter, corner.contact.castRadius);
+                }
+            }
+        }
     }
 }

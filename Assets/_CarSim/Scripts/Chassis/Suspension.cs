@@ -6,22 +6,29 @@ public class Suspension
     [SerializeField] public SuspensionData suspData;
 
     public float currentLength { get; private set; }
-    public float currentVelocity { get; private set; }
     public float currentNormalLoad { get; private set; }
     public bool isGrounded { get; private set; } 
+    
+    private float staticPreloadForce = 0f;
 
-    public void Initialize()
+  
+    public void Initialize(float vehicleMass) 
     {
-        currentLength = suspData.restLength;
-        currentVelocity = 0f;
+        currentLength = suspData.targetRideHeight;
         currentNormalLoad = 0f;
         isGrounded = false;
+
+        staticPreloadForce = (vehicleMass * 9.81f) / 4f; 
     }
 
-    public float CalculateForce(bool isGrounded, float hitDistance, float suspensionCompressionVelocity)
+    public float CalculateForce(bool isGrounded, float hitDistance, float compressionVelocity)
     {
         this.isGrounded = isGrounded;
-        this.currentLength = isGrounded ? hitDistance : suspData.restLength + suspData.maxTravel;
+        
+        float maxDroopLength = suspData.targetRideHeight + suspData.droopTravel;
+        float maxBumpLength = suspData.targetRideHeight - suspData.bumpTravel;
+
+        this.currentLength = isGrounded ? hitDistance : maxDroopLength;
 
         if (!isGrounded) 
         {
@@ -29,40 +36,31 @@ public class Suspension
             return 0f;
         }
 
-        float compression = suspData.restLength - currentLength;
-        if (compression < -suspData.maxTravel) return 0f; 
+        
+        float deviation = suspData.targetRideHeight - currentLength;
 
-        float springForce = compression * suspData.springStiffness;
+        float springForce = staticPreloadForce + (deviation * suspData.springStiffness);
+        springForce = Mathf.Max(0f, springForce); 
 
-        if (compression > suspData.bumpStopEngagement)
+        float currentBumpDistance = (currentLength - maxBumpLength); 
+        if (currentBumpDistance < suspData.bumpStopGap)
         {
-            float bumpStopCompression = compression - suspData.bumpStopEngagement;
+            float bumpStopCompression = suspData.bumpStopGap - currentBumpDistance;
             springForce += bumpStopCompression * suspData.bumpStopStiffness; 
         }
 
-        float dampingForce = 0f;
-        if (suspensionCompressionVelocity > 0f) 
-        {
-            dampingForce = suspensionCompressionVelocity * suspData.bumpDamping;
-        }
-        else 
-        {
-            dampingForce = suspensionCompressionVelocity * suspData.reboundDamping;
-            dampingForce = Mathf.Max(dampingForce, -springForce * 0.8f); 
-        }
+        float dampingForce = compressionVelocity > 0f 
+            ? compressionVelocity * suspData.bumpDamping 
+            : compressionVelocity * suspData.reboundDamping;
+            
+
+        if (compressionVelocity <= 0f) dampingForce = Mathf.Max(dampingForce, -springForce * 0.8f);
 
         float totalForce = springForce + dampingForce;
      
-        float absoluteMaxForce = suspData.absoluteMaxForce; 
-        currentNormalLoad = Mathf.Clamp(totalForce, 0f, absoluteMaxForce); 
-        this.currentLength = Mathf.Clamp(currentLength, suspData.restLength - suspData.maxTravel, suspData.restLength + suspData.maxTravel);
+        currentNormalLoad = Mathf.Clamp(totalForce, 0f, suspData.absoluteMaxForce); 
+        this.currentLength = Mathf.Clamp(currentLength, maxBumpLength, maxDroopLength);
         
         return currentNormalLoad;
-        
-    }
-
-    public Vector3 GetWheelVisualPosition(Vector3 suspensionMountPoint, Vector3 downVector)
-    {
-        return suspensionMountPoint + (downVector * currentLength);
     }
 }

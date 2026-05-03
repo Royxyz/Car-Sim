@@ -93,8 +93,25 @@ public class AdvancedTelemetryLogger : MonoBehaviour
 
         string currentStage = aiDriver != null ? aiDriver.currentState.ToString() : "Manual";
 
-        // Start Row
-        string line = $"{Time.time:F3},{currentStage},{speedKmh:F1},{longG:F2},{latG:F2},{sim.GetComponent<IVehicleInput>().Steering:F2},{sim.GetComponent<IVehicleInput>().Throttle:F2},{sim.GetComponent<IVehicleInput>().Brake:F2},{clutchEng:F2},{gear},{rpm:F0},{netTorque:F1},{boost:F2},{pitch:F2},{roll:F2},{yawRate:F2},{downforceN:F0},{dragN:F0}";
+        // FIX 4: Zero-allocation string building for chassis data
+        csvRows.Append(Time.time.ToString("F3")).Append(",")
+               .Append(currentStage).Append(",")
+               .Append(speedKmh.ToString("F1")).Append(",")
+               .Append(longG.ToString("F2")).Append(",")
+               .Append(latG.ToString("F2")).Append(",")
+               .Append(sim.GetComponent<IVehicleInput>().Steering.ToString("F2")).Append(",")
+               .Append(sim.GetComponent<IVehicleInput>().Throttle.ToString("F2")).Append(",")
+               .Append(sim.GetComponent<IVehicleInput>().Brake.ToString("F2")).Append(",")
+               .Append(clutchEng.ToString("F2")).Append(",")
+               .Append(gear).Append(",")
+               .Append(rpm.ToString("F0")).Append(",")
+               .Append(netTorque.ToString("F1")).Append(",")
+               .Append(boost.ToString("F2")).Append(",")
+               .Append(pitch.ToString("F2")).Append(",")
+               .Append(roll.ToString("F2")).Append(",")
+               .Append(yawRate.ToString("F2")).Append(",")
+               .Append(downforceN.ToString("F0")).Append(",")
+               .Append(dragN.ToString("F0"));
 
         // 3. Corner Data (High-Resolution Extraction)
         for (int i = 0; i < 4; i++)
@@ -103,7 +120,7 @@ public class AdvancedTelemetryLogger : MonoBehaviour
             
             // Suspension & Wheel Kinematics
             float load = corner.suspension.currentNormalLoad;
-            float travel = corner.suspension.suspData.restLength - corner.suspension.currentLength; 
+            float travel = corner.suspension.suspData.targetRideHeight- corner.suspension.currentLength; 
             float slip = corner.wheel.longitudinalSlip;
             float slipAngle = corner.wheel.slipAngle * Mathf.Rad2Deg;
             float wheelRpm = corner.wheel.angularVelocity * (30f / Mathf.PI);
@@ -117,11 +134,20 @@ public class AdvancedTelemetryLogger : MonoBehaviour
             float brakeTorque = corner.brake.currentAppliedTorque;
             int absActive = corner.brake.isABSDriveActive ? 1 : 0;
 
-            // Append to row
-            line += $",{load:F0},{travel:F3},{slip:F3},{slipAngle:F2},{wheelRpm:F0},{longForceFx:F0},{latForceFy:F0},{brakeTorque:F0},{absActive}";
+            // FIX 4: Zero-allocation string building for corner data
+            csvRows.Append(",")
+                   .Append(load.ToString("F0")).Append(",")
+                   .Append(travel.ToString("F3")).Append(",")
+                   .Append(slip.ToString("F3")).Append(",")
+                   .Append(slipAngle.ToString("F2")).Append(",")
+                   .Append(wheelRpm.ToString("F0")).Append(",")
+                   .Append(longForceFx.ToString("F0")).Append(",")
+                   .Append(latForceFy.ToString("F0")).Append(",")
+                   .Append(brakeTorque.ToString("F0")).Append(",")
+                   .Append(absActive.ToString());
         }
 
-        csvRows.AppendLine(line);
+        csvRows.AppendLine();
     }
 
     public void StopLoggingAndSave(AIDriverStressTest aiDriverRef)

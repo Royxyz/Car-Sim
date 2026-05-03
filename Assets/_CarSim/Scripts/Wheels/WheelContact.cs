@@ -4,8 +4,8 @@ using UnityEngine;
 public class WheelContact
 {
     [Header("Settings")]
-    [Tooltip("How far above the mount point to start the raycast (prevents the ray from starting underground on hard bottom-outs).")]
     public float rayOriginOffset = 1.0f;
+    public float castRadius = 0.12f;
 
     public bool isGrounded { get; private set; }
     public float hitDistance { get; private set; }
@@ -14,13 +14,14 @@ public class WheelContact
 
     private RaycastHit[] hitBuffer = new RaycastHit[10];
 
-    public void EvaluateContact(Transform vehicleRoot, Vector3 mountPos, Vector3 mountUp, float suspensionRestLength, float suspensionMaxTravel, float wheelRadius, LayerMask trackMask)
+    public void EvaluateContact(Transform vehicleRoot, Vector3 mountPos, Vector3 mountUp, float maxSuspensionLength, float wheelRadius, LayerMask trackMask)
     {
         Vector3 rayStartPos = mountPos + (mountUp * rayOriginOffset);
-        float maxRayLength = suspensionRestLength + suspensionMaxTravel + wheelRadius + rayOriginOffset;
 
-        int hitCount = Physics.RaycastNonAlloc(rayStartPos, -mountUp, hitBuffer, maxRayLength, trackMask);
-        
+        float maxSweepLength = maxSuspensionLength + wheelRadius + rayOriginOffset;
+
+        int hitCount = Physics.SphereCastNonAlloc(rayStartPos, castRadius, -mountUp, hitBuffer, maxSweepLength, trackMask);
+
         bool foundValidHit = false;
         RaycastHit validHit = default;
         float closestDistance = float.MaxValue;
@@ -41,14 +42,14 @@ public class WheelContact
         if (foundValidHit)
         {
             isGrounded = true;
-            hitDistance = validHit.distance - wheelRadius - rayOriginOffset;
+            hitDistance = validHit.distance + castRadius - wheelRadius - rayOriginOffset;
             contactPoint = validHit.point;
             contactNormal = validHit.normal;
         }
         else
         {
             isGrounded = false;
-            hitDistance = suspensionRestLength + suspensionMaxTravel;
+            hitDistance = maxSuspensionLength;
 
             contactPoint = mountPos - (mountUp * hitDistance);
             contactNormal = Vector3.up;
