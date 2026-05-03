@@ -32,7 +32,7 @@ public class Wheel
         // SmoothStep is mathematically softer than a hard Clamp01
         float slipDampener = Mathf.SmoothStep(0f, 1f, Mathf.Abs(forwardSpeed) / 3.0f); 
         
-        slipAngle = Mathf.Atan2(lateralSpeed, absForward) * slipDampener;
+        slipAngle = Mathf.Atan2(-lateralSpeed, absForward) * slipDampener;
         longitudinalSlip = ((wheelLinearSpeed - forwardSpeed) / absForward) * slipDampener;
     }
 

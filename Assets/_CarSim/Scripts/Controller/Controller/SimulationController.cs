@@ -152,8 +152,22 @@ public class SimulationController : MonoBehaviour
         
         float reflectedLoad = drivetrain.GetTotalReflectedLoad(totalLoadTorque/4f, totalLoadTorque/4f, totalLoadTorque/4f, totalLoadTorque/4f);
         float reflectedInertia = drivetrain.GetTotalReflectedInertia(corners[0].wheel.wheelData.inertia, corners[1].wheel.wheelData.inertia, corners[2].wheel.wheelData.inertia, corners[3].wheel.wheelData.inertia);
+        
 
-        powerTrain.UpdatePhysics(inputManager.throttleInput, reflectedLoad, reflectedInertia, dt);
+        float transOutputRadSec = drivetrain.CalculateInputSpeed(
+            corners[0].wheel.angularVelocity,
+            corners[1].wheel.angularVelocity,
+            corners[2].wheel.angularVelocity,
+            corners[3].wheel.angularVelocity
+        );
+
+
+        float transOutputRPM = transOutputRadSec * (30f / Mathf.PI);
+        float actualTransRPM = transOutputRPM * powerTrain.transmission.GetTotalRatio();
+
+
+        powerTrain.UpdatePhysics(inputManager.throttleInput, actualTransRPM, reflectedLoad, reflectedInertia, dt);
+
 
         float transOutputTorque = powerTrain.GetWheelTorque();
         float[] wheelDriveTorques = drivetrain.RouteTorque(transOutputTorque, corners[0].wheel.angularVelocity, corners[1].wheel.angularVelocity, corners[2].wheel.angularVelocity, corners[3].wheel.angularVelocity);
@@ -201,7 +215,7 @@ public class SimulationController : MonoBehaviour
         // [THE FIX]: THE TORQUE CLAMP
         // This explicitly forbids the physics engine from instantly cartwheeling the car, 
         // no matter how catastrophically the car drops onto its suspension.
-        float maxSafeTorque = rb.mass * 20f; 
+        float maxSafeTorque = rb.mass * 100f; 
         if (stepTotalTorque.magnitude > maxSafeTorque)
         {
             stepTotalTorque = stepTotalTorque.normalized * maxSafeTorque;
