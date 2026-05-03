@@ -10,16 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7cecb7958c9893547b4dd7f49f891c67, type: 3}
-  m_Name: STIEngine
+  m_Name: NewEngineData
   m_EditorClassIdentifier: Assembly-CSharp::EngineData
-  torqueCsvFile: {fileID: 4900000, guid: 6f9e9779841c3c349818e3b9b816be4f, type: 3}
+  torqueCsvFile: {fileID: 0}
   engineInertia: 0.2
   staticFriction: 10
   dynamicFriction: 0.05
   throttleSmoothing: 0.08
-  isTurbocharged: 1
-  turboSpoolTimeAtIdle: 1.5
-  turboSpoolTimeAtRedline: 0.15
-  blowOffTime: 0.1
+  induction: {fileID: 0}
   idleRPM: 800
-  redlineRPM: 7100
+  redlineRPM: 7500

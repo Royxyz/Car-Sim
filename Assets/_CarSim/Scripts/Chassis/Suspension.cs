@@ -58,15 +58,13 @@ public class Suspension
         }
 
         float totalForce = springForce + dampingForce;
-        
-        // [THE FIX]: Massive vertical cap. 
-        // We let the suspension push up with 150,000 N so the BoxCollider never touches the ground.
-        float absoluteMaxForce = 150000f; 
+     
+        float absoluteMaxForce = suspData.absoluteMaxForce; 
         currentNormalLoad = Mathf.Clamp(totalForce, 0f, absoluteMaxForce); 
-        
         this.currentLength = Mathf.Clamp(currentLength, suspData.restLength - suspData.maxTravel, suspData.restLength + suspData.maxTravel);
         
         return currentNormalLoad;
+        
     }
 
     public Vector3 GetWheelVisualPosition(Vector3 suspensionMountPoint, Vector3 downVector)

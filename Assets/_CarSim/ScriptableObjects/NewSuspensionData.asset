@@ -17,3 +17,4 @@ MonoBehaviour:
   springStiffness: 35000
   bumpDamping: 3500
   reboundDamping: 4000
+  absoluteMaxForce: 150000

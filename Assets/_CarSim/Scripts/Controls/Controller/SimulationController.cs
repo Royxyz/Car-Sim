@@ -1,17 +1,25 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody), typeof(InputManager))]
+[RequireComponent(typeof(Rigidbody))]
 public class SimulationController : MonoBehaviour
 {
     [Header("Core Components")]
     public Rigidbody rb;
-    private InputManager inputManager;
+    private IVehicleInput vehicleInput; 
 
     [Header("Vehicle Systems")]
+    public ChassisData chassisData;    
+    public SteeringData steeringData;  
+    public AntiRollBar antiRollBar = new AntiRollBar(); 
+
+    [Header("Powertrain")]
     public PowerTrain powerTrain;
     public AutoController autoController;
     public Drivetrain drivetrain;
     public Aerodynamics aerodynamics;
+    
+    [Tooltip("If false, player must use the Clutch axis and Shift buttons manually.")]
+    public bool isAutomatic = true;
 
     [Header("Corners (0:FL, 1:FR, 2:RL, 3:RR)")]
     public WheelAssembly[] corners = new WheelAssembly[4];
@@ -36,34 +44,32 @@ public class SimulationController : MonoBehaviour
     private Vector3 totalAccumulatedForce;
     private Vector3 totalAccumulatedTorque;
 
-    private struct CornerState
-    {
-        public bool isGrounded;
-        public float hitDistance;
-        public Vector3 contactPoint;
-        public Vector3 contactNormal;
-    }
-    
-    private CornerState[] cornerStates = new CornerState[4];
-    private RaycastHit[] hitBuffer = new RaycastHit[10];
-
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        inputManager = GetComponent<InputManager>();
 
-        rb.centerOfMass = new Vector3(0f, -0.4f, 0f); 
+        vehicleInput = GetComponent<IVehicleInput>();
 
-        if (rb.inertiaTensor.magnitude < 10f) 
+        if (vehicleInput == null)
         {
-            float mass = rb.mass > 100f ? rb.mass : 1500f;
-            Vector3 carSize = new Vector3(2.8f, 1.0f, 4.5f); 
-            rb.inertiaTensor = new Vector3(
-                (1f/12f) * mass * (carSize.y * carSize.y + carSize.z * carSize.z), 
-                (1f/12f) * mass * (carSize.x * carSize.x + carSize.z * carSize.z), 
-                (1f/12f) * mass * (carSize.x * carSize.x + carSize.y * carSize.y)  
-            );
-            rb.inertiaTensorRotation = Quaternion.identity;
+            Debug.LogError("No IVehicleInput found on the car! Please attach InputManager or an AI Controller.");
+        }
+
+        if (chassisData != null)
+        {
+            rb.mass = chassisData.totalMass;
+            rb.centerOfMass = chassisData.centerOfMassOffset; 
+
+            if (rb.inertiaTensor.magnitude < 10f) 
+            {
+                Vector3 size = chassisData.inertiaTensorBoxSize; 
+                rb.inertiaTensor = new Vector3(
+                    (1f/12f) * rb.mass * (size.y * size.y + size.z * size.z), 
+                    (1f/12f) * rb.mass * (size.x * size.x + size.z * size.z), 
+                    (1f/12f) * rb.mass * (size.x * size.x + size.y * size.y)  
+                );
+                rb.inertiaTensorRotation = Quaternion.identity;
+            }
         }
 
         InitializeSystems();
@@ -87,7 +93,7 @@ public class SimulationController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (corners.Length != 4) return;
+        if (corners.Length != 4 || vehicleInput == null) return;
 
         float frameDt = Time.fixedDeltaTime;
         float subDt = frameDt / subSteps;
@@ -111,6 +117,8 @@ public class SimulationController : MonoBehaviour
         rb.AddTorque(totalAccumulatedTorque / subSteps, ForceMode.Force);
         
         ApplyAerodynamics();
+
+        antiRollBar.ApplyAntiRollBars(corners, rb); 
     }
 
     private void Update()
@@ -123,15 +131,18 @@ public class SimulationController : MonoBehaviour
 
     private void HandleDriverInputs()
     {
-        if (inputManager.shiftUpTriggered) powerTrain.transmission.ShiftUp();
-        if (inputManager.shiftDownTriggered) powerTrain.transmission.ShiftDown();
+        if (vehicleInput.ShiftUp) powerTrain.transmission.ShiftUp();
+        if (vehicleInput.ShiftDown) powerTrain.transmission.ShiftDown();
 
-        float baseSteer = inputManager.steeringInput * 35f; 
+        float baseSteer = vehicleInput.Steering * steeringData.maxSteerAngle; 
         for (int i = 0; i < 4; i++)
         {
             if (corners[i] != null && corners[i].isSteerable)
             {
-                float ackermannModifier = (Mathf.Sign(baseSteer) == (i % 2 == 0 ? -1 : 1)) ? 1.15f : 0.85f;
+                float ackermannModifier = (Mathf.Sign(baseSteer) == (i % 2 == 0 ? -1 : 1)) 
+                    ? steeringData.ackermannInnerMultiplier 
+                    : steeringData.ackermannOuterMultiplier;
+                    
                 corners[i].ackermannSteeringAngle = baseSteer * ackermannModifier;
             }
         }
@@ -139,7 +150,14 @@ public class SimulationController : MonoBehaviour
 
     private void RunPhysicsSubStep(float dt)
     {
-        autoController.UpdateController(dt);
+        if (isAutomatic)
+        {
+            autoController.UpdateController(dt);
+        }
+        else
+        {
+            powerTrain.clutch.engagement = Mathf.Clamp01(1f - vehicleInput.Clutch);
+        }
 
         Vector3 stepTotalForce = Vector3.zero;
         Vector3 stepTotalTorque = Vector3.zero;
@@ -153,21 +171,15 @@ public class SimulationController : MonoBehaviour
         float reflectedLoad = drivetrain.GetTotalReflectedLoad(totalLoadTorque/4f, totalLoadTorque/4f, totalLoadTorque/4f, totalLoadTorque/4f);
         float reflectedInertia = drivetrain.GetTotalReflectedInertia(corners[0].wheel.wheelData.inertia, corners[1].wheel.wheelData.inertia, corners[2].wheel.wheelData.inertia, corners[3].wheel.wheelData.inertia);
         
-
         float transOutputRadSec = drivetrain.CalculateInputSpeed(
-            corners[0].wheel.angularVelocity,
-            corners[1].wheel.angularVelocity,
-            corners[2].wheel.angularVelocity,
-            corners[3].wheel.angularVelocity
+            corners[0].wheel.angularVelocity, corners[1].wheel.angularVelocity,
+            corners[2].wheel.angularVelocity, corners[3].wheel.angularVelocity
         );
-
 
         float transOutputRPM = transOutputRadSec * (30f / Mathf.PI);
         float actualTransRPM = transOutputRPM * powerTrain.transmission.GetTotalRatio();
 
-
-        powerTrain.UpdatePhysics(inputManager.throttleInput, actualTransRPM, reflectedLoad, reflectedInertia, dt);
-
+        powerTrain.UpdatePhysics(vehicleInput.Throttle, actualTransRPM, reflectedLoad, reflectedInertia, dt);
 
         float transOutputTorque = powerTrain.GetWheelTorque();
         float[] wheelDriveTorques = drivetrain.RouteTorque(transOutputTorque, corners[0].wheel.angularVelocity, corners[1].wheel.angularVelocity, corners[2].wheel.angularVelocity, corners[3].wheel.angularVelocity);
@@ -183,39 +195,11 @@ public class SimulationController : MonoBehaviour
             ProcessCornerPhysics(i, virtualMountWorldPos, virtualMountUp, virtualPointVel, wheelDriveTorques[i], dt, ref stepTotalForce, ref stepTotalTorque, radiusFromCoM);
         }
 
-        // VIRTUAL ANTI-ROLL BARS
-        float arbFrontStiffness = 15000f; 
-        float arbRearStiffness  = 12000f;
-
-        float compFL = cornerStates[0].isGrounded ? corners[0].suspension.suspData.restLength - cornerStates[0].hitDistance : 0f;
-        float compFR = cornerStates[1].isGrounded ? corners[1].suspension.suspData.restLength - cornerStates[1].hitDistance : 0f;
-        float compRL = cornerStates[2].isGrounded ? corners[2].suspension.suspData.restLength - cornerStates[2].hitDistance : 0f;
-        float compRR = cornerStates[3].isGrounded ? corners[3].suspension.suspData.restLength - cornerStates[3].hitDistance : 0f;
-
-        float arbForceFront = (compFL - compFR) * arbFrontStiffness;
-        float arbForceRear  = (compRL - compRR) * arbRearStiffness;
-
-        Vector3 arbFL = (vChassis.rotation * localMountUps[0]) * arbForceFront;
-        Vector3 arbFR = (vChassis.rotation * localMountUps[1]) * -arbForceFront;
-        Vector3 arbRL = (vChassis.rotation * localMountUps[2]) * arbForceRear;
-        Vector3 arbRR = (vChassis.rotation * localMountUps[3]) * -arbForceRear;
-
-        stepTotalForce += (arbFL + arbFR + arbRL + arbRR);
-        stepTotalTorque += Vector3.Cross(vChassis.rotation * localMountPositions[0], arbFL);
-        stepTotalTorque += Vector3.Cross(vChassis.rotation * localMountPositions[1], arbFR);
-        stepTotalTorque += Vector3.Cross(vChassis.rotation * localMountPositions[2], arbRL);
-        stepTotalTorque += Vector3.Cross(vChassis.rotation * localMountPositions[3], arbRR);
-
-        // Integrate Virtual Chassis 
         Vector3 totalVirtualForce = stepTotalForce + (Physics.gravity * rb.mass);
         vChassis.linearVelocity += (totalVirtualForce / rb.mass) * dt;
-        vChassis.linearVelocity *= (1.0f - (0.5f * dt)); 
         vChassis.position += vChassis.linearVelocity * dt;
 
-        // [THE FIX]: THE TORQUE CLAMP
-        // This explicitly forbids the physics engine from instantly cartwheeling the car, 
-        // no matter how catastrophically the car drops onto its suspension.
-        float maxSafeTorque = rb.mass * 100f; 
+        float maxSafeTorque = rb.mass * chassisData.maxSafeTorqueMultiplier; 
         if (stepTotalTorque.magnitude > maxSafeTorque)
         {
             stepTotalTorque = stepTotalTorque.normalized * maxSafeTorque;
@@ -245,70 +229,40 @@ public class SimulationController : MonoBehaviour
     private void ProcessCornerPhysics(int index, Vector3 mountPos, Vector3 mountUp, Vector3 mountVel, float driveTorque, float dt, ref Vector3 stepForce, ref Vector3 stepTorque, Vector3 radiusFromCoM)
     {
         WheelAssembly corner = corners[index];
-        float rayOffset = 1.0f; 
-        Vector3 rayStartPos = mountPos + (mountUp * rayOffset);
-        float maxRayLength = corner.suspension.suspData.restLength + corner.suspension.suspData.maxTravel + corner.wheel.wheelData.radius + rayOffset;
 
-        int hitCount = Physics.RaycastNonAlloc(rayStartPos, -mountUp, hitBuffer, maxRayLength, trackMask);
-        bool foundValidHit = false;
-        RaycastHit validHit = default;
-        float closestDistance = float.MaxValue;
+        corner.contact.EvaluateContact(
+            this.transform.root, mountPos, mountUp, 
+            corner.suspension.suspData.restLength, 
+            corner.suspension.suspData.maxTravel, 
+            corner.wheel.wheelData.radius, 
+            trackMask
+        );
 
-        for (int i = 0; i < hitCount; i++)
-        {
-            if (hitBuffer[i].collider.transform.root != this.transform.root)
-            {
-                if (hitBuffer[i].distance < closestDistance)
-                {
-                    closestDistance = hitBuffer[i].distance;
-                    validHit = hitBuffer[i];
-                    foundValidHit = true;
-                }
-            }
-        }
-
-        if (foundValidHit)
-        {
-            cornerStates[index].isGrounded = true;
-            cornerStates[index].hitDistance = validHit.distance - corner.wheel.wheelData.radius - rayOffset; 
-            cornerStates[index].contactPoint = validHit.point;
-            cornerStates[index].contactNormal = validHit.normal;
-        }
-        else
-        {
-            cornerStates[index].isGrounded = false;
-            cornerStates[index].hitDistance = corner.suspension.suspData.restLength + corner.suspension.suspData.maxTravel;
-            cornerStates[index].contactPoint = mountPos - (mountUp * (maxRayLength - rayOffset));
-            cornerStates[index].contactNormal = Vector3.up;
-        }
-
-        CornerState state = cornerStates[index];
         float compressionVelocity = Vector3.Dot(mountVel, -mountUp);
 
-        float suspForceMagnitude = corner.suspension.CalculateForce(state.isGrounded, state.hitDistance, compressionVelocity);
+        float suspForceMagnitude = corner.suspension.CalculateForce(corner.contact.isGrounded, corner.contact.hitDistance, compressionVelocity);
         Vector3 suspensionForceWorld = mountUp * suspForceMagnitude;
         Vector3 gripForceWorld = Vector3.zero; 
 
-        if (state.isGrounded)
+        if (corner.contact.isGrounded)
         {
-            Vector3 contactRadius = state.contactPoint - vChassis.position;
+            Vector3 contactRadius = corner.contact.contactPoint - vChassis.position;
             Vector3 contactVelWorld = vChassis.linearVelocity + Vector3.Cross(vChassis.angularVelocity, contactRadius);
             
             Quaternion wheelRot = vChassis.rotation * Quaternion.Euler(0, corner.ackermannSteeringAngle, 0);
             
-            Vector3 contactVelPlanar = Vector3.ProjectOnPlane(contactVelWorld, state.contactNormal);
+            Vector3 contactVelPlanar = Vector3.ProjectOnPlane(contactVelWorld, corner.contact.contactNormal);
             Vector3 contactVelLocal = Quaternion.Inverse(wheelRot) * contactVelPlanar;
 
             corner.wheel.CalculateSlips(contactVelLocal);
-            float brakeTorque = corner.brake.CalculateBrakeTorque(inputManager.brakeInput, corner.wheel.longitudinalSlip);
+            float brakeTorque = corner.brake.CalculateBrakeTorque(vehicleInput.Brake, corner.wheel.longitudinalSlip);
             
-            float maxFrictionLoad = (rb.mass * 9.81f); 
-            float effectiveFrictionLoad = Mathf.Clamp(suspForceMagnitude, 0f, maxFrictionLoad);
+            float effectiveFrictionLoad = Mathf.Clamp(suspForceMagnitude, 0f, (rb.mass * 9.81f));
             
             Vector2 gripForceLocal = corner.tire.CalculateGripForces(effectiveFrictionLoad, corner.wheel.longitudinalSlip, corner.wheel.slipAngle);
             
-            Vector3 gripDirLong = Vector3.ProjectOnPlane(wheelRot * Vector3.forward, state.contactNormal).normalized;
-            Vector3 gripDirLat = Vector3.ProjectOnPlane(wheelRot * Vector3.right, state.contactNormal).normalized;
+            Vector3 gripDirLong = Vector3.ProjectOnPlane(wheelRot * Vector3.forward, corner.contact.contactNormal).normalized;
+            Vector3 gripDirLat = Vector3.ProjectOnPlane(wheelRot * Vector3.right, corner.contact.contactNormal).normalized;
             
             gripForceWorld = (gripDirLong * gripForceLocal.x) + (gripDirLat * gripForceLocal.y); 
 
@@ -317,14 +271,14 @@ public class SimulationController : MonoBehaviour
         }
         else
         {
-            corner.wheel.UpdatePhysics(driveTorque, corner.brake.CalculateBrakeTorque(inputManager.brakeInput, 0f), 0f, dt);
+            corner.wheel.UpdatePhysics(driveTorque, corner.brake.CalculateBrakeTorque(vehicleInput.Brake, 0f), 0f, dt);
         }
 
         Vector3 totalCornerForce = suspensionForceWorld + gripForceWorld;
         stepForce += totalCornerForce;
         
         Vector3 suspTorque = Vector3.Cross(radiusFromCoM, suspensionForceWorld);
-        Vector3 gripTorque = Vector3.Cross(state.contactPoint - vChassis.position, gripForceWorld);
+        Vector3 gripTorque = Vector3.Cross(corner.contact.contactPoint - vChassis.position, gripForceWorld);
         
         stepTorque += (suspTorque + gripTorque);
     }

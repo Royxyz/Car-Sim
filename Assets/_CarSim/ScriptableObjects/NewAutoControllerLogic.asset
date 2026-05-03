@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 82fed78d6622df7489f30e6323dc09c0, type: 3}
-  m_Name: STI_TCU
+  m_Name: NewAutoControllerLogic
   m_EditorClassIdentifier: Assembly-CSharp::AutoControllerLogicData
-  biteRPM: 1200
-  lockRPM: 1800
-  upshiftRPM: 6800
-  downshiftRPM: 3200
-  shiftDuration: 0.25
+  biteRPM: 1000
+  lockRPM: 1500
+  upshiftRPM: 6500
+  downshiftRPM: 2500
+  shiftDuration: 0.3

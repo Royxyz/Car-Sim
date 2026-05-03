@@ -13,11 +13,15 @@ public class WheelAssembly
     public bool isSteerable = false;
     public float ackermannSteeringAngle = 0f; 
 
+
     [Header("Physics Modules")]
     public Suspension suspension;
     public Wheel wheel;
     public Brake brake;
     public TireFrictionModel tire;
+
+    [Tooltip("Handles track detection and raycasting.")]
+    public WheelContact contact = new WheelContact();
 
     public Vector3 lastCalculatedForce { get; private set; }
 

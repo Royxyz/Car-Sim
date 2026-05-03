@@ -63,13 +63,10 @@ public class PowerTrain
             if (Mathf.Abs(clutchTorque) > maxTorqueToZeroSlip)
             {
                 clutchTorque = Mathf.Sign(slipVelocity) * maxTorqueToZeroSlip;
-                engineRadPerSec -= (clutchTorque / engine._engineData.engineInertia) * dt;
             }
-            else
-            {
-                float engineAccel = (currentNetTorque - clutchTorque) / engine._engineData.engineInertia;
-                engineRadPerSec += engineAccel * dt;
-            }
+
+            float engineAccel = (currentNetTorque - clutchTorque) / engine._engineData.engineInertia;
+            engineRadPerSec += engineAccel * dt;
         }
 
         engineRPM = Mathf.Max(0f, engineRadPerSec * (30f / Mathf.PI));

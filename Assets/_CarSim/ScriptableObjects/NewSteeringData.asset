@@ -9,8 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fcafa0cd73f12d945b72db31f15b592b, type: 3}
-  m_Name: STI_Clutch
-  m_EditorClassIdentifier: Assembly-CSharp::ClutchData
-  maxTorqueCapacity: 600
-  lockThreshold: 2
+  m_Script: {fileID: 11500000, guid: 0b3fbe41ac6ae454793ea9b76f62341f, type: 3}
+  m_Name: NewSteeringData
+  m_EditorClassIdentifier: Assembly-CSharp::SteeringData
+  maxSteerAngle: 35
+  ackermannInnerMultiplier: 1.15
+  ackermannOuterMultiplier: 0.85

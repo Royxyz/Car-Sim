@@ -43,8 +43,6 @@ public class Differential
     }
     public float GetInputSpeed(float leftSpeed, float rightSpeed)
     {
-        // The input speed of a differential is the average of its outputs, 
-        // multiplied by its gear ratio.
         return ((leftSpeed + rightSpeed) * 0.5f) * diffData.gearRatio;
     }
 }

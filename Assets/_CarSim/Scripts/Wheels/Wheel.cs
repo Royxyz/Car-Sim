@@ -25,15 +25,13 @@ public class Wheel
         float lateralSpeed = contactPatchLocalVelocity.x;
         float wheelLinearSpeed = angularVelocity * wheelData.radius;
 
-        // Increase threshold slightly to give the virtual chassis room to breathe at 0mph
+        // The threshold already safely prevents division by zero
         float speedThreshold = 2.0f; 
         float absForward = Mathf.Max(Mathf.Abs(forwardSpeed), speedThreshold);
 
-        // SmoothStep is mathematically softer than a hard Clamp01
-        float slipDampener = Mathf.SmoothStep(0f, 1f, Mathf.Abs(forwardSpeed) / 3.0f); 
-        
-        slipAngle = Mathf.Atan2(-lateralSpeed, absForward) * slipDampener;
-        longitudinalSlip = ((wheelLinearSpeed - forwardSpeed) / absForward) * slipDampener;
+        // Remove the slipDampener. Let the raw slip calculate normally.
+        slipAngle = Mathf.Atan2(-lateralSpeed, absForward);
+        longitudinalSlip = (wheelLinearSpeed - forwardSpeed) / absForward;
     }
 
     public void UpdatePhysics(float driveTorque, float brakeTorque, float tireGripTorque, float dt)

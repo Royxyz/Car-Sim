@@ -1,9 +1,8 @@
 using UnityEngine;
 
-public class InputManager : MonoBehaviour
+public class InputManager : MonoBehaviour, IVehicleInput
 {
     private CarController controls;
-
     public float steeringInput { get; private set; }
     public float throttleInput { get; private set; }
     public float brakeInput { get; private set; }
@@ -11,6 +10,15 @@ public class InputManager : MonoBehaviour
     
     public bool shiftUpTriggered { get; private set; }
     public bool shiftDownTriggered { get; private set; }
+
+
+    public float Steering => steeringInput;
+    public float Throttle => throttleInput;
+    public float Brake => brakeInput;
+    public float Clutch => clutchInput;
+    public bool ShiftUp => shiftUpTriggered;
+    public bool ShiftDown => shiftDownTriggered;
+
 
     private void Awake()
     {

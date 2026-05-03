@@ -17,36 +17,62 @@ public class Engine
 
     public float CalculateDynamicGeneratedTorque(float playerThrottle, float currentRPM, float dt)
     {
-        
         float throttleSpeed = 1f / _engineData.throttleSmoothing;
         currentThrottleBlade = Mathf.MoveTowards(currentThrottleBlade, playerThrottle, throttleSpeed * dt);
 
-        
-        if (!_engineData.isTurbocharged)
+        if (_engineData.induction == null) 
         {
-            currentManifoldPressure = currentThrottleBlade;
+            Debug.LogWarning("InductionData missing on EngineData!");
+            return _engineData.GetGeneratedTorque(currentRPM, currentThrottleBlade);
         }
-        else
+
+        float naBaselinePressure = 1.0f; 
+        float extraParasiticDrag = 0f;
+
+        switch (_engineData.induction.type)
         {
-            float naBaseline = Mathf.Min(currentThrottleBlade, 0.5f);
+            case InductionType.NaturallyAspirated:
+                currentManifoldPressure = currentThrottleBlade * naBaselinePressure;
+                break;
 
-            if (currentThrottleBlade > 0.5f)
-            {
-                float rpmFactor = Mathf.InverseLerp(_engineData.idleRPM, _engineData.redlineRPM, currentRPM);
-                float currentSpoolTime = Mathf.Lerp(_engineData.turboSpoolTimeAtIdle, _engineData.turboSpoolTimeAtRedline, rpmFactor);
+            case InductionType.Supercharged:
+                float targetSCPressure = Mathf.Lerp(0f, _engineData.induction.maxPressureBar, currentThrottleBlade);
+                currentManifoldPressure = targetSCPressure;
 
-                float spoolSpeed = 1f / currentSpoolTime;
-                currentManifoldPressure = Mathf.MoveTowards(currentManifoldPressure, currentThrottleBlade, spoolSpeed * dt);
+                float rpmFactorSC = Mathf.InverseLerp(_engineData.idleRPM, _engineData.redlineRPM, currentRPM);
+                extraParasiticDrag = _engineData.induction.superchargerParasiticDrag * rpmFactorSC;
+                break;
+
+            case InductionType.Turbocharged:
+                float baseVacuum = Mathf.Min(currentThrottleBlade, 0.4f) * (1f / 0.4f); 
                 
-                currentManifoldPressure = Mathf.Max(currentManifoldPressure, naBaseline);
-            }
-            else
-            {
-                float dumpSpeed = 1f / _engineData.blowOffTime;
-                currentManifoldPressure = Mathf.MoveTowards(currentManifoldPressure, currentThrottleBlade, dumpSpeed * dt);
-            }
+                if (currentThrottleBlade > 0.4f)
+                {
+                    float boostRequest = Mathf.InverseLerp(0.4f, 1.0f, currentThrottleBlade);
+                    float targetTurboPressure = Mathf.Lerp(naBaselinePressure, _engineData.induction.maxPressureBar, boostRequest);
+
+                    float rpmFactorTurbo = Mathf.InverseLerp(_engineData.idleRPM, _engineData.redlineRPM, currentRPM);
+                    float currentSpoolTime = Mathf.Lerp(_engineData.induction.turboSpoolTimeAtIdle, _engineData.induction.turboSpoolTimeAtRedline, rpmFactorTurbo);
+
+                    float spoolSpeed = _engineData.induction.maxPressureBar / currentSpoolTime;
+                    currentManifoldPressure = Mathf.MoveTowards(currentManifoldPressure, targetTurboPressure, spoolSpeed * dt);
+
+                    currentManifoldPressure = Mathf.Max(currentManifoldPressure, baseVacuum);
+                }
+                else
+                {
+                    float dumpSpeed = _engineData.induction.maxPressureBar / _engineData.induction.blowOffTime;
+                    currentManifoldPressure = Mathf.MoveTowards(currentManifoldPressure, baseVacuum, dumpSpeed * dt);
+                }
+                break;
         }
 
-        return _engineData.GetGeneratedTorque(currentRPM, currentManifoldPressure);
+
+        float mappedThrottle = Mathf.Clamp(currentManifoldPressure, 0f, 1f); 
+        float baseNATorque = _engineData.GetGeneratedTorque(currentRPM, mappedThrottle);
+
+        float boostMultiplier = Mathf.Max(1.0f, currentManifoldPressure); 
+
+        return (baseNATorque * boostMultiplier) - extraParasiticDrag;
     }
 }
