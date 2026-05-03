@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27b60e70dcf31fb43a77b546a969f8b6, type: 3}
   m_Name: NewInductionData
   m_EditorClassIdentifier: Assembly-CSharp::InductionData
-  type: 0
-  maxPressureBar: 1
+  type: 2
+  maxPressureBar: 1.5
   superchargerParasiticDrag: 30
   turboSpoolTimeAtIdle: 1.5
   turboSpoolTimeAtRedline: 0.15

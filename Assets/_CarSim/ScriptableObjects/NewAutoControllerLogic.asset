@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82fed78d6622df7489f30e6323dc09c0, type: 3}
   m_Name: NewAutoControllerLogic
   m_EditorClassIdentifier: Assembly-CSharp::AutoControllerLogicData
-  biteRPM: 1000
-  lockRPM: 1500
-  upshiftRPM: 6500
+  biteRPM: 2500
+  lockRPM: 3500
+  upshiftRPM: 6100
   downshiftRPM: 2500
   shiftDuration: 0.3
