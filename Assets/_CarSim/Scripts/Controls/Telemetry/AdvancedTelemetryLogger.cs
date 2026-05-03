@@ -5,10 +5,11 @@ using System.IO;
 [RequireComponent(typeof(SimulationController))]
 public class AdvancedTelemetryLogger : MonoBehaviour
 {
-    public string fileName = "Benchmark_Report.csv";
+    [Header("File Settings")]
+    public string saveDirectory = "_CarSim/Telemetry";
     
     private SimulationController sim;
-    private IVehicleInput inputs;
+    private AIDriverStressTest aiDriver; 
     private StringBuilder csvRows;
     private bool isLogging = false;
 
@@ -20,22 +21,29 @@ public class AdvancedTelemetryLogger : MonoBehaviour
     private float peakBoost = 0f;
     private float peakRPM = 0f;
     private float topSpeedKmh = 0f;
+    private float peakDownforce = 0f;
 
     private void Awake()
     {
         sim = GetComponent<SimulationController>();
-        inputs = GetComponent<IVehicleInput>();
+        aiDriver = GetComponent<AIDriverStressTest>();
         csvRows = new StringBuilder();
     }
 
     public void StartLogging()
     {
         csvRows.Clear();
-        csvRows.AppendLine("Time,SpeedKmh,Accel_Long_G,Accel_Lat_G,Steer,Throttle,Brake,Gear,RPM,Boost_Bar,Pitch,Roll,YawRate," +
-                           "FL_Load,FL_Slip,FL_SlipAngle,FL_Travel," +
-                           "FR_Load,FR_Slip,FR_SlipAngle,FR_Travel," +
-                           "RL_Load,RL_Slip,RL_SlipAngle,RL_Travel," +
-                           "RR_Load,RR_Slip,RR_SlipAngle,RR_Travel");
+        
+        // Massive Header Construction
+        string header = "Time,TestStage,SpeedKmh,Accel_Long_G,Accel_Lat_G,Steer,Throttle,Brake,Clutch,Gear,RPM,Torque_Nm,Boost_Bar,Pitch,Roll,YawRate,Aero_Downforce_N,Aero_Drag_N";
+        
+        string[] corners = { "FL", "FR", "RL", "RR" };
+        foreach (string c in corners)
+        {
+            header += $",{c}_Load_N,{c}_Travel_m,{c}_Slip,{c}_SlipAng_deg,{c}_RPM,{c}_LongForce_N,{c}_LatForce_N,{c}_BrakeTrq_Nm,{c}_ABS_Active";
+        }
+        
+        csvRows.AppendLine(header);
         
         lastVelocity = sim.rb.linearVelocity;
         isLogging = true;
@@ -58,7 +66,7 @@ public class AdvancedTelemetryLogger : MonoBehaviour
         
         // --- Track Benchmark Peaks ---
         if (longG > peakAccelG) peakAccelG = longG;
-        if (longG < peakBrakeG) peakBrakeG = longG; // Braking is negative long G
+        if (longG < peakBrakeG) peakBrakeG = longG; 
         if (Mathf.Abs(latG) > peakLatG) peakLatG = Mathf.Abs(latG);
         if (speedKmh > topSpeedKmh) topSpeedKmh = speedKmh;
         
@@ -67,33 +75,56 @@ public class AdvancedTelemetryLogger : MonoBehaviour
         if (rpm > peakRPM) peakRPM = rpm;
         if (boost > peakBoost) peakBoost = boost;
 
-        // 2. Body Attitude
+        // 2. Body Attitude & Powertrain
         Vector3 eulerAngles = sim.rb.rotation.eulerAngles;
         float pitch = eulerAngles.x > 180 ? eulerAngles.x - 360 : eulerAngles.x;
         float roll = eulerAngles.z > 180 ? eulerAngles.z - 360 : eulerAngles.z;
         float yawRate = sim.rb.angularVelocity.y * Mathf.Rad2Deg;
 
         int gear = sim.powerTrain.transmission.currentGear;
+        float netTorque = sim.powerTrain.currentNetTorque;
+        float clutchEng = sim.powerTrain.clutch.engagement;
+        
+        // Calculate Aerodynamics (Using the new Flight-Sim Logic)
+        Vector3 aeroForcesLocal = sim.aerodynamics.CalculateAerodynamicForces(sim.rb.linearVelocity, sim.transform);
+        float downforceN = Mathf.Abs(aeroForcesLocal.y);
+        float dragN = Mathf.Abs(aeroForcesLocal.z);
+        if (downforceN > peakDownforce) peakDownforce = downforceN;
+
+        string currentStage = aiDriver != null ? aiDriver.currentState.ToString() : "Manual";
 
         // Start Row
-        string line = $"{Time.time:F3},{speedKmh:F1},{longG:F2},{latG:F2},{inputs.Steering:F2},{inputs.Throttle:F2},{inputs.Brake:F2},{gear},{rpm:F0},{boost:F2},{pitch:F2},{roll:F2},{yawRate:F2}";
+        string line = $"{Time.time:F3},{currentStage},{speedKmh:F1},{longG:F2},{latG:F2},{sim.GetComponent<IVehicleInput>().Steering:F2},{sim.GetComponent<IVehicleInput>().Throttle:F2},{sim.GetComponent<IVehicleInput>().Brake:F2},{clutchEng:F2},{gear},{rpm:F0},{netTorque:F1},{boost:F2},{pitch:F2},{roll:F2},{yawRate:F2},{downforceN:F0},{dragN:F0}";
 
-        // 3. Corner Data
+        // 3. Corner Data (High-Resolution Extraction)
         for (int i = 0; i < 4; i++)
         {
             var corner = sim.corners[i];
+            
+            // Suspension & Wheel Kinematics
             float load = corner.suspension.currentNormalLoad;
+            float travel = corner.suspension.suspData.restLength - corner.suspension.currentLength; 
             float slip = corner.wheel.longitudinalSlip;
             float slipAngle = corner.wheel.slipAngle * Mathf.Rad2Deg;
-            float travel = corner.suspension.suspData.restLength - corner.suspension.currentLength; 
+            float wheelRpm = corner.wheel.angularVelocity * (30f / Mathf.PI);
 
-            line += $",{load:F0},{slip:F3},{slipAngle:F2},{travel:F3}";
+            // Re-evaluate Pacejka to extract exact forces at this millisecond
+            Vector2 gripForces = corner.tire.CalculateGripForces(load, corner.wheel.longitudinalSlip, corner.wheel.slipAngle);
+            float longForceFx = gripForces.x;
+            float latForceFy = gripForces.y;
+
+            // Brake specific data
+            float brakeTorque = corner.brake.currentAppliedTorque;
+            int absActive = corner.brake.isABSDriveActive ? 1 : 0;
+
+            // Append to row
+            line += $",{load:F0},{travel:F3},{slip:F3},{slipAngle:F2},{wheelRpm:F0},{longForceFx:F0},{latForceFy:F0},{brakeTorque:F0},{absActive}";
         }
 
         csvRows.AppendLine(line);
     }
 
-    public void StopLoggingAndSave(AIDriverStressTest aiDriver)
+    public void StopLoggingAndSave(AIDriverStressTest aiDriverRef)
     {
         isLogging = false;
 
@@ -101,22 +132,36 @@ public class AdvancedTelemetryLogger : MonoBehaviour
         StringBuilder finalOutput = new StringBuilder();
         finalOutput.AppendLine("===== VEHICLE DYNAMICS BENCHMARK REPORT =====");
         finalOutput.AppendLine($"Test Weight: {sim.rb.mass} kg");
-        finalOutput.AppendLine($"0-100 km/h Time: {aiDriver.timeTo100Kmh:F2} sec");
-        finalOutput.AppendLine($"Braking Distance (100-0): {aiDriver.brakingDistance:F1} meters");
+        finalOutput.AppendLine($"0-100 km/h Time: {aiDriverRef.timeTo100Kmh:F2} sec");
+        finalOutput.AppendLine($"Braking Distance (100-0): {aiDriverRef.brakingDistance:F1} meters");
         finalOutput.AppendLine($"Peak Acceleration: {peakAccelG:F2} G");
         finalOutput.AppendLine($"Peak Braking: {Mathf.Abs(peakBrakeG):F2} G");
         finalOutput.AppendLine($"Peak Lateral Grip: {peakLatG:F2} G");
+        finalOutput.AppendLine($"Peak Downforce Generated: {peakDownforce:F0} N (approx {(peakDownforce/9.81f):F0} kg)");
         finalOutput.AppendLine($"Peak Engine Speed: {peakRPM:F0} RPM");
         finalOutput.AppendLine($"Peak Manifold Pressure: {peakBoost:F2} Bar");
         finalOutput.AppendLine($"Top Speed Reached: {topSpeedKmh:F1} km/h");
         finalOutput.AppendLine("=============================================\n");
         
-        // Append the raw telemetry rows below the report
         finalOutput.Append(csvRows.ToString());
 
-        string path = Path.Combine(Application.dataPath, fileName);
-        File.WriteAllText(path, finalOutput.ToString());
+        // Manage Directories and Run Numbers
+        string dirPath = Path.Combine(Application.dataPath, saveDirectory);
+        if (!Directory.Exists(dirPath))
+        {
+            Directory.CreateDirectory(dirPath);
+        }
+
+        int runNumber = 1;
+        string filePath;
+        do
+        {
+            filePath = Path.Combine(dirPath, $"Run_{runNumber:D3}.csv");
+            runNumber++;
+        } while (File.Exists(filePath));
+
+        File.WriteAllText(filePath, finalOutput.ToString());
         
-        Debug.Log($"<color=cyan><b>[Telemetry]</b> Benchmark Saved to: {path}</color>\n{finalOutput.ToString().Substring(0, 500)}...");
+        Debug.Log($"<color=cyan><b>[Telemetry]</b> Granular Benchmark Saved to: {filePath}</color>");
     }
 }

@@ -33,14 +33,15 @@ public class WheelAssembly
     }
 
     public void UpdateVisuals()
-    {
-        if (visualMesh == null || suspensionMountPoint == null) return;
+{
+    if (visualMesh == null || suspensionMountPoint == null) return;
 
-        visualMesh.position = suspensionMountPoint.position - (suspensionMountPoint.up * suspension.currentLength);
+    visualMesh.position = suspensionMountPoint.position - (suspensionMountPoint.up * suspension.currentLength);
 
-        Quaternion steerRotation = Quaternion.AngleAxis(ackermannSteeringAngle, suspensionMountPoint.right);
-        Quaternion spinRotation = Quaternion.AngleAxis(wheel.rotationAngle * Mathf.Rad2Deg, Vector3.down); // Assuming X is the axle
-        
-        visualMesh.rotation = suspensionMountPoint.rotation * steerRotation * spinRotation;
-    }
+    Quaternion steerRotation = Quaternion.AngleAxis(ackermannSteeringAngle, suspensionMountPoint.up);
+
+    Quaternion spinRotation = Quaternion.AngleAxis(wheel.rotationAngle * Mathf.Rad2Deg, Vector3.right); 
+
+    visualMesh.rotation = suspensionMountPoint.rotation * steerRotation * spinRotation;
+}
 }

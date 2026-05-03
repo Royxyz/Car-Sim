@@ -9,10 +9,12 @@ public class TireFrictionModel
     {
         if (normalLoad <= 0f) return Vector2.zero;
 
-        float rawFx = CalculatePacejka(longitudinalSlip, tireData.longB, tireData.longC, tireData.longD, tireData.longE) * normalLoad * tireData.frictionMultiplier;
-        float rawFy = CalculatePacejka(slipAngle, tireData.latB, tireData.latC, tireData.latD, tireData.latE) * normalLoad * tireData.frictionMultiplier;
+        float effectiveLoad = Mathf.Min(normalLoad, tireData.maxLoadCapacity);
 
-        float maxAvailableGrip = normalLoad * tireData.frictionMultiplier * Mathf.Max(tireData.longD, tireData.latD);
+        float rawFx = CalculatePacejka(longitudinalSlip, tireData.longB, tireData.longC, tireData.longD, tireData.longE) * effectiveLoad * tireData.frictionMultiplier;
+        float rawFy = CalculatePacejka(slipAngle, tireData.latB, tireData.latC, tireData.latD, tireData.latE) * effectiveLoad * tireData.frictionMultiplier;
+
+        float maxAvailableGrip = effectiveLoad * tireData.frictionMultiplier * Mathf.Max(tireData.longD, tireData.latD);
 
         float combinedForceMagnitude = Mathf.Sqrt((rawFx * rawFx) + (rawFy * rawFy));
 

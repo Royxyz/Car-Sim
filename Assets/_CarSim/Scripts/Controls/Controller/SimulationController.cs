@@ -285,9 +285,9 @@ public class SimulationController : MonoBehaviour
 
     private void ApplyAerodynamics()
     {
-        Vector3 localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
-        Vector3 aeroForcesLocal = aerodynamics.CalculateAerodynamicForces(localVelocity);
+        Vector3 aeroForcesLocal = aerodynamics.CalculateAerodynamicForces(rb.linearVelocity, transform);
         Vector3 aeroForcesWorld = transform.TransformDirection(aeroForcesLocal);
-        rb.AddForce(aeroForcesWorld);
+        Vector3 centerOfPressureWorld = transform.TransformPoint(aerodynamics.aeroData.centerOfPressureOffset);
+        rb.AddForceAtPosition(aeroForcesWorld, centerOfPressureWorld);
     }
 }
