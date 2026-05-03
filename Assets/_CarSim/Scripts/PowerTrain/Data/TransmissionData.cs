@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "WRX_STI_TransmissionData", menuName = "Vehicle Physics/Transmission Data")]
+[CreateAssetMenu(fileName = "TransmissionData", menuName = "Vehicle Physics/Transmission Data")]
 public class TransmissionData : ScriptableObject
 {
     [Header("Gearing (Subaru WRX STI 6-Speed)")]

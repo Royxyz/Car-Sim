@@ -41,4 +41,8 @@ public class Differential
     {
         return (leftLoad + rightLoad) / diffData.gearRatio;
     }
+    public float GetInputSpeed(float leftSpeed, float rightSpeed)
+    {
+        return ((leftSpeed + rightSpeed) * 0.5f) * diffData.gearRatio;
+    }
 }

@@ -9,6 +9,7 @@ public class PowerTrain
 
     public float engineRPM { get; private set; }
     public float transmissionInputRPM { get; private set; }
+    public float currentNetTorque { get; private set; }
 
     public void Initialize()
     {
@@ -17,87 +18,72 @@ public class PowerTrain
         transmissionInputRPM = 0f;
     }
 
-    public void UpdatePhysics(float throttle, float wheelLoadTorque, float wheelInertia, float dt)
+
+    public void UpdatePhysics(float throttle, float actualTransRPM, float wheelLoadTorque, float wheelInertia, float dt)
     {
+        // 1. Hard-sync the transmission to the actual wheel speed
+        transmissionInputRPM = actualTransRPM; 
+        
         float engineRadPerSec = engineRPM * (Mathf.PI / 30f);
         float transRadPerSec = transmissionInputRPM * (Mathf.PI / 30f);
+        
         float idleError = engine._engineData.idleRPM - engineRPM;
-        float idleThrottle = 0f;
-        if (idleError > 0f)
-        {
-            idleThrottle = Mathf.Clamp01(idleError * 0.005f); 
-        }
-
+        float idleThrottle = idleError > 0f ? Mathf.Clamp01(idleError * 0.005f) : 0f;
         float actualThrottle = Mathf.Max(throttle, idleThrottle);
         
-        if (engineRPM >= engine._engineData.redlineRPM)
-        {
-            actualThrottle = 0f; 
-        }
+        if (engineRPM >= engine._engineData.redlineRPM) actualThrottle = 0f;
 
         float engineGeneratedTorque = engine.CalculateDynamicGeneratedTorque(actualThrottle, engineRPM, dt);
         float engineInternalLoss = engine._engineData.GetLossTorque(engineRPM);
-        float engineNetTorque = engineGeneratedTorque - engineInternalLoss;
+        
+        // 2. Store the real torque for the wheels to use later
+        currentNetTorque = engineGeneratedTorque - engineInternalLoss;
 
         float reflectedLoad = transmission.GetReflectedLoadTorque(wheelLoadTorque);
         float reflectedInertia = transmission.GetReflectedInertia(wheelInertia);
-
 
         float slipVelocity = engineRadPerSec - transRadPerSec;
         bool speedsMatch = Mathf.Abs(slipVelocity) < clutch.clutchData.lockThreshold;
         float currentMaxCapacity = clutch.engagement * clutch.clutchData.maxTorqueCapacity;
 
-        
-        float requiredReactionTorque = clutch.CalculateReactionTorque(engine._engineData.engineInertia, engineNetTorque, reflectedInertia, reflectedLoad);
+        float requiredReactionTorque = clutch.CalculateReactionTorque(engine._engineData.engineInertia, currentNetTorque, reflectedInertia, reflectedLoad);
 
-       
         if (clutch.engagement > 0.01f && speedsMatch && Mathf.Abs(requiredReactionTorque) <= currentMaxCapacity)
         {
             clutch.isLocked = true;
-            float totalInertia = engine._engineData.engineInertia + reflectedInertia;
-            float acceleration = (engineNetTorque - reflectedLoad) / totalInertia;
-
-            engineRadPerSec += acceleration * dt;
-            transRadPerSec = engineRadPerSec; 
+            // 3. Forward Kinematics: If locked, the heavy wheels dictate the engine speed
+            engineRadPerSec = transRadPerSec;
         }
         else
         {
             clutch.isLocked = false;
             float clutchTorque = clutch.CalculateSlippingTorque(engineRadPerSec, transRadPerSec);
-
-            
             float maxTorqueToZeroSlip = Mathf.Abs(slipVelocity) * (engine._engineData.engineInertia * reflectedInertia) / ((engine._engineData.engineInertia + reflectedInertia) * dt);
-            
+
             if (Mathf.Abs(clutchTorque) > maxTorqueToZeroSlip)
             {
                 clutchTorque = Mathf.Sign(slipVelocity) * maxTorqueToZeroSlip;
-                engineRadPerSec -= (clutchTorque / engine._engineData.engineInertia) * dt;
-                transRadPerSec = engineRadPerSec; 
             }
-            else
-            {
-                float engineAccel = (engineNetTorque - clutchTorque) / engine._engineData.engineInertia;
-                float transAccel = (clutchTorque - reflectedLoad) / reflectedInertia;
 
-                engineRadPerSec += engineAccel * dt;
-                transRadPerSec += transAccel * dt;
-            }
+            float engineAccel = (currentNetTorque - clutchTorque) / engine._engineData.engineInertia;
+            engineRadPerSec += engineAccel * dt;
         }
 
         engineRPM = Mathf.Max(0f, engineRadPerSec * (30f / Mathf.PI));
-        transmissionInputRPM = transRadPerSec * (30f / Mathf.PI);
     }
 
     public float GetWheelTorque()
     {
         float engineRadPerSec = engineRPM * (Mathf.PI / 30f);
         float transRadPerSec = transmissionInputRPM * (Mathf.PI / 30f);
-        
+
         float clutchTorque = clutch.CalculateSlippingTorque(engineRadPerSec, transRadPerSec);
         if (clutch.isLocked)
         {
-             clutchTorque = engine._engineData.GetGeneratedTorque(engineRPM, 1f); 
+             // 4. FIX: Use the actual torque the engine is producing, NOT 100% throttle!
+             clutchTorque = currentNetTorque;
         }
         return transmission.GetOutputTorque(clutchTorque);
     }
+
 }

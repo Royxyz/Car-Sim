@@ -73,5 +73,25 @@ public class Drivetrain
         float frontLoad = frontDiff.GetReflectedLoad(loadFL, loadFR);
         float rearLoad = rearDiff.GetReflectedLoad(loadRL, loadRR);
         return centerDiff.GetReflectedLoad(frontLoad, rearLoad);
+    }   
+    public float CalculateInputSpeed(float flSpeed, float frSpeed, float rlSpeed, float rrSpeed)
+    {
+        switch (drivetrainData.driveType)
+        {
+            case DriveType.FWD:
+                return frontDiff.GetInputSpeed(flSpeed, frSpeed);
+
+            case DriveType.RWD:
+                return rearDiff.GetInputSpeed(rlSpeed, rrSpeed);
+
+            case DriveType.AWD:
+                float frontInput = frontDiff.GetInputSpeed(flSpeed, frSpeed);
+                float rearInput = rearDiff.GetInputSpeed(rlSpeed, rrSpeed);
+                return centerDiff.GetInputSpeed(frontInput, rearInput);
+
+            default:
+                return 0f;
+        }
     }
+
 }
