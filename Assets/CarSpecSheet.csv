@@ -1,0 +1,124 @@
+Category,Component,Parameter,Value
+Chassis,Base Dynamics,totalMass,1320
+Chassis,Base Dynamics,centerOfMassOffset,0.00 | 0.25 | 0.00
+Chassis,Base Dynamics,inertiaTensorBoxSize,2.00 | 1.15 | 4.30
+Chassis,Base Dynamics,maxSafeTorqueMultiplier,100
+Chassis,Steering,maxSteerAngle,38
+Chassis,Steering,ackermannInnerMultiplier,1.2
+Chassis,Steering,ackermannOuterMultiplier,0.8
+Chassis,Anti-Roll Bars,frontAntiRoll,28000
+Chassis,Anti-Roll Bars,rearAntiRoll,16000
+Aerodynamics,Aero Settings,airDensity,1.225
+Aerodynamics,Aero Settings,frontalArea,2.5
+Aerodynamics,Aero Settings,sideArea,5
+Aerodynamics,Aero Settings,topArea,6
+Aerodynamics,Aero Settings,centerOfPressureOffset,0.00 | 0.40 | -0.80
+Aerodynamics,Aero Settings,downforceVsAoA,Curve Keys: 2
+Aerodynamics,Aero Settings,dragVsAoA,Curve Keys: 2
+Aerodynamics,Aero Settings,sideforceVsSlipAngle,Curve Keys: 2
+Powertrain,Engine,torqueCsvFile,CSV File: Freak_engine_map
+Powertrain,Engine,engineInertia,0.25
+Powertrain,Engine,staticFriction,15
+Powertrain,Engine,dynamicFriction,0.06
+Powertrain,Engine,throttleSmoothing,0.05
+Powertrain,Engine,induction,FreakInductionData (InductionData)
+Powertrain,Engine,idleRPM,900
+Powertrain,Engine,redlineRPM,7800
+Powertrain,Forced Induction,type,Turbocharged
+Powertrain,Forced Induction,maxPressureBar,2.5
+Powertrain,Forced Induction,superchargerParasiticDrag,30
+Powertrain,Forced Induction,boostThresholdRPM,2500
+Powertrain,Forced Induction,optimalBoostRPM,4500
+Powertrain,Forced Induction,turboSpoolRate,2.5
+Powertrain,Forced Induction,blowOffRate,15
+Powertrain,Clutch,maxTorqueCapacity,1500
+Powertrain,Clutch,lockThreshold,2.5
+Powertrain,Transmission,forwardGears,3.2 : 2.1 : 1.55 : 1.2 : 0.95 : 0.78
+Powertrain,Transmission,reverseGear,3.1
+Powertrain,Transmission,finalDrive,4.11
+Powertrain,Transmission,efficiency,0.85
+Powertrain,Transmission,transmissionInertia,0.25
+Powertrain,Auto Controller,hasTorqueConverterCreep,False
+Powertrain,Auto Controller,idleCreepEngagement,0.05
+Powertrain,Auto Controller,biteRPM,2000
+Powertrain,Auto Controller,lockRPM,2800
+Powertrain,Auto Controller,upshiftRPM,7500
+Powertrain,Auto Controller,downshiftRPM,4500
+Powertrain,Auto Controller,shiftDuration,0.15
+Drivetrain,Layout,driveType,AWD
+Drivetrain,Front Differential,diffType,LimitedSlip
+Drivetrain,Front Differential,gearRatio,1
+Drivetrain,Front Differential,inertia,0.05
+Drivetrain,Front Differential,preloadLSD,0.1
+Drivetrain,Front Differential,lockingFriction,30
+Drivetrain,Front Differential,lockingStiffness,5000
+Drivetrain,Center Differential,diffType,Open
+Drivetrain,Center Differential,gearRatio,1
+Drivetrain,Center Differential,inertia,0.05
+Drivetrain,Center Differential,preloadLSD,0.25
+Drivetrain,Center Differential,lockingFriction,120
+Drivetrain,Center Differential,lockingStiffness,5000
+Drivetrain,Rear Differential,diffType,LimitedSlip
+Drivetrain,Rear Differential,gearRatio,1
+Drivetrain,Rear Differential,inertia,0.05
+Drivetrain,Rear Differential,preloadLSD,0.5
+Drivetrain,Rear Differential,lockingFriction,250
+Drivetrain,Rear Differential,lockingStiffness,5000
+Front Axle,Wheel Config,mass,28
+Front Axle,Wheel Config,radius,0.35
+Front Axle,Wheel Config,inertia,1.7
+Front Axle,Tire Compound,maxLoadCapacity,15000
+Front Axle,Tire Compound,frictionMultiplier,1.35
+Front Axle,Tire Compound,rollingResistance,0.02
+Front Axle,Tire Compound,longRelaxationLength,0.15
+Front Axle,Tire Compound,latRelaxationLength,0.25
+Front Axle,Tire Compound,longB,12
+Front Axle,Tire Compound,longC,1.6
+Front Axle,Tire Compound,longD,1
+Front Axle,Tire Compound,longE,0.99
+Front Axle,Tire Compound,latB,15
+Front Axle,Tire Compound,latC,1.55
+Front Axle,Tire Compound,latD,1
+Front Axle,Tire Compound,latE,0.85
+Front Axle,Brakes,maxBrakeTorque,6000
+Front Axle,Brakes,hasABS,True
+Front Axle,Brakes,absSlipThreshold,0.12
+Front Axle,Brakes,absReleaseMultiplier,0.3
+Front Axle,Suspension,targetRideHeight,0.46
+Front Axle,Suspension,bumpTravel,0.15
+Front Axle,Suspension,droopTravel,0.1
+Front Axle,Suspension,springStiffness,150000
+Front Axle,Suspension,bumpDamping,8000
+Front Axle,Suspension,reboundDamping,5500
+Front Axle,Suspension,bumpStopGap,0.02
+Front Axle,Suspension,bumpStopStiffness,150000
+Front Axle,Suspension,absoluteMaxForce,150000
+Rear Axle,Wheel Config,mass,28
+Rear Axle,Wheel Config,radius,0.35
+Rear Axle,Wheel Config,inertia,1.7
+Rear Axle,Tire Compound,maxLoadCapacity,15000
+Rear Axle,Tire Compound,frictionMultiplier,1.35
+Rear Axle,Tire Compound,rollingResistance,0.02
+Rear Axle,Tire Compound,longRelaxationLength,0.15
+Rear Axle,Tire Compound,latRelaxationLength,0.25
+Rear Axle,Tire Compound,longB,12
+Rear Axle,Tire Compound,longC,1.6
+Rear Axle,Tire Compound,longD,1
+Rear Axle,Tire Compound,longE,0.99
+Rear Axle,Tire Compound,latB,15
+Rear Axle,Tire Compound,latC,1.55
+Rear Axle,Tire Compound,latD,1
+Rear Axle,Tire Compound,latE,0.85
+Rear Axle,Brakes,maxBrakeTorque,6000
+Rear Axle,Brakes,hasABS,True
+Rear Axle,Brakes,absSlipThreshold,0.12
+Rear Axle,Brakes,absReleaseMultiplier,0.3
+Rear Axle,Suspension,targetRideHeight,0.46
+Rear Axle,Suspension,bumpTravel,0.15
+Rear Axle,Suspension,droopTravel,0.1
+Rear Axle,Suspension,springStiffness,150000
+Rear Axle,Suspension,bumpDamping,8000
+Rear Axle,Suspension,reboundDamping,5500
+Rear Axle,Suspension,bumpStopGap,0.02
+Rear Axle,Suspension,bumpStopStiffness,150000
+Rear Axle,Suspension,absoluteMaxForce,150000

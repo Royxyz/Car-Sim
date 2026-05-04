@@ -67,9 +67,7 @@ public class Engine
                 break;
         }
 
-        float mappedThrottle = Mathf.Clamp(currentManifoldPressure, 0f, 1f); 
-        float baseNATorque = _engineData.GetGeneratedTorque(currentRPM, mappedThrottle);
-        
+        float baseNATorque = _engineData.GetGeneratedTorque(currentRPM, currentThrottleBlade);
         float boostMultiplier = Mathf.Max(1.0f, currentManifoldPressure); 
 
         return (baseNATorque * boostMultiplier) - extraParasiticDrag;

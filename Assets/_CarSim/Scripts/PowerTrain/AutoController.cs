@@ -48,29 +48,20 @@ public class AutoController
 
         Transmission trans = powerTrain.transmission;
         int currentGear = trans.currentGear;
-        int maxGear = trans.transmissionData.forwardGears.Length;
         float currentRPM = powerTrain.engineRPM;
 
-        float wheelSpeed = Mathf.Abs(powerTrain.transmissionInputRPM);
-        bool isStopped = wheelSpeed < 15f; 
-
+        // Neutral State Escape: Only shift into Drive via throttle. 
+        // Reverse is handled manually by the player via the ShiftDown input.
         if (currentGear == 0)
         {
             if (throttle > 0.05f) StartShift(1);       
-            else if (brake > 0.05f) StartShift(-1);    
             return; 
         }
 
-        if (isStopped && throttle < 0.05f && brake < 0.05f && !logicData.hasTorqueConverterCreep)
-        {
-            if (currentGear == 1) StartShift(-1);       
-            else if (currentGear == -1) StartShift(1);  
-            return;
-        }
-
+        // Standard Auto-Shifting (Only applies to forward gears)
         if (shiftCooldownTimer <= 0f)
         {
-            if (currentGear > 0 && currentGear < maxGear && currentRPM > logicData.upshiftRPM)
+            if (currentGear > 0 && currentGear < trans.transmissionData.forwardGears.Length && currentRPM > logicData.upshiftRPM)
             {
                 float currentRatio = trans.transmissionData.forwardGears[currentGear - 1];
                 float nextRatio = trans.transmissionData.forwardGears[currentGear]; 
