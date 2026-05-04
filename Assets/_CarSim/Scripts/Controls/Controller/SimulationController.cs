@@ -111,7 +111,7 @@ public class SimulationController : MonoBehaviour
         {
             if (corners[i] != null)
             {
-                Vector3 mountWorldPos = rb.position + (rb.rotation * localMountPositions[i]);
+                Vector3 mountWorldPos = rb.worldCenterOfMass + (rb.rotation * localMountPositions[i]);
                 Vector3 mountUp = rb.rotation * localMountUps[i];
                 
                 float maxSuspensionLength = corners[i].suspension.suspData.targetRideHeight + corners[i].suspension.suspData.droopTravel;
@@ -276,7 +276,10 @@ public class SimulationController : MonoBehaviour
     {
         WheelAssembly corner = corners[index];
 
-        float compressionVelocity = Vector3.Dot(mountVel, -mountUp);
+        // FIX: Calculate true compression velocity based on spring length change, NOT world velocity
+        float maxSuspensionLength = corner.suspension.suspData.targetRideHeight + corner.suspension.suspData.droopTravel;
+        float expectedLength = corner.contact.isGrounded ? corner.contact.hitDistance : maxSuspensionLength;
+        float compressionVelocity = (corner.suspension.currentLength - expectedLength) / dt;
 
         float suspForceMagnitude = corner.suspension.CalculateForce(corner.contact.isGrounded, corner.contact.hitDistance, compressionVelocity);
         Vector3 suspensionForceWorld = mountUp * suspForceMagnitude;
@@ -294,9 +297,7 @@ public class SimulationController : MonoBehaviour
 
             corner.wheel.CalculateSlips(contactVelLocal);
             
-            // Apply the routed activeBrake here
             float brakeTorque = corner.brake.CalculateBrakeTorque(activeBrake, corner.wheel.longitudinalSlip);
-            
             float effectiveFrictionLoad = Mathf.Max(0f, suspForceMagnitude);
             
             Vector2 gripForceLocal = corner.tire.CalculateGripForces(
@@ -318,7 +319,6 @@ public class SimulationController : MonoBehaviour
         }
         else
         {
-            // Apply the routed activeBrake to airborne wheels as well
             corner.wheel.UpdatePhysics(driveTorque, corner.brake.CalculateBrakeTorque(activeBrake, 0f), 0f, dt);
         }
 
@@ -352,6 +352,7 @@ public class SimulationController : MonoBehaviour
             
             float maxSuspensionLength = corner.suspension.suspData.targetRideHeight + corner.suspension.suspData.droopTravel;
 
+            // Draw the yellow max-droop line
             Gizmos.color = Color.yellow;
             Vector3 maxDropPos = mountPos - (mountUp * maxSuspensionLength);
             Gizmos.DrawLine(mountPos, maxDropPos);
@@ -360,19 +361,24 @@ public class SimulationController : MonoBehaviour
             {
                 if (corner.contact.isGrounded)
                 {
+                    // Green Sphere: Actual contact point on the geometry
                     Gizmos.color = Color.green;
                     Gizmos.DrawSphere(corner.contact.contactPoint, 0.05f);
 
+                    // Cyan Sphere: The SphereCast volume at the exact moment of impact
                     Gizmos.color = Color.cyan;
-                    float sweepDistance = corner.contact.hitDistance + corner.wheel.wheelData.radius + corner.contact.rayOriginOffset;
+                    // Recalculate sweep distance (reversing the math from WheelContact)
+                    float sweepDistance = corner.contact.hitDistance - corner.contact.castRadius + corner.wheel.wheelData.radius + corner.contact.rayOriginOffset;
                     Vector3 sphereCenter = (mountPos + (mountUp * corner.contact.rayOriginOffset)) - (mountUp * sweepDistance);
                     Gizmos.DrawWireSphere(sphereCenter, corner.contact.castRadius);
 
+                    // Red Line: The surface normal
                     Gizmos.color = Color.red;
                     Gizmos.DrawRay(corner.contact.contactPoint, corner.contact.contactNormal * 0.5f);
                 }
                 else
                 {
+                    // Red Sphere: Max droop search volume
                     Gizmos.color = Color.red;
                     float sweepDistance = maxSuspensionLength + corner.wheel.wheelData.radius + corner.contact.rayOriginOffset;
                     Vector3 sphereCenter = (mountPos + (mountUp * corner.contact.rayOriginOffset)) - (mountUp * sweepDistance);
@@ -381,4 +387,5 @@ public class SimulationController : MonoBehaviour
             }
         }
     }
+    
 }

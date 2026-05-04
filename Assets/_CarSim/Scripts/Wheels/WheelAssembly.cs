@@ -24,7 +24,7 @@ public class WheelAssembly
 
     public Vector3 lastCalculatedForce { get; private set; }
     
-    // FIX 5: State variables for visual interpolation
+    // State variables for visual interpolation
     private float smoothedSuspensionLength;
     private Quaternion smoothedRotation;
 
@@ -54,8 +54,10 @@ public class WheelAssembly
 
         visualMesh.position = suspensionMountPoint.position - (suspensionMountPoint.up * smoothedSuspensionLength);
 
-        Quaternion steerRotation = Quaternion.AngleAxis(ackermannSteeringAngle, suspensionMountPoint.up);
+        // FIX: Using local Vector3 axes instead of suspensionMountPoint.up to prevent double-transforming world space
+        Quaternion steerRotation = Quaternion.AngleAxis(ackermannSteeringAngle, Vector3.up);
         Quaternion spinRotation = Quaternion.AngleAxis(wheel.rotationAngle * Mathf.Rad2Deg, Vector3.right); 
+        
         Quaternion targetRotation = suspensionMountPoint.rotation * steerRotation * spinRotation;
 
         smoothedRotation = Quaternion.Slerp(smoothedRotation, targetRotation, Time.deltaTime * lerpSpeed);

@@ -5,7 +5,7 @@ public class WheelContact
 {
     [Header("Settings")]
     public float rayOriginOffset = 1.0f;
-    // Kept here so it doesn't break your existing Inspector serialized data
+    [Tooltip("The radius of the collision sphere. Prevents the wheel from falling through small cracks in the road.")]
     public float castRadius = 0.12f; 
 
     public bool isGrounded { get; private set; }
@@ -18,10 +18,12 @@ public class WheelContact
     public void EvaluateContact(Transform vehicleRoot, Vector3 mountPos, Vector3 mountUp, float maxSuspensionLength, float wheelRadius, LayerMask trackMask)
     {
         if (hitBuffer == null) hitBuffer = new RaycastHit[10];
+        
         Vector3 rayStartPos = mountPos + (mountUp * rayOriginOffset);
         float maxSweepLength = maxSuspensionLength + wheelRadius + rayOriginOffset;
 
-        int hitCount = Physics.RaycastNonAlloc(rayStartPos, -mountUp, hitBuffer, maxSweepLength, trackMask);
+        // FIX: Re-enable the SphereCast, which is much more stable than a pure Raycast for vehicles
+        int hitCount = Physics.SphereCastNonAlloc(rayStartPos, castRadius, -mountUp, hitBuffer, maxSweepLength, trackMask);
 
         bool foundValidHit = false;
         RaycastHit validHit = default;
@@ -44,8 +46,12 @@ public class WheelContact
         if (foundValidHit)
         {
             isGrounded = true;
-            // Ray hits the ground. Subtract offset (above mount) and radius (below center) to get pure suspension length.
-            hitDistance = validHit.distance - rayOriginOffset - wheelRadius;
+            
+            // FIX: validHit.distance is the sweep distance of the center of the sphere.
+            // The physical bottom of the sphere is lower by exactly 'castRadius'.
+            // We add castRadius to find the true depth of the ground, then subtract offset and wheelRadius.
+            hitDistance = validHit.distance + castRadius - rayOriginOffset - wheelRadius;
+            
             contactPoint = validHit.point;
             contactNormal = validHit.normal;
         }

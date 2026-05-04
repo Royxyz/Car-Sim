@@ -299,10 +299,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIDriverStressTest
   targetLaunchSpeedKmh: 150
-  slalomSpeedKmh: 80
+  slalomSpeedKmh: 60
   slalomDuration: 6
   slalomFrequency: 2.5
-  topSpeedRunDuration: 20
+  topSpeedRunDuration: 18
   steeringKp: 0.03
   telemetryLogger: {fileID: 8837832929164473937}
   carRb: {fileID: 3862868878325186754}
