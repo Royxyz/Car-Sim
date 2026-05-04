@@ -15,6 +15,13 @@ public class AeroData : ScriptableObject
     [Tooltip("Offset relative to the Transform Origin. Usually placed slightly high, and behind the Center of Mass for high-speed stability.")]
     public Vector3 centerOfPressureOffset = new Vector3(0f, 0.4f, -0.8f);
 
+    [Header("Ground Effect")]
+    [Tooltip("The physical distance (in meters) from the floor where the underbody aero is 100% efficient.")]
+    public float optimalRideHeight = 0.12f;
+    
+    [Tooltip("How much extra downforce is generated when the car hits the optimal ride height.")]
+    public float groundEffectMultiplier = 1.25f;
+
     [Header("Dynamic Curves")]
     [Tooltip("X: Pitch Angle of Attack (deg). Y: Lift Coefficient. Negative pitch (nose down) should increase downforce.")]
     public AnimationCurve downforceVsAoA = AnimationCurve.Linear(-5f, 1.8f, 5f, 1.0f);

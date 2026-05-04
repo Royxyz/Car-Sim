@@ -7,6 +7,10 @@ public class TireData : ScriptableObject
     public float maxLoadCapacity = 15000f;
     public float frictionMultiplier = 1.0f;
     public float rollingResistance = 0.015f;
+    
+    [Tooltip("How much the friction coefficient drops as load approaches max capacity (0 = linear, 0.5 = 50% drop at max load)")]
+    [Range(0f, 1f)]
+    public float loadSensitivity = 0.2f;
 
     [Header("Relaxation Lengths (Meters)")]
     [Tooltip("Distance the tire must travel to build 63% of longitudinal slip. (~0.15m)")]
