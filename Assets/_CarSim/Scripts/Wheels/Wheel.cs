@@ -11,25 +11,28 @@ public class Wheel
     public float longitudinalSlip { get; private set; }
     public float slipAngle { get; private set; }
 
+    public float forwardSpeed { get; private set; }
+    public float wheelLinearSpeed { get; private set; }
+
     public void Initialize()
     {
         angularVelocity = 0f;
         rotationAngle = 0f;
         longitudinalSlip = 0f;
         slipAngle = 0f;
+        forwardSpeed = 0f;
+        wheelLinearSpeed = 0f;
     }
 
     public void CalculateSlips(Vector3 contactPatchLocalVelocity)
     {
-        float forwardSpeed = contactPatchLocalVelocity.z;
+        forwardSpeed = contactPatchLocalVelocity.z;
         float lateralSpeed = contactPatchLocalVelocity.x;
-        float wheelLinearSpeed = angularVelocity * wheelData.radius;
+        wheelLinearSpeed = angularVelocity * wheelData.radius;
 
-        // The threshold already safely prevents division by zero
-        float speedThreshold = 2.0f; 
+        float speedThreshold = 0.5f; 
         float absForward = Mathf.Max(Mathf.Abs(forwardSpeed), speedThreshold);
 
-        // Remove the slipDampener. Let the raw slip calculate normally.
         slipAngle = Mathf.Atan2(-lateralSpeed, absForward);
         longitudinalSlip = (wheelLinearSpeed - forwardSpeed) / absForward;
     }

@@ -12,9 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85f33f38a3a125f4181eaa2846646a1e, type: 3}
   m_Name: FreakSuspensionData
   m_EditorClassIdentifier: Assembly-CSharp::SuspensionData
-  restLength: 0.45
-  maxTravel: 0.15
-  springStiffness: 65000
+  targetRideHeight: 0.46
+  bumpTravel: 0.15
+  droopTravel: 0.1
+  springStiffness: 35000
   bumpDamping: 4500
   reboundDamping: 5500
+  bumpStopGap: 0.02
+  bumpStopStiffness: 150000
   absoluteMaxForce: 150000

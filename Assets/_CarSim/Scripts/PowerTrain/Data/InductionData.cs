@@ -15,8 +15,13 @@ public class InductionData : ScriptableObject
     [Tooltip("Parasitic drag torque at redline (Nm) required to spin the belt. (Drains power)")]
     public float superchargerParasiticDrag = 30f;
 
-    [Header("Turbocharger Specific")]
-    public float turboSpoolTimeAtIdle = 1.5f;
-    public float turboSpoolTimeAtRedline = 0.15f;
-    public float blowOffTime = 0.1f;
+    [Header("Turbo Dynamics")]
+    [Tooltip("The RPM where the turbo starts making positive pressure.")]
+    public float boostThresholdRPM = 2500f; 
+    [Tooltip("The RPM where the turbo can physically generate its maximum rated boost.")]
+    public float optimalBoostRPM = 4500f;   
+    [Tooltip("Base speed of the spool. Higher RPM multiplies this.")]
+    public float turboSpoolRate = 2.5f;     
+    [Tooltip("How fast the wastegate/BOV dumps pressure when lifting off.")]
+    public float blowOffRate = 15f;
 }

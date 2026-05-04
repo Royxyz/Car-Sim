@@ -14,8 +14,8 @@ public class AntiRollBar
 
     public void ApplyAxleARB(WheelAssembly left, WheelAssembly right, float stiffness, Rigidbody rb)
     {
-        float travelL = left.suspension.suspData.restLength - left.suspension.currentLength;
-        float travelR = right.suspension.suspData.restLength - right.suspension.currentLength;
+        float travelL = left.suspension.suspData.targetRideHeight - left.suspension.currentLength;
+        float travelR = right.suspension.suspData.targetRideHeight - right.suspension.currentLength;
 
         float difference = travelL - travelR;
         float antiRollForce = difference * stiffness;

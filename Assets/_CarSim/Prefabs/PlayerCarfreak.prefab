@@ -543,6 +543,7 @@ MonoBehaviour:
       tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
     contact:
       rayOriginOffset: 1
+      castRadius: 0.12
   - suspensionMountPoint: {fileID: 3085046770139381753}
     visualMesh: {fileID: 4186085289854664423}
     isSteerable: 1
@@ -557,6 +558,7 @@ MonoBehaviour:
       tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
     contact:
       rayOriginOffset: 1
+      castRadius: 0.12
   - suspensionMountPoint: {fileID: 5686765570159508859}
     visualMesh: {fileID: 2417900782220448862}
     isSteerable: 0
@@ -571,6 +573,7 @@ MonoBehaviour:
       tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
     contact:
       rayOriginOffset: 1
+      castRadius: 0.12
   - suspensionMountPoint: {fileID: 4694435239788870144}
     visualMesh: {fileID: 9222830600859753546}
     isSteerable: 0
@@ -585,6 +588,7 @@ MonoBehaviour:
       tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
     contact:
       rayOriginOffset: 1
+      castRadius: 0.12
   subSteps: 15
   trackMask:
     serializedVersion: 2
@@ -596,7 +600,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4323978353638480029}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2b73f0da8937530439406a8eb3223c88, type: 3}
   m_Name: 

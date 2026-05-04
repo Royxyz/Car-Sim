@@ -28,8 +28,8 @@ public class Transmission
         if (currentGear == 0) return 0f;
 
         float ratio = currentGear == -1 
-            ? transmissionData.reverseGear 
-            : transmissionData.forwardGears[currentGear - 1];
+        ? -Mathf.Abs(transmissionData.reverseGear) 
+        : transmissionData.forwardGears[currentGear - 1];
 
         return ratio * transmissionData.finalDrive;
     }

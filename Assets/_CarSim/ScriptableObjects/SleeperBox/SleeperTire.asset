@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10274d706a37d8246a199d1cb7865c7e, type: 3}
+  m_Name: SleeperTire
+  m_EditorClassIdentifier: Assembly-CSharp::TireData
+  maxLoadCapacity: 15000
+  frictionMultiplier: 1.45
+  rollingResistance: 0.018
+  longRelaxationLength: 0.15
+  latRelaxationLength: 0.25
+  longB: 12.5
+  longC: 1.9
+  longD: 1
+  longE: 0.75
+  latB: 12.5
+  latC: 1.9
+  latD: 1.1
+  latE: 0.75

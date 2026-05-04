@@ -6,14 +6,23 @@ public class LiveTelemetryDashboard : MonoBehaviour
     private SimulationController sim;
     private IVehicleInput inputs;
 
-    // For G-Force tracking
+    // Smoothing for G-Forces to eliminate jitter
     private Vector3 lastVelocity;
-    private float currentLongG = 0f;
-    private float currentLatG = 0f;
+    private float currentLongG;
+    private float currentLatG;
+    private float longGVelocity;
+    private float latGVelocity;
 
     [Header("Dashboard Settings")]
-    public int guiScale = 2; // Increase if playing on a 4K monitor
+    public int guiScale = 1; 
     public bool showWheelData = true;
+    [Tooltip("Higher = smoother G-force readings, but slightly more delayed.")]
+    public float gForceSmoothTime = 0.15f; 
+
+    // Cached GUI styles
+    private GUIStyle leftAlign;
+    private GUIStyle rightAlign;
+    private GUIStyle boldHeader;
 
     private void Awake()
     {
@@ -25,15 +34,14 @@ public class LiveTelemetryDashboard : MonoBehaviour
     {
         if (sim == null || sim.rb == null) return;
 
-        // Calculate G-Forces
         float dt = Time.fixedDeltaTime;
         Vector3 currentVel = sim.rb.linearVelocity;
         Vector3 localAccel = sim.transform.InverseTransformDirection((currentVel - lastVelocity) / dt);
-        
-        // Smooth the G-force slightly so the numbers are readable
-        currentLongG = Mathf.Lerp(currentLongG, localAccel.z / 9.81f, dt * 10f);
-        currentLatG = Mathf.Lerp(currentLatG, localAccel.x / 9.81f, dt * 10f);
-        
+
+        // SmoothDamp entirely eliminates the harsh frame-to-frame physics jitter
+        currentLongG = Mathf.SmoothDamp(currentLongG, localAccel.z / 9.81f, ref longGVelocity, gForceSmoothTime);
+        currentLatG = Mathf.SmoothDamp(currentLatG, localAccel.x / 9.81f, ref latGVelocity, gForceSmoothTime);
+
         lastVelocity = currentVel;
     }
 
@@ -41,79 +49,96 @@ public class LiveTelemetryDashboard : MonoBehaviour
     {
         if (sim == null || inputs == null) return;
 
+        InitStyles();
+
         // Scale the UI for higher resolution screens
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(guiScale, guiScale, 1));
 
-        // Background Box
-        float boxWidth = showWheelData ? 450 : 250;
-        GUI.Box(new Rect(10, 10, boxWidth, 320), "<b>VEHICLE TELEMETRY</b>");
-
-        // --- Column 1: Core Powertrain & Inputs ---
-        GUILayout.BeginArea(new Rect(20, 40, 220, 300));
+        // Compact Layout Dimensions
+        float width = 380f;
+        float height = showWheelData ? 150f : 100f;
         
-        float speedKmh = sim.rb.linearVelocity.magnitude * 3.6f;
-        DrawRow("Speed:", $"{speedKmh:F1} km/h", Color.white);
+        GUILayout.BeginArea(new Rect(10, 10, width, height), GUI.skin.box);
         
+        // --- HEADER ---
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("<b>VEHICLE TELEMETRY</b>", boldHeader);
         int gear = sim.powerTrain.transmission.currentGear;
-        string gearString = gear == -1 ? "R" : gear == 0 ? "N" : gear.ToString();
-        DrawRow("Gear:", gearString, Color.cyan);
-        
-        DrawRow("RPM:", $"{sim.powerTrain.engineRPM:F0}", Color.yellow);
-        
+        string gearStr = gear == -1 ? "R" : gear == 0 ? "N" : gear.ToString();
+        GUILayout.Label($"<b>GEAR: <color=cyan>{gearStr}</color></b>", rightAlign);
+        GUILayout.EndHorizontal();
+
+        // --- ROW 1: Engine State ---
+        float speedKmh = sim.rb.linearVelocity.magnitude * 3.6f;
+        float rpm = sim.powerTrain.engineRPM;
         float boost = sim.powerTrain.engine.currentManifoldPressure;
-        DrawRow("Manifold (Bar):", $"{boost:F2}", boost > 1.0f ? Color.red : Color.white);
+        string boostColor = boost > 1.0f ? "red" : "white";
+        
+        GUILayout.BeginHorizontal();
+        GUILayout.Label($"Spd: {speedKmh,3:F0} km/h", leftAlign);
+        GUILayout.Label($"RPM: <color=yellow>{rpm,4:F0}</color>", leftAlign);
+        GUILayout.Label($"Boost: <color={boostColor}>{boost:F2}</color> Bar", leftAlign);
+        GUILayout.EndHorizontal();
 
-        GUILayout.Space(10);
-        DrawRow("Throttle:", $"{inputs.Throttle * 100:F0}%", Color.green);
-        DrawRow("Brake:", $"{inputs.Brake * 100:F0}%", Color.red);
-        DrawRow("Clutch:", $"{inputs.Clutch * 100:F0}%", Color.gray);
-        DrawRow("Steer Angle:", $"{inputs.Steering * sim.steeringData.maxSteerAngle:F1}°", Color.white);
+        // --- ROW 2: Driver Inputs ---
+        GUILayout.BeginHorizontal();
+        GUILayout.Label($"T:<color=green>{inputs.Throttle*100,3:F0}%</color>", leftAlign);
+        GUILayout.Label($"B:<color=red>{inputs.Brake*100,3:F0}%</color>", leftAlign);
+        GUILayout.Label($"C:<color=grey>{inputs.Clutch*100,3:F0}%</color>", leftAlign);
+        GUILayout.Label($"Str: {inputs.Steering * sim.steeringData.maxSteerAngle,4:F1}°", leftAlign);
+        GUILayout.EndHorizontal();
 
-        GUILayout.Space(10);
-        DrawRow("Long G:", $"{currentLongG:F2} G", Mathf.Abs(currentLongG) > 0.8f ? Color.yellow : Color.white);
-        DrawRow("Lat G:", $"{currentLatG:F2} G", Mathf.Abs(currentLatG) > 0.8f ? Color.yellow : Color.white);
+        // --- ROW 3: G-Forces ---
+        string longColor = Mathf.Abs(currentLongG) > 0.8f ? "yellow" : "white";
+        string latColor = Mathf.Abs(currentLatG) > 0.8f ? "yellow" : "white";
+        
+        GUILayout.BeginHorizontal();
+        GUILayout.Label($"Long G: <color={longColor}>{currentLongG,5:F2}</color>", leftAlign);
+        GUILayout.Label($"Lat G: <color={latColor}>{currentLatG,5:F2}</color>", leftAlign);
+        GUILayout.EndHorizontal();
 
-        GUILayout.EndArea();
-
-        // --- Column 2: Wheel Dynamics (Optional) ---
+        // --- ROW 4: Compact Wheel Data ---
         if (showWheelData && sim.corners.Length == 4)
         {
-            GUILayout.BeginArea(new Rect(250, 40, 180, 300));
+            GUILayout.Space(2);
+            GUILayout.Label("<b>Tire Load (N)  |  Long. Slip</b>", boldHeader);
             
-            GUILayout.Label("<b>TIRE SLIP (Long)</b>");
-            DrawRow("FL Slip:", $"{sim.corners[0].wheel.longitudinalSlip:F3}", GetSlipColor(sim.corners[0].wheel.longitudinalSlip));
-            DrawRow("FR Slip:", $"{sim.corners[1].wheel.longitudinalSlip:F3}", GetSlipColor(sim.corners[1].wheel.longitudinalSlip));
-            DrawRow("RL Slip:", $"{sim.corners[2].wheel.longitudinalSlip:F3}", GetSlipColor(sim.corners[2].wheel.longitudinalSlip));
-            DrawRow("RR Slip:", $"{sim.corners[3].wheel.longitudinalSlip:F3}", GetSlipColor(sim.corners[3].wheel.longitudinalSlip));
-
-            GUILayout.Space(10);
-            GUILayout.Label("<b>SUSPENSION LOAD</b>");
-            DrawRow("FL Load:", $"{sim.corners[0].suspension.currentNormalLoad:F0} N", Color.white);
-            DrawRow("FR Load:", $"{sim.corners[1].suspension.currentNormalLoad:F0} N", Color.white);
-            DrawRow("RL Load:", $"{sim.corners[2].suspension.currentNormalLoad:F0} N", Color.white);
-            DrawRow("RR Load:", $"{sim.corners[3].suspension.currentNormalLoad:F0} N", Color.white);
-
-            GUILayout.EndArea();
+            DrawAxleRow("FL", sim.corners[0], "FR", sim.corners[1]);
+            DrawAxleRow("RL", sim.corners[2], "RR", sim.corners[3]);
         }
+
+        GUILayout.EndArea();
     }
 
-    // Helper to draw clean rows with colored values
-    private void DrawRow(string label, string value, Color valueColor)
+    // Helper to draw a left/right wheel pair on a single line
+    private void DrawAxleRow(string leftName, WheelAssembly leftCol, string rightName, WheelAssembly rightCol)
     {
         GUILayout.BeginHorizontal();
-        GUILayout.Label(label, GUILayout.Width(100));
-        GUI.contentColor = valueColor;
-        GUILayout.Label(value);
-        GUI.contentColor = Color.white; // Reset
+        
+        string lSlipC = GetSlipColorHex(leftCol.wheel.longitudinalSlip);
+        GUILayout.Label($"{leftName}: {leftCol.suspension.currentNormalLoad,5:F0} | <color={lSlipC}>{leftCol.wheel.longitudinalSlip,5:F2}</color>", leftAlign);
+        
+        string rSlipC = GetSlipColorHex(rightCol.wheel.longitudinalSlip);
+        GUILayout.Label($"{rightName}: {rightCol.suspension.currentNormalLoad,5:F0} | <color={rSlipC}>{rightCol.wheel.longitudinalSlip,5:F2}</color>", leftAlign);
+
         GUILayout.EndHorizontal();
     }
 
-    // Helper to turn text red/yellow when tires lose traction
-    private Color GetSlipColor(float slip)
+    private string GetSlipColorHex(float slip)
     {
         float absSlip = Mathf.Abs(slip);
-        if (absSlip > 0.15f) return Color.red;    // Hard wheelspin or locking
-        if (absSlip > 0.08f) return Color.yellow; // Peak Pacejka grip
-        return Color.green;                       // Rolling smoothly
+        if (absSlip > 0.15f) return "#FF4444"; // Red (Slipping/Locking)
+        if (absSlip > 0.08f) return "#FFFF00"; // Yellow (Peak Grip)
+        return "#00FF00";                      // Green (Stable)
+    }
+
+    private void InitStyles()
+    {
+        if (leftAlign == null)
+        {
+            leftAlign = new GUIStyle(GUI.skin.label) { richText = true, alignment = TextAnchor.MiddleLeft };
+            rightAlign = new GUIStyle(GUI.skin.label) { richText = true, alignment = TextAnchor.MiddleRight };
+            boldHeader = new GUIStyle(GUI.skin.label) { richText = true, alignment = TextAnchor.MiddleLeft };
+        }
     }
 }

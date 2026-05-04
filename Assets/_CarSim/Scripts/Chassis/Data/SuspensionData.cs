@@ -3,19 +3,23 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewSuspensionData", menuName = "Vehicle Physics/Suspension Data")]
 public class SuspensionData : ScriptableObject
 {
-    public float restLength = 0.5f;
-    public float maxTravel = 0.2f;
+    [Header("Geometry (Ride Height Centric)")]
+    [Tooltip("The exact distance from the mount to the wheel center when sitting still.")]
+    public float targetRideHeight = 0.46f;
+
+    [Tooltip("How far the wheel can compress UP from the ride height.")]
+    public float bumpTravel = 0.15f;
+
+    [Tooltip("How far the wheel can hang DOWN from the ride height when airborne.")]
+    public float droopTravel = 0.10f;       
+
+    [Header("Spring & Dampers")]
     public float springStiffness = 35000f;
     public float bumpDamping = 3500f;
     public float reboundDamping = 4000f;
 
-    [Header("Bump Stops (Physical Rubber Limits)")]
-    [Tooltip("How far into the travel (meters) before the physical bump stop engages. Usually slightly less than maxTravel.")]
-    public float bumpStopEngagement = 0.13f; 
-    
-    [Tooltip("The stiffness of the rubber bump stop itself. Usually 3x to 5x stiffer than the main spring.")]
+    [Header("Bump Stops")]
+    public float bumpStopGap = 0.02f; 
     public float bumpStopStiffness = 150000f;
-
-    [Header("Safety Constraints")]
     public float absoluteMaxForce = 150000f;
 }

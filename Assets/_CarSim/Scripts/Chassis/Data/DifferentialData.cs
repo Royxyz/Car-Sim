@@ -10,4 +10,5 @@ public class DifferentialData : ScriptableObject
     public float inertia = 0.05f;
     [Range(0f, 1f)] public float preloadLSD = 0.1f;
     public float lockingFriction = 50f;
+    public float lockingStiffness = 5000f;
 }

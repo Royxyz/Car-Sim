@@ -5,28 +5,43 @@ public class TireFrictionModel
 {
     [SerializeField] public TireData tireData;
 
-    public Vector2 CalculateGripForces(float normalLoad, float longitudinalSlip, float slipAngle)
+    public float dynamicLongSlip { get; private set; }
+    public float dynamicSlipAngle { get; private set; }
+
+    public void Initialize()
     {
-        if (normalLoad <= 0f) return Vector2.zero;
+        dynamicLongSlip = 0f;
+        dynamicSlipAngle = 0f;
+    }
+
+    public Vector2 CalculateGripForces(float normalLoad, float rawLongSlip, float rawSlipAngle, float forwardSpeed, float wheelLinearSpeed, float dt)
+    {
+        if (normalLoad <= 0f)
+        {
+            dynamicLongSlip = 0f;
+            dynamicSlipAngle = 0f;
+            return Vector2.zero;
+        }
+
+        float transportVelocity = Mathf.Max(Mathf.Abs(forwardSpeed), Mathf.Abs(wheelLinearSpeed), 1.0f);
+        float distanceTraveled = transportVelocity * dt;
+
+        float longBlend = 1f - Mathf.Exp(-distanceTraveled / tireData.longRelaxationLength);
+        float latBlend = 1f - Mathf.Exp(-distanceTraveled / tireData.latRelaxationLength);
+
+        dynamicLongSlip = Mathf.Lerp(dynamicLongSlip, rawLongSlip, longBlend);
+        dynamicSlipAngle = Mathf.Lerp(dynamicSlipAngle, rawSlipAngle, latBlend);
 
         float effectiveLoad = Mathf.Min(normalLoad, tireData.maxLoadCapacity);
 
-        float rawFx = CalculatePacejka(longitudinalSlip, tireData.longB, tireData.longC, tireData.longD, tireData.longE) * effectiveLoad * tireData.frictionMultiplier;
-        float rawFy = CalculatePacejka(slipAngle, tireData.latB, tireData.latC, tireData.latD, tireData.latE) * effectiveLoad * tireData.frictionMultiplier;
+        float slipMagnitude = Mathf.Sqrt((dynamicLongSlip * dynamicLongSlip) + (dynamicSlipAngle * dynamicSlipAngle));
+        slipMagnitude = Mathf.Max(slipMagnitude, 0.0001f);
 
-        float maxAvailableGrip = effectiveLoad * tireData.frictionMultiplier * Mathf.Max(tireData.longD, tireData.latD);
+        float rawFxMag = CalculatePacejka(slipMagnitude, tireData.longB, tireData.longC, tireData.longD, tireData.longE) * effectiveLoad * tireData.frictionMultiplier;
+        float rawFyMag = CalculatePacejka(slipMagnitude, tireData.latB, tireData.latC, tireData.latD, tireData.latE) * effectiveLoad * tireData.frictionMultiplier;
 
-        float combinedForceMagnitude = Mathf.Sqrt((rawFx * rawFx) + (rawFy * rawFy));
-
-        float Fx = rawFx;
-        float Fy = rawFy;
-
-        if (combinedForceMagnitude > maxAvailableGrip && combinedForceMagnitude > 0.001f)
-        {
-            float scaleRatio = maxAvailableGrip / combinedForceMagnitude;
-            Fx *= scaleRatio;
-            Fy *= scaleRatio;
-        }
+        float Fx = rawFxMag * (dynamicLongSlip / slipMagnitude);
+        float Fy = rawFyMag * (dynamicSlipAngle / slipMagnitude);
 
         return new Vector2(Fx, Fy);
     }
@@ -35,7 +50,6 @@ public class TireFrictionModel
     {
         return D * Mathf.Sin(C * Mathf.Atan(B * slip - E * (B * slip - Mathf.Atan(B * slip))));
     }
-
     public float GetRollingResistanceForce(float normalLoad)
     {
         return normalLoad * tireData.rollingResistance;

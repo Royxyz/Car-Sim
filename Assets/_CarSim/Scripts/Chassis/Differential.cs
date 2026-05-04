@@ -18,7 +18,7 @@ public class Differential
         if (diffData.diffType == DifferentialType.Locked)
         {
             float speedDiff = leftSpeed - rightSpeed;
-            float lockingTorque = speedDiff * 1000f; 
+            float lockingTorque = speedDiff * diffData.lockingStiffness; 
             return new Vector2(halfTorque - lockingTorque, halfTorque + lockingTorque);
         }
 

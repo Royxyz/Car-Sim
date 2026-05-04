@@ -10,7 +10,7 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
     public float topSpeedRunDuration = 8f; 
 
     [Header("AI Control Parameters")]
-    [Tooltip("Proportional gain for high-speed straight-line steering correction. Too high = wobbles. Too low = drifts.")]
+    [Tooltip("Proportional gain for high-speed straight-line steering correction.")]
     public float steeringKp = 0.03f; 
     private float targetHeading;
 
@@ -64,10 +64,7 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
     private void StartStressTest()
     {
         Debug.Log("<color=green><b>[Benchmark]</b> Test Initiated: Stage 1 - 0-100 LAUNCH</color>");
-        
-        // Lock in the starting heading for the Kp controller
         targetHeading = carRb.rotation.eulerAngles.y;
-        
         currentState = TestState.Launching;
         launchStartTime = Time.time;
         
@@ -82,8 +79,12 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                 break;
 
             case TestState.Launching:
-                Throttle = 1f; Brake = 0f; 
-                MaintainHeading(); // Replaces Steering = 0f;
+                // 1. Calculate required steering first
+                MaintainHeading(); 
+                
+                // 2. Traction Control: Lift throttle if fighting torque steer
+                Throttle = 1f - (Mathf.Abs(Steering) * 0.7f); 
+                Brake = 0f; 
 
                 if (!reached100 && currentSpeedKmh >= 100f)
                 {
@@ -101,8 +102,11 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                 break;
 
             case TestState.PanicBraking:
-                Throttle = 0f; Brake = 1f; 
                 MaintainHeading(); 
+                
+             
+                Brake = Mathf.Clamp01(1f - Mathf.Abs(Steering));
+                Throttle = 0f; 
 
                 if (currentSpeedKmh <= 2f) 
                 {
@@ -115,8 +119,9 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                 break;
 
             case TestState.ReLaunching:
-                Throttle = 0.8f; Brake = 0f; 
                 MaintainHeading();
+                Throttle = 0.8f - (Mathf.Abs(Steering) * 0.5f); 
+                Brake = 0f; 
 
                 if (currentSpeedKmh >= slalomSpeedKmh)
                 {
@@ -127,15 +132,18 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                 break;
 
             case TestState.Slalom:
-                Throttle = 0.6f; Brake = 0f; 
                 stateTimer += Time.deltaTime;
                 
+                // 4. Smooth analog steering input
                 Steering = Mathf.Sin(stateTimer * slalomFrequency);
+                
+                // 5. Power Oversteer Management: Lift throttle smoothly at peak steering angles
+                Throttle = Mathf.Lerp(1.0f, 0.1f, Mathf.Abs(Steering));
+                Brake = 0f; 
 
                 if (stateTimer >= slalomDuration)
                 {
                     Debug.Log("<color=magenta><b>[Benchmark]</b> Stage 5 - TOP SPEED AERO RUN</color>");
-                    // Update target heading so the AI goes straight from wherever the slalom spit it out
                     targetHeading = carRb.rotation.eulerAngles.y; 
                     currentState = TestState.TopSpeedRun;
                     stateTimer = 0f;
@@ -143,8 +151,11 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
                 break;
 
             case TestState.TopSpeedRun:
-                Throttle = 1f; Brake = 0f; 
                 MaintainHeading();
+                
+                // Prevent violent high-speed overcorrection
+                Throttle = 1f - (Mathf.Abs(Steering) * 0.4f); 
+                Brake = 0f; 
                 stateTimer += Time.deltaTime;
 
                 if (stateTimer >= topSpeedRunDuration)
@@ -162,15 +173,10 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
         }
     }
 
-    // The Kp Feedback Loop
     private void MaintainHeading()
     {
         float currentHeading = carRb.rotation.eulerAngles.y;
-        
-        // DeltaAngle automatically handles the 360 to 0 degree wrap-around
         float error = Mathf.DeltaAngle(currentHeading, targetHeading);
-        
-        // Calculate proportional steering input and clamp it between -1 (Left) and 1 (Right)
         Steering = Mathf.Clamp(error * steeringKp, -1f, 1f);
     }
 

@@ -6,6 +6,8 @@ public class SimulationController : MonoBehaviour
     [Header("Core Components")]
     public Rigidbody rb;
     private IVehicleInput vehicleInput; 
+    
+    private Transform cachedRoot; 
 
     [Header("Vehicle Systems")]
     public ChassisData chassisData;    
@@ -20,6 +22,9 @@ public class SimulationController : MonoBehaviour
     
     [Tooltip("If false, player must use the Clutch axis and Shift buttons manually.")]
     public bool isAutomatic = true;
+    
+    [Tooltip("If true, swaps Throttle and Brake inputs when in Reverse (Gamepad friendly). Disable this for AI Drivers.")]
+    public bool useSmartReverseAssist = false;
 
     [Header("Corners (0:FL, 1:FR, 2:RL, 3:RR)")]
     public WheelAssembly[] corners = new WheelAssembly[4];
@@ -47,6 +52,8 @@ public class SimulationController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        
+        cachedRoot = transform.root;
 
         vehicleInput = GetComponent<IVehicleInput>();
 
@@ -84,7 +91,7 @@ public class SimulationController : MonoBehaviour
         {
             if (corners[i] != null) 
             {
-                corners[i].Initialize();
+                corners[i].Initialize(rb.mass);
                 localMountPositions[i] = transform.InverseTransformPoint(corners[i].suspensionMountPoint.position) - rb.centerOfMass;
                 localMountUps[i] = transform.InverseTransformDirection(corners[i].suspensionMountPoint.up);
             }
@@ -99,6 +106,26 @@ public class SimulationController : MonoBehaviour
         float subDt = frameDt / subSteps;
 
         HandleDriverInputs();
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (corners[i] != null)
+            {
+                Vector3 mountWorldPos = rb.worldCenterOfMass + (rb.rotation * localMountPositions[i]);
+                Vector3 mountUp = rb.rotation * localMountUps[i];
+                
+                float maxSuspensionLength = corners[i].suspension.suspData.targetRideHeight + corners[i].suspension.suspData.droopTravel;
+
+                corners[i].contact.EvaluateContact(
+                    cachedRoot, 
+                    mountWorldPos, 
+                    mountUp, 
+                    maxSuspensionLength, 
+                    corners[i].wheel.wheelData.radius, 
+                    trackMask
+                );
+            }
+        }
 
         vChassis.position = rb.position + rb.rotation * rb.centerOfMass;
         vChassis.rotation = rb.rotation;
@@ -150,9 +177,18 @@ public class SimulationController : MonoBehaviour
 
     private void RunPhysicsSubStep(float dt)
     {
+        float activeThrottle = vehicleInput.Throttle;
+        float activeBrake = vehicleInput.Brake;
+
+        if (isAutomatic && powerTrain.transmission.currentGear == -1 && useSmartReverseAssist)
+        {
+            activeThrottle = vehicleInput.Brake;
+            activeBrake = vehicleInput.Throttle;
+        }
+
         if (isAutomatic)
         {
-            autoController.UpdateController(dt);
+            autoController.UpdateController(activeThrottle, activeBrake, dt);
         }
         else
         {
@@ -162,13 +198,24 @@ public class SimulationController : MonoBehaviour
         Vector3 stepTotalForce = Vector3.zero;
         Vector3 stepTotalTorque = Vector3.zero;
 
-        float totalLoadTorque = 0f;
+        float[] wheelLoadTorques = new float[4];
+        
         for(int i = 0; i < 4; i++) 
         {
-            totalLoadTorque += Mathf.Abs(corners[i].tire.CalculateGripForces(corners[i].suspension.currentNormalLoad, corners[i].wheel.longitudinalSlip, corners[i].wheel.slipAngle).x) * corners[i].wheel.wheelData.radius;
+            wheelLoadTorques[i] = corners[i].tire.CalculateGripForces(
+                corners[i].suspension.currentNormalLoad, 
+                corners[i].wheel.longitudinalSlip, 
+                corners[i].wheel.slipAngle,
+                corners[i].wheel.forwardSpeed,
+                corners[i].wheel.wheelLinearSpeed,
+                0f 
+            ).x * corners[i].wheel.wheelData.radius;
         }
         
-        float reflectedLoad = drivetrain.GetTotalReflectedLoad(totalLoadTorque/4f, totalLoadTorque/4f, totalLoadTorque/4f, totalLoadTorque/4f);
+        float reflectedLoad = drivetrain.GetTotalReflectedLoad(
+            wheelLoadTorques[0], wheelLoadTorques[1], 
+            wheelLoadTorques[2], wheelLoadTorques[3]
+        );
         float reflectedInertia = drivetrain.GetTotalReflectedInertia(corners[0].wheel.wheelData.inertia, corners[1].wheel.wheelData.inertia, corners[2].wheel.wheelData.inertia, corners[3].wheel.wheelData.inertia);
         
         float transOutputRadSec = drivetrain.CalculateInputSpeed(
@@ -179,7 +226,7 @@ public class SimulationController : MonoBehaviour
         float transOutputRPM = transOutputRadSec * (30f / Mathf.PI);
         float actualTransRPM = transOutputRPM * powerTrain.transmission.GetTotalRatio();
 
-        powerTrain.UpdatePhysics(vehicleInput.Throttle, actualTransRPM, reflectedLoad, reflectedInertia, dt);
+        powerTrain.UpdatePhysics(activeThrottle, actualTransRPM, reflectedLoad, reflectedInertia, dt);
 
         float transOutputTorque = powerTrain.GetWheelTorque();
         float[] wheelDriveTorques = drivetrain.RouteTorque(transOutputTorque, corners[0].wheel.angularVelocity, corners[1].wheel.angularVelocity, corners[2].wheel.angularVelocity, corners[3].wheel.angularVelocity);
@@ -192,7 +239,7 @@ public class SimulationController : MonoBehaviour
             Vector3 radiusFromCoM = virtualMountWorldPos - vChassis.position;
             Vector3 virtualPointVel = vChassis.linearVelocity + Vector3.Cross(vChassis.angularVelocity, radiusFromCoM);
 
-            ProcessCornerPhysics(i, virtualMountWorldPos, virtualMountUp, virtualPointVel, wheelDriveTorques[i], dt, ref stepTotalForce, ref stepTotalTorque, radiusFromCoM);
+            ProcessCornerPhysics(i, virtualMountWorldPos, virtualMountUp, virtualPointVel, wheelDriveTorques[i], activeBrake, dt, ref stepTotalForce, ref stepTotalTorque, radiusFromCoM);
         }
 
         Vector3 totalVirtualForce = stepTotalForce + (Physics.gravity * rb.mass);
@@ -213,7 +260,6 @@ public class SimulationController : MonoBehaviour
         );
         
         vChassis.angularVelocity += (vChassis.rotation * localAngAccel) * dt;
-        vChassis.angularVelocity *= (1.0f - (3.0f * dt)); 
 
         Quaternion qVel = new Quaternion(vChassis.angularVelocity.x, vChassis.angularVelocity.y, vChassis.angularVelocity.z, 0f) * vChassis.rotation;
         vChassis.rotation.x += 0.5f * qVel.x * dt;
@@ -226,19 +272,14 @@ public class SimulationController : MonoBehaviour
         totalAccumulatedTorque += stepTotalTorque;
     }
 
-    private void ProcessCornerPhysics(int index, Vector3 mountPos, Vector3 mountUp, Vector3 mountVel, float driveTorque, float dt, ref Vector3 stepForce, ref Vector3 stepTorque, Vector3 radiusFromCoM)
+    private void ProcessCornerPhysics(int index, Vector3 mountPos, Vector3 mountUp, Vector3 mountVel, float driveTorque, float activeBrake, float dt, ref Vector3 stepForce, ref Vector3 stepTorque, Vector3 radiusFromCoM)
     {
         WheelAssembly corner = corners[index];
 
-        corner.contact.EvaluateContact(
-            this.transform.root, mountPos, mountUp, 
-            corner.suspension.suspData.restLength, 
-            corner.suspension.suspData.maxTravel, 
-            corner.wheel.wheelData.radius, 
-            trackMask
-        );
-
-        float compressionVelocity = Vector3.Dot(mountVel, -mountUp);
+        // FIX: Calculate true compression velocity based on spring length change, NOT world velocity
+        float maxSuspensionLength = corner.suspension.suspData.targetRideHeight + corner.suspension.suspData.droopTravel;
+        float expectedLength = corner.contact.isGrounded ? corner.contact.hitDistance : maxSuspensionLength;
+        float compressionVelocity = (corner.suspension.currentLength - expectedLength) / dt;
 
         float suspForceMagnitude = corner.suspension.CalculateForce(corner.contact.isGrounded, corner.contact.hitDistance, compressionVelocity);
         Vector3 suspensionForceWorld = mountUp * suspForceMagnitude;
@@ -255,12 +296,19 @@ public class SimulationController : MonoBehaviour
             Vector3 contactVelLocal = Quaternion.Inverse(wheelRot) * contactVelPlanar;
 
             corner.wheel.CalculateSlips(contactVelLocal);
-            float brakeTorque = corner.brake.CalculateBrakeTorque(vehicleInput.Brake, corner.wheel.longitudinalSlip);
             
-            float effectiveFrictionLoad = Mathf.Clamp(suspForceMagnitude, 0f, (rb.mass * 9.81f));
+            float brakeTorque = corner.brake.CalculateBrakeTorque(activeBrake, corner.wheel.longitudinalSlip);
+            float effectiveFrictionLoad = Mathf.Max(0f, suspForceMagnitude);
             
-            Vector2 gripForceLocal = corner.tire.CalculateGripForces(effectiveFrictionLoad, corner.wheel.longitudinalSlip, corner.wheel.slipAngle);
-            
+            Vector2 gripForceLocal = corner.tire.CalculateGripForces(
+                effectiveFrictionLoad, 
+                corner.wheel.longitudinalSlip, 
+                corner.wheel.slipAngle,
+                corner.wheel.forwardSpeed,
+                corner.wheel.wheelLinearSpeed,
+                dt 
+            );
+
             Vector3 gripDirLong = Vector3.ProjectOnPlane(wheelRot * Vector3.forward, corner.contact.contactNormal).normalized;
             Vector3 gripDirLat = Vector3.ProjectOnPlane(wheelRot * Vector3.right, corner.contact.contactNormal).normalized;
             
@@ -271,7 +319,7 @@ public class SimulationController : MonoBehaviour
         }
         else
         {
-            corner.wheel.UpdatePhysics(driveTorque, corner.brake.CalculateBrakeTorque(vehicleInput.Brake, 0f), 0f, dt);
+            corner.wheel.UpdatePhysics(driveTorque, corner.brake.CalculateBrakeTorque(activeBrake, 0f), 0f, dt);
         }
 
         Vector3 totalCornerForce = suspensionForceWorld + gripForceWorld;
@@ -290,4 +338,54 @@ public class SimulationController : MonoBehaviour
         Vector3 centerOfPressureWorld = transform.TransformPoint(aerodynamics.aeroData.centerOfPressureOffset);
         rb.AddForceAtPosition(aeroForcesWorld, centerOfPressureWorld);
     }
+
+    private void OnDrawGizmos()
+    {
+        if (corners == null || corners.Length != 4 || rb == null) return;
+
+        foreach (var corner in corners)
+        {
+            if (corner == null || corner.suspensionMountPoint == null || corner.suspension.suspData == null) continue;
+
+            Vector3 mountPos = corner.suspensionMountPoint.position;
+            Vector3 mountUp = corner.suspensionMountPoint.up;
+            
+            float maxSuspensionLength = corner.suspension.suspData.targetRideHeight + corner.suspension.suspData.droopTravel;
+
+            // Draw the yellow max-droop line
+            Gizmos.color = Color.yellow;
+            Vector3 maxDropPos = mountPos - (mountUp * maxSuspensionLength);
+            Gizmos.DrawLine(mountPos, maxDropPos);
+
+            if (corner.contact != null && corner.wheel != null && corner.wheel.wheelData != null)
+            {
+                if (corner.contact.isGrounded)
+                {
+                    // Green Sphere: Actual contact point on the geometry
+                    Gizmos.color = Color.green;
+                    Gizmos.DrawSphere(corner.contact.contactPoint, 0.05f);
+
+                    // Cyan Sphere: The SphereCast volume at the exact moment of impact
+                    Gizmos.color = Color.cyan;
+                    // Recalculate sweep distance (reversing the math from WheelContact)
+                    float sweepDistance = corner.contact.hitDistance - corner.contact.castRadius + corner.wheel.wheelData.radius + corner.contact.rayOriginOffset;
+                    Vector3 sphereCenter = (mountPos + (mountUp * corner.contact.rayOriginOffset)) - (mountUp * sweepDistance);
+                    Gizmos.DrawWireSphere(sphereCenter, corner.contact.castRadius);
+
+                    // Red Line: The surface normal
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawRay(corner.contact.contactPoint, corner.contact.contactNormal * 0.5f);
+                }
+                else
+                {
+                    // Red Sphere: Max droop search volume
+                    Gizmos.color = Color.red;
+                    float sweepDistance = maxSuspensionLength + corner.wheel.wheelData.radius + corner.contact.rayOriginOffset;
+                    Vector3 sphereCenter = (mountPos + (mountUp * corner.contact.rayOriginOffset)) - (mountUp * sweepDistance);
+                    Gizmos.DrawWireSphere(sphereCenter, corner.contact.castRadius);
+                }
+            }
+        }
+    }
+    
 }
