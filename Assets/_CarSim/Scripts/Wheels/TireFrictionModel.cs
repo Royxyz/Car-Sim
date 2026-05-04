@@ -34,22 +34,40 @@ public class TireFrictionModel
 
         float effectiveLoad = Mathf.Min(normalLoad, tireData.maxLoadCapacity);
 
+        // --- FIX 1: Tire Load Sensitivity ---
+        float normalizedLoad = effectiveLoad / tireData.maxLoadCapacity;
+        float loadFalloffMultiplier = 1.0f - (normalizedLoad * tireData.loadSensitivity);
+        // Ensure friction multiplier never drops below a 30% hard floor to prevent total loss of control
+        float finalFrictionMult = tireData.frictionMultiplier * Mathf.Max(0.3f, loadFalloffMultiplier);
+
         float slipMagnitude = Mathf.Sqrt((dynamicLongSlip * dynamicLongSlip) + (dynamicSlipAngle * dynamicSlipAngle));
         slipMagnitude = Mathf.Max(slipMagnitude, 0.0001f);
 
-        float rawFxMag = CalculatePacejka(slipMagnitude, tireData.longB, tireData.longC, tireData.longD, tireData.longE) * effectiveLoad * tireData.frictionMultiplier;
-        float rawFyMag = CalculatePacejka(slipMagnitude, tireData.latB, tireData.latC, tireData.latD, tireData.latE) * effectiveLoad * tireData.frictionMultiplier;
+        // Apply the load-sensitive multiplier to the Pacejka formulas
+        float rawFxMag = CalculatePacejka(slipMagnitude, tireData.longB, tireData.longC, tireData.longD, tireData.longE) * effectiveLoad * finalFrictionMult;
+        float rawFyMag = CalculatePacejka(slipMagnitude, tireData.latB, tireData.latC, tireData.latD, tireData.latE) * effectiveLoad * finalFrictionMult;
 
         float Fx = rawFxMag * (dynamicLongSlip / slipMagnitude);
         float Fy = rawFyMag * (dynamicSlipAngle / slipMagnitude);
 
-        return new Vector2(Fx, Fy);
+        // --- FIX 2: Friction Ellipse Constraint ---
+        // Prevents generating more total lateral/longitudinal force than physically possible at the current slip
+        float maxAllowedForce = CalculatePacejka(slipMagnitude, tireData.longB, tireData.longC, tireData.longD, tireData.longE) * effectiveLoad * finalFrictionMult;
+        Vector2 combinedForce = new Vector2(Fx, Fy);
+
+        if (combinedForce.magnitude > maxAllowedForce)
+        {
+            combinedForce = combinedForce.normalized * maxAllowedForce;
+        }
+
+        return combinedForce;
     }
 
     private float CalculatePacejka(float slip, float B, float C, float D, float E)
     {
         return D * Mathf.Sin(C * Mathf.Atan(B * slip - E * (B * slip - Mathf.Atan(B * slip))));
     }
+    
     public float GetRollingResistanceForce(float normalLoad)
     {
         return normalLoad * tireData.rollingResistance;

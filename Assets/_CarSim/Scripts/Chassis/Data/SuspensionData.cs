@@ -22,4 +22,11 @@ public class SuspensionData : ScriptableObject
     public float bumpStopGap = 0.02f; 
     public float bumpStopStiffness = 150000f;
     public float absoluteMaxForce = 150000f;
+
+    [Header("Kinematics")]
+    [Tooltip("Degrees of negative camber gained per meter of suspension compression. Mimics Double Wishbone arcs.")]
+    public float camberGainPerMeter = 12f; 
+    
+    [Tooltip("Degrees of toe change per meter of compression (Bump Steer). Mimics tie-rod arc discrepancies. Positive = Toe Out under compression.")]
+    public float bumpSteerPerMeter = 3f;
 }

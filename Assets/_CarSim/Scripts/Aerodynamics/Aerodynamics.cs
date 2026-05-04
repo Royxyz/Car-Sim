@@ -21,9 +21,20 @@ public class Aerodynamics
         float cD = aeroData.dragVsAoA.Evaluate(aoa);
         float cS = aeroData.sideforceVsSlipAngle.Evaluate(slipAngle);
 
-
         float downforce = dynamicPressure * aeroData.topArea * cL;
-        
+
+        Vector3 centerOfPressureWorld = carTransform.TransformPoint(aeroData.centerOfPressureOffset);
+        float actualRideHeight = aeroData.optimalRideHeight;
+
+        if (Physics.Raycast(centerOfPressureWorld, -Vector3.up, out RaycastHit hit, 2.0f))
+        {
+            actualRideHeight = hit.distance - aeroData.centerOfPressureOffset.y;
+            actualRideHeight = Mathf.Max(actualRideHeight, 0.01f); 
+        }
+
+        float rideHeightFactor = Mathf.Clamp01(aeroData.optimalRideHeight / actualRideHeight);
+        downforce += (downforce * rideHeightFactor * aeroData.groundEffectMultiplier);
+
         float drag = dynamicPressure * aeroData.frontalArea * cD;
         drag *= Mathf.Sign(localAirVelocity.z);
 

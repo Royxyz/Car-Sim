@@ -23,6 +23,7 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
     public float Throttle { get; private set; }
     public float Brake { get; private set; }
     public float Clutch { get; private set; }
+    public float Handbrake { get; private set; } // NEW
     public bool ShiftUp { get; private set; }
     public bool ShiftDown { get; private set; }
 

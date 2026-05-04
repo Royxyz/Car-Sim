@@ -65,7 +65,7 @@ Drivetrain,Rear Differential,preloadLSD,0.5
 Drivetrain,Rear Differential,lockingFriction,250
 Drivetrain,Rear Differential,lockingStiffness,5000
 Front Axle,Wheel Config,mass,28
-Front Axle,Wheel Config,radius,0.35
+Front Axle,Wheel Config,radius,0.38
 Front Axle,Wheel Config,inertia,1.7
 Front Axle,Tire Compound,maxLoadCapacity,15000
 Front Axle,Tire Compound,frictionMultiplier,1.35
@@ -84,7 +84,7 @@ Front Axle,Brakes,maxBrakeTorque,6000
 Front Axle,Brakes,hasABS,True
 Front Axle,Brakes,absSlipThreshold,0.12
 Front Axle,Brakes,absReleaseMultiplier,0.3
-Front Axle,Suspension,targetRideHeight,0.46
+Front Axle,Suspension,targetRideHeight,0.45
 Front Axle,Suspension,bumpTravel,0.15
 Front Axle,Suspension,droopTravel,0.1
 Front Axle,Suspension,springStiffness,150000
@@ -94,7 +94,7 @@ Front Axle,Suspension,bumpStopGap,0.02
 Front Axle,Suspension,bumpStopStiffness,150000
 Front Axle,Suspension,absoluteMaxForce,150000
 Rear Axle,Wheel Config,mass,28
-Rear Axle,Wheel Config,radius,0.35
+Rear Axle,Wheel Config,radius,0.38
 Rear Axle,Wheel Config,inertia,1.7
 Rear Axle,Tire Compound,maxLoadCapacity,15000
 Rear Axle,Tire Compound,frictionMultiplier,1.35
@@ -113,7 +113,7 @@ Rear Axle,Brakes,maxBrakeTorque,6000
 Rear Axle,Brakes,hasABS,True
 Rear Axle,Brakes,absSlipThreshold,0.12
 Rear Axle,Brakes,absReleaseMultiplier,0.3
-Rear Axle,Suspension,targetRideHeight,0.46
+Rear Axle,Suspension,targetRideHeight,0.45
 Rear Axle,Suspension,bumpTravel,0.15
 Rear Axle,Suspension,droopTravel,0.1
 Rear Axle,Suspension,springStiffness,150000

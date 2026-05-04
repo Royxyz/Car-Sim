@@ -446,7 +446,6 @@ GameObject:
   - component: {fileID: 3765813821921315995}
   - component: {fileID: 5150192323938341603}
   - component: {fileID: 2014306854992822808}
-  - component: {fileID: 2218388502509280102}
   m_Layer: 0
   m_Name: PlayerCarfreak
   m_TagString: Untagged
@@ -484,6 +483,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f5c6a37a0de7c240959ac7e71c9e04a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InputManager
+  applyToKeyboardOnly: 1
+  enableSteeringAssist: 1
+  enableTractionControl: 1
+  enableThrottleSmoothing: 1
+  enableBrakeSmoothing: 1
+  steerTurnSpeed: 3
+  steerReturnSpeed: 5
+  speedSteerLimit:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: -0.00375
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 200
+      value: 0.25
+      inSlope: -0.00375
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  throttleSmoothSpeed: 5
+  brakeSmoothSpeed: 5
+  tcsSlipThreshold: 0.12
+  tcsAggressiveness: 10
 --- !u!114 &3765813821921315995
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -527,7 +561,9 @@ MonoBehaviour:
       diffData: {fileID: 11400000, guid: 9c08d8ab292fe734e91277f3ba1f9292, type: 2}
   aerodynamics:
     aeroData: {fileID: 11400000, guid: b6e6a007b45637b4385ff590487dbeed, type: 2}
+  brakeBias: 0.65
   isAutomatic: 1
+  useSmartReverseAssist: 1
   corners:
   - suspensionMountPoint: {fileID: 8601038594073501477}
     visualMesh: {fileID: 5546920366938746584}
@@ -600,13 +636,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4323978353638480029}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2b73f0da8937530439406a8eb3223c88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LiveTelemetryDashboard
   guiScale: 1
   showWheelData: 1
+  gForceSmoothTime: 0.15
 --- !u!54 &2014306854992822808
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -634,20 +671,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &2218388502509280102
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4323978353638480029}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 259a3f48b218187408079aba1b7d63f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TelemetryLogger
-  recordDuration: 60
-  fileName: CarTelemetry.csv
 --- !u!1 &4488754006407660511
 GameObject:
   m_ObjectHideFlags: 0
