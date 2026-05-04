@@ -125,8 +125,16 @@ public class AdvancedTelemetryLogger : MonoBehaviour
             float slipAngle = corner.wheel.slipAngle * Mathf.Rad2Deg;
             float wheelRpm = corner.wheel.angularVelocity * (30f / Mathf.PI);
 
-            // Re-evaluate Pacejka to extract exact forces at this millisecond
-            Vector2 gripForces = corner.tire.CalculateGripForces(load, corner.wheel.longitudinalSlip, corner.wheel.slipAngle);
+     
+            Vector2 gripForces = corner.tire.CalculateGripForces(
+                load, 
+                corner.wheel.longitudinalSlip, 
+                corner.wheel.slipAngle,
+                corner.wheel.forwardSpeed,
+                corner.wheel.wheelLinearSpeed,
+                0f 
+            );
+            
             float longForceFx = gripForces.x;
             float latForceFy = gripForces.y;
 

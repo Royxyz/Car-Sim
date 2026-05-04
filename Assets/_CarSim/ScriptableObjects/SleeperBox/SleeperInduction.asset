@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27b60e70dcf31fb43a77b546a969f8b6, type: 3}
+  m_Name: SleeperInduction
+  m_EditorClassIdentifier: Assembly-CSharp::InductionData
+  type: 2
+  maxPressureBar: 2.8
+  superchargerParasiticDrag: 30
+  boostThresholdRPM: 2500
+  optimalBoostRPM: 4500
+  turboSpoolRate: 2.5
+  blowOffRate: 15

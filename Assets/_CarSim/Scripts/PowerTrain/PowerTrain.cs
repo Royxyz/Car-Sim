@@ -11,17 +11,18 @@ public class PowerTrain
     public float transmissionInputRPM { get; private set; }
     public float currentNetTorque { get; private set; }
 
+    private float _lastReactionTorque; 
+
     public void Initialize()
     {
         engine.Initialize();
         engineRPM = engine._engineData.idleRPM;
         transmissionInputRPM = 0f;
+        _lastReactionTorque = 0f;
     }
-
 
     public void UpdatePhysics(float throttle, float actualTransRPM, float wheelLoadTorque, float wheelInertia, float dt)
     {
-        // 1. Hard-sync the transmission to the actual wheel speed
         transmissionInputRPM = actualTransRPM; 
         
         float engineRadPerSec = engineRPM * (Mathf.PI / 30f);
@@ -36,7 +37,6 @@ public class PowerTrain
         float engineGeneratedTorque = engine.CalculateDynamicGeneratedTorque(actualThrottle, engineRPM, dt);
         float engineInternalLoss = engine._engineData.GetLossTorque(engineRPM);
         
-        // 2. Store the real torque for the wheels to use later
         currentNetTorque = engineGeneratedTorque - engineInternalLoss;
 
         float reflectedLoad = transmission.GetReflectedLoadTorque(wheelLoadTorque);
@@ -47,11 +47,12 @@ public class PowerTrain
         float currentMaxCapacity = clutch.engagement * clutch.clutchData.maxTorqueCapacity;
 
         float requiredReactionTorque = clutch.CalculateReactionTorque(engine._engineData.engineInertia, currentNetTorque, reflectedInertia, reflectedLoad);
+        
+        _lastReactionTorque = requiredReactionTorque;
 
         if (clutch.engagement > 0.01f && speedsMatch && Mathf.Abs(requiredReactionTorque) <= currentMaxCapacity)
         {
             clutch.isLocked = true;
-            // 3. Forward Kinematics: If locked, the heavy wheels dictate the engine speed
             engineRadPerSec = transRadPerSec;
         }
         else
@@ -78,12 +79,12 @@ public class PowerTrain
         float transRadPerSec = transmissionInputRPM * (Mathf.PI / 30f);
 
         float clutchTorque = clutch.CalculateSlippingTorque(engineRadPerSec, transRadPerSec);
+        
         if (clutch.isLocked)
         {
-             // 4. FIX: Use the actual torque the engine is producing, NOT 100% throttle!
-             clutchTorque = currentNetTorque;
+             clutchTorque = _lastReactionTorque;
         }
+        
         return transmission.GetOutputTorque(clutchTorque);
     }
-
 }

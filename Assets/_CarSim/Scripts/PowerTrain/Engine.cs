@@ -17,60 +17,59 @@ public class Engine
 
     public float CalculateDynamicGeneratedTorque(float playerThrottle, float currentRPM, float dt)
     {
-        float throttleSpeed = 1f / _engineData.throttleSmoothing;
+        float throttleSpeed = 1f / Mathf.Max(_engineData.throttleSmoothing, 0.001f);
         currentThrottleBlade = Mathf.MoveTowards(currentThrottleBlade, playerThrottle, throttleSpeed * dt);
 
         if (_engineData.induction == null) 
         {
-            Debug.LogWarning("InductionData missing on EngineData!");
             return _engineData.GetGeneratedTorque(currentRPM, currentThrottleBlade);
         }
 
         float naBaselinePressure = 1.0f; 
+        float engineVacuum = 0.2f;      
         float extraParasiticDrag = 0f;
 
         switch (_engineData.induction.type)
         {
             case InductionType.NaturallyAspirated:
-                currentManifoldPressure = currentThrottleBlade * naBaselinePressure;
+                currentManifoldPressure = Mathf.Lerp(engineVacuum, naBaselinePressure, currentThrottleBlade);
                 break;
 
             case InductionType.Supercharged:
-                float targetSCPressure = Mathf.Lerp(0f, _engineData.induction.maxPressureBar, currentThrottleBlade);
-                currentManifoldPressure = targetSCPressure;
 
-                float rpmFactorSC = Mathf.InverseLerp(_engineData.idleRPM, _engineData.redlineRPM, currentRPM);
-                extraParasiticDrag = _engineData.induction.superchargerParasiticDrag * rpmFactorSC;
+                float rpmRatio = Mathf.InverseLerp(_engineData.idleRPM, _engineData.redlineRPM, currentRPM);
+                float maxAvailableSCBoost = naBaselinePressure + (_engineData.induction.maxPressureBar * rpmRatio);
+                currentManifoldPressure = Mathf.Lerp(engineVacuum, maxAvailableSCBoost, currentThrottleBlade);
+                extraParasiticDrag = _engineData.induction.superchargerParasiticDrag * rpmRatio;
                 break;
 
             case InductionType.Turbocharged:
-                float baseVacuum = Mathf.Min(currentThrottleBlade, 0.4f) * (1f / 0.4f); 
-                
-                if (currentThrottleBlade > 0.4f)
+                float exhaustEnergyFactor = Mathf.InverseLerp(
+                    _engineData.induction.boostThresholdRPM, 
+                    _engineData.induction.optimalBoostRPM, 
+                    currentRPM
+                );
+
+                float maxAvailableTurboPressure = naBaselinePressure + (_engineData.induction.maxPressureBar * exhaustEnergyFactor);
+
+                float targetPressure = Mathf.Lerp(engineVacuum, maxAvailableTurboPressure, currentThrottleBlade);
+
+                if (targetPressure > currentManifoldPressure)
                 {
-                    float boostRequest = Mathf.InverseLerp(0.4f, 1.0f, currentThrottleBlade);
-                    float targetTurboPressure = Mathf.Lerp(naBaselinePressure, _engineData.induction.maxPressureBar, boostRequest);
-
-                    float rpmFactorTurbo = Mathf.InverseLerp(_engineData.idleRPM, _engineData.redlineRPM, currentRPM);
-                    float currentSpoolTime = Mathf.Lerp(_engineData.induction.turboSpoolTimeAtIdle, _engineData.induction.turboSpoolTimeAtRedline, rpmFactorTurbo);
-
-                    float spoolSpeed = _engineData.induction.maxPressureBar / currentSpoolTime;
-                    currentManifoldPressure = Mathf.MoveTowards(currentManifoldPressure, targetTurboPressure, spoolSpeed * dt);
-
-                    currentManifoldPressure = Mathf.Max(currentManifoldPressure, baseVacuum);
+                    float dynamicSpoolRate = Mathf.Lerp(_engineData.induction.turboSpoolRate * 0.5f, _engineData.induction.turboSpoolRate * 3f, exhaustEnergyFactor);
+                    
+                    currentManifoldPressure = Mathf.Lerp(currentManifoldPressure, targetPressure, 1f - Mathf.Exp(-dynamicSpoolRate * dt));
                 }
                 else
                 {
-                    float dumpSpeed = _engineData.induction.maxPressureBar / _engineData.induction.blowOffTime;
-                    currentManifoldPressure = Mathf.MoveTowards(currentManifoldPressure, baseVacuum, dumpSpeed * dt);
+                    currentManifoldPressure = Mathf.Lerp(currentManifoldPressure, targetPressure, 1f - Mathf.Exp(-_engineData.induction.blowOffRate * dt));
                 }
                 break;
         }
 
-
         float mappedThrottle = Mathf.Clamp(currentManifoldPressure, 0f, 1f); 
         float baseNATorque = _engineData.GetGeneratedTorque(currentRPM, mappedThrottle);
-
+        
         float boostMultiplier = Mathf.Max(1.0f, currentManifoldPressure); 
 
         return (baseNATorque * boostMultiplier) - extraParasiticDrag;

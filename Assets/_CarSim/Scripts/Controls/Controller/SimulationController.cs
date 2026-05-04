@@ -176,7 +176,7 @@ public class SimulationController : MonoBehaviour
     {
         if (isAutomatic)
         {
-            autoController.UpdateController(dt);
+            autoController.UpdateController(vehicleInput.Throttle, vehicleInput.Brake, dt);
         }
         else
         {
@@ -186,13 +186,24 @@ public class SimulationController : MonoBehaviour
         Vector3 stepTotalForce = Vector3.zero;
         Vector3 stepTotalTorque = Vector3.zero;
 
-        float totalLoadTorque = 0f;
+        float[] wheelLoadTorques = new float[4];
+        
         for(int i = 0; i < 4; i++) 
         {
-            totalLoadTorque += Mathf.Abs(corners[i].tire.CalculateGripForces(corners[i].suspension.currentNormalLoad, corners[i].wheel.longitudinalSlip, corners[i].wheel.slipAngle).x) * corners[i].wheel.wheelData.radius;
+            wheelLoadTorques[i] = corners[i].tire.CalculateGripForces(
+                corners[i].suspension.currentNormalLoad, 
+                corners[i].wheel.longitudinalSlip, 
+                corners[i].wheel.slipAngle,
+                corners[i].wheel.forwardSpeed,
+                corners[i].wheel.wheelLinearSpeed,
+                0f 
+            ).x * corners[i].wheel.wheelData.radius;
         }
         
-        float reflectedLoad = drivetrain.GetTotalReflectedLoad(totalLoadTorque/4f, totalLoadTorque/4f, totalLoadTorque/4f, totalLoadTorque/4f);
+        float reflectedLoad = drivetrain.GetTotalReflectedLoad(
+            wheelLoadTorques[0], wheelLoadTorques[1], 
+            wheelLoadTorques[2], wheelLoadTorques[3]
+        );
         float reflectedInertia = drivetrain.GetTotalReflectedInertia(corners[0].wheel.wheelData.inertia, corners[1].wheel.wheelData.inertia, corners[2].wheel.wheelData.inertia, corners[3].wheel.wheelData.inertia);
         
         float transOutputRadSec = drivetrain.CalculateInputSpeed(
@@ -273,10 +284,17 @@ public class SimulationController : MonoBehaviour
             corner.wheel.CalculateSlips(contactVelLocal);
             float brakeTorque = corner.brake.CalculateBrakeTorque(vehicleInput.Brake, corner.wheel.longitudinalSlip);
             
-            float effectiveFrictionLoad = Mathf.Clamp(suspForceMagnitude, 0f, (rb.mass * 9.81f));
+            float effectiveFrictionLoad = Mathf.Max(0f, suspForceMagnitude);
             
-            Vector2 gripForceLocal = corner.tire.CalculateGripForces(effectiveFrictionLoad, corner.wheel.longitudinalSlip, corner.wheel.slipAngle);
-            
+            Vector2 gripForceLocal = corner.tire.CalculateGripForces(
+                effectiveFrictionLoad, 
+                corner.wheel.longitudinalSlip, 
+                corner.wheel.slipAngle,
+                corner.wheel.forwardSpeed,
+                corner.wheel.wheelLinearSpeed,
+                dt 
+            );
+
             Vector3 gripDirLong = Vector3.ProjectOnPlane(wheelRot * Vector3.forward, corner.contact.contactNormal).normalized;
             Vector3 gripDirLat = Vector3.ProjectOnPlane(wheelRot * Vector3.right, corner.contact.contactNormal).normalized;
             

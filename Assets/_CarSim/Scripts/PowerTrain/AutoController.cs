@@ -11,7 +11,7 @@ public class AutoController
     private int pendingGearChange;
     
     private float shiftCooldownTimer = 0f;
-    private const float COOLDOWN_DURATION = 0.5f; // Half-second breathing room
+    private const float COOLDOWN_DURATION = 0.5f; 
 
     public void Initialize(PowerTrain pt, AutoControllerLogicData data)
     {
@@ -23,15 +23,15 @@ public class AutoController
         shiftCooldownTimer = 0f;
     }
 
-    public void UpdateController(float dt)
+    public void UpdateController(float throttle, float brake, float dt)
     {
         if (powerTrain == null || logicData == null) return;
 
-        HandleShiftingLogic(dt);
-        HandleClutchLogic(dt); 
+        HandleShiftingLogic(throttle, brake, dt);
+        HandleClutchLogic(throttle, dt); 
     }
 
-    private void HandleShiftingLogic(float dt)
+    private void HandleShiftingLogic(float throttle, float brake, float dt)
     {
         if (shiftCooldownTimer > 0f) shiftCooldownTimer -= dt;
 
@@ -51,30 +51,37 @@ public class AutoController
         int maxGear = trans.transmissionData.forwardGears.Length;
         float currentRPM = powerTrain.engineRPM;
 
+        float wheelSpeed = Mathf.Abs(powerTrain.transmissionInputRPM);
+        bool isStopped = wheelSpeed < 15f; 
+
         if (currentGear == 0)
         {
-            StartShift(1);
+            if (throttle > 0.05f) StartShift(1);       
+            else if (brake > 0.05f) StartShift(-1);    
             return; 
+        }
+
+        if (isStopped && throttle < 0.05f && brake < 0.05f && !logicData.hasTorqueConverterCreep)
+        {
+            if (currentGear == 1) StartShift(-1);       
+            else if (currentGear == -1) StartShift(1);  
+            return;
         }
 
         if (shiftCooldownTimer <= 0f)
         {
-            // UPSHIFT LOGIC
             if (currentGear > 0 && currentGear < maxGear && currentRPM > logicData.upshiftRPM)
             {
                 float currentRatio = trans.transmissionData.forwardGears[currentGear - 1];
-                float nextRatio = trans.transmissionData.forwardGears[currentGear]; // Index of next gear
+                float nextRatio = trans.transmissionData.forwardGears[currentGear]; 
                 
-                // Gear ratio math: Predict what the RPM will be in the higher gear
                 float expectedRPM = currentRPM * (nextRatio / currentRatio);
 
-                // Only upshift if the drop won't instantly trigger a downshift
                 if (expectedRPM > (logicData.downshiftRPM + 200f))
                 {
                     StartShift(1);
                 }
             }
-            // DOWNSHIFT LOGIC
             else if (currentGear > 1 && currentRPM < logicData.downshiftRPM)
             {
                 float currentRatio = trans.transmissionData.forwardGears[currentGear - 1];
@@ -82,7 +89,6 @@ public class AutoController
                 
                 float expectedRPM = currentRPM * (prevRatio / currentRatio);
 
-                // Only downshift if it won't blow up the engine past redline
                 if (expectedRPM < (powerTrain.engine._engineData.redlineRPM - 200f))
                 {
                     StartShift(-1);
@@ -107,23 +113,37 @@ public class AutoController
         pendingGearChange = 0;
     }
 
-    private void HandleClutchLogic(float dt)
+    private void HandleClutchLogic(float throttle, float dt)
     {
         if (isShifting)
         {
-            // Smoothly disengage during a shift to prevent violent torque snaps
             powerTrain.clutch.engagement = Mathf.MoveTowards(powerTrain.clutch.engagement, 0f, dt * (1f / logicData.shiftDuration));
             return;
         }
 
         int currentGear = powerTrain.transmission.currentGear;
 
+        if (currentGear == 0)
+        {
+            powerTrain.clutch.engagement = 0f;
+            return;
+        }
+
         if (currentGear == 1 || currentGear == -1)
         {
-            // Launch control logic
-            float targetEngagement = Mathf.InverseLerp(logicData.biteRPM, logicData.lockRPM, powerTrain.engineRPM);
-            
-            // Override: If the car is rolling fast enough, force full engagement
+            float targetEngagement = 0f;
+
+            if (logicData.hasTorqueConverterCreep) 
+            {
+                targetEngagement = logicData.idleCreepEngagement;
+            }
+
+            if (throttle > 0.01f || logicData.hasTorqueConverterCreep)
+            {
+                float rpmBite = Mathf.InverseLerp(logicData.biteRPM, logicData.lockRPM, powerTrain.engineRPM);
+                targetEngagement = Mathf.Max(targetEngagement, rpmBite);
+            }
+
             if (Mathf.Abs(powerTrain.transmissionInputRPM) > logicData.lockRPM) 
             {
                 targetEngagement = 1f;
@@ -133,12 +153,7 @@ public class AutoController
         }
         else if (currentGear > 1)
         {
-            // Rapidly dump the clutch back to 100% after a 2nd+ gear shift
             powerTrain.clutch.engagement = Mathf.MoveTowards(powerTrain.clutch.engagement, 1f, dt * 15f);
-        }
-        else
-        {
-            powerTrain.clutch.engagement = 0f;
         }
     }
 }

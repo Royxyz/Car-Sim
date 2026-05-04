@@ -14,7 +14,7 @@ public class Aerodynamics
         if (speedSquare < 0.1f) return Vector3.zero;
 
         float dynamicPressure = 0.5f * aeroData.airDensity * speedSquare;
-        float aoa = Mathf.Atan2(localAirVelocity.y, localAirVelocity.z) * Mathf.Rad2Deg; 
+        float aoa = Mathf.Atan2(localAirVelocity.y, Mathf.Abs(localAirVelocity.z)) * Mathf.Rad2Deg; 
         float slipAngle = Mathf.Atan2(localAirVelocity.x, localAirVelocity.z) * Mathf.Rad2Deg;
 
         float cL = aeroData.downforceVsAoA.Evaluate(aoa);
