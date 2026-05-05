@@ -140,19 +140,24 @@ public class InputManager : MonoBehaviour, IVehicleInput
         filteredThrottle = applyAssists ? targetThrottle : rawThrottle;
     }
     private float GetMaxDrivenLongitudinalSlip()
+{
+    float maxSlip = 0f;
+    DriveType driveType = sim.drivetrain.drivetrainData.driveType;
+
+    for (int i = 0; i < 4; i++)
     {
-        float maxSlip = 0f;
-        for (int i = 0; i < 4; i++)
+        if (driveType == DriveType.FWD && i > 1) continue; 
+        if (driveType == DriveType.RWD && i < 2) continue;
+
+        if (sim.corners[i] != null && sim.corners[i].contact.isGrounded)
         {
-            if (sim.corners[i] != null && sim.corners[i].contact.isGrounded)
+            float slip = Mathf.Abs(sim.corners[i].tire.dynamicLongSlip); 
+            if (slip > maxSlip)
             {
-                float slip = sim.corners[i].wheel.longitudinalSlip;
-                if (slip > maxSlip)
-                {
-                    maxSlip = slip;
-                }
+                maxSlip = slip;
             }
         }
-        return maxSlip;
     }
+    return maxSlip;
+}
 }

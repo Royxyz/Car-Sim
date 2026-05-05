@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: SleeperInduction
   m_EditorClassIdentifier: Assembly-CSharp::InductionData
   type: 2
-  maxPressureBar: 2.8
+  maxPressureBar: 2
   superchargerParasiticDrag: 30
-  boostThresholdRPM: 2500
-  optimalBoostRPM: 4500
-  turboSpoolRate: 2.5
-  blowOffRate: 15
+  boostThresholdRPM: 2800
+  optimalBoostRPM: 4000
+  turboSpoolRate: 3.5
+  blowOffRate: 20

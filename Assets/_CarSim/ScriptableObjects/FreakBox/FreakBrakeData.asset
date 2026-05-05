@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38be123d4dedf748a3cea28117bd1f8, type: 3}
   m_Name: FreakBrakeData
   m_EditorClassIdentifier: Assembly-CSharp::BrakeData
-  maxBrakeTorque: 6000
+  maxBrakeTorque: 4500
+  maxHandbrakeTorque: 6000
   hasABS: 1
   absSlipThreshold: 0.12
   absReleaseMultiplier: 0.3

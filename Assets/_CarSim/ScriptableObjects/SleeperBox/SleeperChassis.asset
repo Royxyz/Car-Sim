@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23fd18496d4e35a428edd19703e28c16, type: 3}
   m_Name: SleeperChassis
   m_EditorClassIdentifier: Assembly-CSharp::ChassisData
-  totalMass: 1440
-  centerOfMassOffset: {x: 0, y: -0.45, z: 0.1}
-  inertiaTensorBoxSize: {x: 2.9, y: 1.1, z: 4.4}
-  maxSafeTorqueMultiplier: 100
+  totalMass: 1250
+  centerOfMassOffset: {x: 0, y: 0.15, z: 0}
+  inertiaTensorBoxSize: {x: 1.69, y: 1.2, z: 4.5}
+  maxSafeTorqueMultiplier: 120

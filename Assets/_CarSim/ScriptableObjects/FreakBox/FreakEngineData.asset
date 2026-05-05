@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: FreakEngineData
   m_EditorClassIdentifier: Assembly-CSharp::EngineData
   torqueCsvFile: {fileID: 4900000, guid: e500a9e25e9f268469815ecc546e4ea0, type: 3}
-  engineInertia: 0.25
+  engineInertia: 0.28
   staticFriction: 15
-  dynamicFriction: 0.06
-  throttleSmoothing: 0.05
+  dynamicFriction: 0.08
+  throttleSmoothing: 0.06
   induction: {fileID: 11400000, guid: 06b068868c32587489b377a2a9264931, type: 2}
-  idleRPM: 900
-  redlineRPM: 7800
+  idleRPM: 850
+  redlineRPM: 6800

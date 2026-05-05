@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27b60e70dcf31fb43a77b546a969f8b6, type: 3}
   m_Name: FreakInductionData
   m_EditorClassIdentifier: Assembly-CSharp::InductionData
-  type: 2
-  maxPressureBar: 2.5
-  superchargerParasiticDrag: 30
-  turboSpoolTimeAtIdle: 2
-  turboSpoolTimeAtRedline: 0.15
-  blowOffTime: 0.1
+  type: 1
+  maxPressureBar: 1.4
+  superchargerParasiticDrag: 55
+  boostThresholdRPM: 2500
+  optimalBoostRPM: 4500
+  turboSpoolRate: 2.5
+  blowOffRate: 15

@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38be123d4dedf748a3cea28117bd1f8, type: 3}
   m_Name: SleeperBrake
   m_EditorClassIdentifier: Assembly-CSharp::BrakeData
-  maxBrakeTorque: 4500
+  maxBrakeTorque: 3800
+  maxHandbrakeTorque: 5000
   hasABS: 1
-  absSlipThreshold: 0.15
-  absReleaseMultiplier: 0.2
+  absSlipThreshold: 0.18
+  absReleaseMultiplier: 0.35

@@ -33,40 +33,43 @@ public class AeroData : ScriptableObject
     public AnimationCurve sideforceVsSlipAngle = AnimationCurve.Linear(-90f, -1.2f, 90f, 1.2f);
 
     #if UNITY_EDITOR
-    [ContextMenu("Populate  Aero Curves")]
+    [ContextMenu("Populate Aero Curves")]
     public void GenerateAeroCurves()
     {
         // 1. Downforce / Lift Coefficient (Y) vs Pitch Angle (X)
+        // 90s Street car: Mostly neutral. Slight downforce under heavy braking (nose dive), slight lift under hard acceleration.
         downforceVsAoA = new AnimationCurve();
-        downforceVsAoA.AddKey(new Keyframe(-15f, 0.70f)); 
-        downforceVsAoA.AddKey(new Keyframe(-5f, 0.45f));  
-        downforceVsAoA.AddKey(new Keyframe(0f, 0.30f));   
-        downforceVsAoA.AddKey(new Keyframe(5f, 0.15f));   
-        downforceVsAoA.AddKey(new Keyframe(15f, -0.05f)); 
-        downforceVsAoA.AddKey(new Keyframe(30f, -0.10f)); 
+        downforceVsAoA.AddKey(new Keyframe(-15f, 0.25f)); 
+        downforceVsAoA.AddKey(new Keyframe(-5f, 0.15f));  
+        downforceVsAoA.AddKey(new Keyframe(0f, 0.05f));   
+        downforceVsAoA.AddKey(new Keyframe(5f, -0.05f));  
+        downforceVsAoA.AddKey(new Keyframe(15f, -0.15f)); 
+        downforceVsAoA.AddKey(new Keyframe(30f, -0.20f)); 
 
         // 2. Drag Coefficient (Y) vs Pitch Angle (X)
+        // Base drag coefficient for an early 90s coupe is ~0.33. Pitching exposes more surface area.
         dragVsAoA = new AnimationCurve();
-        dragVsAoA.AddKey(new Keyframe(-15f, 0.55f)); 
-        dragVsAoA.AddKey(new Keyframe(-5f, 0.41f));
-        dragVsAoA.AddKey(new Keyframe(0f, 0.38f));   
-        dragVsAoA.AddKey(new Keyframe(5f, 0.41f));
-        dragVsAoA.AddKey(new Keyframe(15f, 0.55f));
+        dragVsAoA.AddKey(new Keyframe(-15f, 0.45f)); 
+        dragVsAoA.AddKey(new Keyframe(-5f, 0.36f));
+        dragVsAoA.AddKey(new Keyframe(0f, 0.33f));   
+        dragVsAoA.AddKey(new Keyframe(5f, 0.37f));
+        dragVsAoA.AddKey(new Keyframe(15f, 0.48f));
 
         // 3. Sideforce Coefficient (Y) vs Yaw Slip Angle (X)
+        // Stabilizing force when drifting/sliding.
         sideforceVsSlipAngle = new AnimationCurve();
-        sideforceVsSlipAngle.AddKey(new Keyframe(-90f, -1.10f));
-        sideforceVsSlipAngle.AddKey(new Keyframe(-45f, -0.85f));
-        sideforceVsSlipAngle.AddKey(new Keyframe(-10f, -0.30f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(-90f, -0.80f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(-45f, -0.60f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(-10f, -0.15f));
         sideforceVsSlipAngle.AddKey(new Keyframe(0f, 0f));
-        sideforceVsSlipAngle.AddKey(new Keyframe(10f, 0.30f));
-        sideforceVsSlipAngle.AddKey(new Keyframe(45f, 0.85f));
-        sideforceVsSlipAngle.AddKey(new Keyframe(90f, 1.10f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(10f, 0.15f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(45f, 0.60f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(90f, 0.80f));
 
+        // Smooth out the tangents for realistic fluid dynamics
         for (int i = 0; i < downforceVsAoA.length; i++) UnityEditor.AnimationUtility.SetKeyLeftTangentMode(downforceVsAoA, i, UnityEditor.AnimationUtility.TangentMode.Auto);
         for (int i = 0; i < dragVsAoA.length; i++) UnityEditor.AnimationUtility.SetKeyLeftTangentMode(dragVsAoA, i, UnityEditor.AnimationUtility.TangentMode.Auto);
         for (int i = 0; i < sideforceVsSlipAngle.length; i++) UnityEditor.AnimationUtility.SetKeyLeftTangentMode(sideforceVsSlipAngle, i, UnityEditor.AnimationUtility.TangentMode.Auto);
-
     }
 #endif
 }

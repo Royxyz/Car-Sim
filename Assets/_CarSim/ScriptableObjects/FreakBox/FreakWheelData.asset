@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: FreakWheelData
   m_EditorClassIdentifier: Assembly-CSharp::WheelData
   mass: 28
-  radius: 0.35
-  inertia: 1.7
+  radius: 0.38
+  inertia: 2

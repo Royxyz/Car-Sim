@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: SleeperAutoController
   m_EditorClassIdentifier: Assembly-CSharp::AutoControllerLogicData
   hasTorqueConverterCreep: 0
-  idleCreepEngagement: 0.05
-  biteRPM: 4500
-  lockRPM: 5500
-  upshiftRPM: 6500
-  downshiftRPM: 3800
-  shiftDuration: 0.2
+  idleCreepEngagement: 0
+  biteRPM: 1400
+  lockRPM: 2200
+  upshiftRPM: 7200
+  downshiftRPM: 3500
+  shiftDuration: 0.25

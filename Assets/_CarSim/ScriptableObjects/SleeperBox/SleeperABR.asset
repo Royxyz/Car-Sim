@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f0540dfc6bee7e42b20fd844efd6934, type: 3}
   m_Name: SleeperABR
   m_EditorClassIdentifier: Assembly-CSharp::AntiRollBarData
-  frontAntiRoll: 6000
-  rearAntiRoll: 4500
+  frontAntiRoll: 7500
+  rearAntiRoll: 3000

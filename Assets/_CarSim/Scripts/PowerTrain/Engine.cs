@@ -50,7 +50,7 @@ public class Engine
                     currentRPM
                 );
 
-                float maxAvailableTurboPressure = naBaselinePressure + (_engineData.induction.maxPressureBar * exhaustEnergyFactor);
+                float maxAvailableTurboPressure = Mathf.Lerp(naBaselinePressure, _engineData.induction.maxPressureBar, exhaustEnergyFactor);
 
                 float targetPressure = Mathf.Lerp(engineVacuum, maxAvailableTurboPressure, currentThrottleBlade);
 

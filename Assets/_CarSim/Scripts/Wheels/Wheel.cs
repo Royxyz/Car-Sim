@@ -47,7 +47,11 @@ public class Wheel
             directionalBrakeTorque = Mathf.Sign(angularVelocity) * brakeTorque;
             directionalRRTorque = Mathf.Sign(angularVelocity) * rollingResTorque;
         }
-
+        else if (brakeTorque > 0f) 
+        {
+            directionalBrakeTorque = Mathf.Sign(tireGripTorque) * Mathf.Min(brakeTorque, Mathf.Abs(tireGripTorque));
+        }
+        
         float netTorque = driveTorque - directionalBrakeTorque - directionalRRTorque - tireGripTorque;
 
         float angularAcceleration = netTorque / wheelData.inertia;

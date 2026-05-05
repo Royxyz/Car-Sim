@@ -13,13 +13,12 @@ MonoBehaviour:
   m_Name: SleeperTransmission
   m_EditorClassIdentifier: Assembly-CSharp::TransmissionData
   forwardGears:
-  - 3.5
-  - 2.11
-  - 1.44
-  - 1.09
-  - 0.81
-  - 0.64
-  reverseGear: 3.545
-  finalDrive: 4.11
-  efficiency: 0.82
-  transmissionInertia: 0.2
+  - 3.321
+  - 1.902
+  - 1.308
+  - 1
+  - 0.838
+  reverseGear: 3.382
+  finalDrive: 4.083
+  efficiency: 0.88
+  transmissionInertia: 0.15

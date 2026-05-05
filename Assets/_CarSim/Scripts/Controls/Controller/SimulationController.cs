@@ -92,11 +92,22 @@ public class SimulationController : MonoBehaviour
         powerTrain.Initialize();
         autoController.Initialize(powerTrain, autoController.logicData);
 
+        float frontZ = transform.InverseTransformPoint(corners[0].suspensionMountPoint.position).z - rb.centerOfMass.z;
+        float rearZ = transform.InverseTransformPoint(corners[2].suspensionMountPoint.position).z - rb.centerOfMass.z;
+
+        float wheelbase = Mathf.Abs(frontZ) + Mathf.Abs(rearZ);
+        float frontWeightRatio = Mathf.Abs(rearZ) / wheelbase; 
+        float rearWeightRatio = Mathf.Abs(frontZ) / wheelbase;
+
         for (int i = 0; i < 4; i++)
         {
             if (corners[i] != null) 
             {
-                corners[i].Initialize(rb.mass);
+                // 3. Assign specific mass to Front (0,1) and Rear (2,3) corners
+                float cornerMass = (i < 2) ? (rb.mass * frontWeightRatio) / 2f : (rb.mass * rearWeightRatio) / 2f;
+                
+                corners[i].Initialize(cornerMass);
+                
                 localMountPositions[i] = transform.InverseTransformPoint(corners[i].suspensionMountPoint.position) - rb.centerOfMass;
                 localMountUps[i] = transform.InverseTransformDirection(corners[i].suspensionMountPoint.up);
             }

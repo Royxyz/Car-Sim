@@ -12,8 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00af67ad511973244b78702a57064239, type: 3}
   m_Name: FreakCentreDifferential
   m_EditorClassIdentifier: Assembly-CSharp::DifferentialData
-  diffType: 0
+  diffType: 2
   gearRatio: 1
   inertia: 0.05
-  preloadLSD: 0.25
-  lockingFriction: 120
+  powerBias: 0.2
+  preloadLSD: 0.1
+  lockingFriction: 150
+  lockingStiffness: 5000
+  coastLockingMultiplier: 0.2

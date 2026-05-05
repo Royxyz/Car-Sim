@@ -12,15 +12,13 @@ public class Suspension
     private float staticPreloadForce = 0f;
 
   
-    public void Initialize(float vehicleMass) 
+    public void Initialize(float restingMass) 
     {
         currentLength = suspData.targetRideHeight;
         currentNormalLoad = 0f;
         isGrounded = false;
-
-        staticPreloadForce = (vehicleMass * 9.81f) / 4f; 
+        staticPreloadForce = restingMass * 9.81f; 
     }
-
     public float CalculateForce(bool isGrounded, float hitDistance, float compressionVelocity)
     {
         this.isGrounded = isGrounded;

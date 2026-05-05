@@ -21,8 +21,10 @@ public class AntiRollBar
         float antiRollForce = difference * stiffness;
 
         if (left.suspension.isGrounded)
-            rb.AddForceAtPosition(left.suspensionMountPoint.up * -antiRollForce, left.suspensionMountPoint.position);
+            rb.AddForceAtPosition(left.suspensionMountPoint.up * antiRollForce, left.suspensionMountPoint.position); // Removed '-'
         if (right.suspension.isGrounded)
-            rb.AddForceAtPosition(right.suspensionMountPoint.up * antiRollForce, right.suspensionMountPoint.position);
+            rb.AddForceAtPosition(right.suspensionMountPoint.up * -antiRollForce, right.suspensionMountPoint.position); // Added '-'
+
+        
     }
 }

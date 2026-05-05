@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09bf26b140f961e4da25145cc89ae332, type: 3}
   m_Name: SleeperDriveTrain
   m_EditorClassIdentifier: Assembly-CSharp::DrivetrainData
-  driveType: 2
+  driveType: 1
