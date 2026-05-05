@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: SleeperEngine
   m_EditorClassIdentifier: Assembly-CSharp::EngineData
   torqueCsvFile: {fileID: 4900000, guid: c3dc134d77bb147449181de31ee8ae17, type: 3}
-  engineInertia: 0.15
+  engineInertia: 0.12
   staticFriction: 15
   dynamicFriction: 0.02
-  throttleSmoothing: 0.05
+  throttleSmoothing: 0.04
   induction: {fileID: 11400000, guid: 9c53df2713c23b6408f4f8225e67dce9, type: 2}
-  idleRPM: 850
-  redlineRPM: 7500
+  idleRPM: 950
+  redlineRPM: 7800

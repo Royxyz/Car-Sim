@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AutoControllerLogicData
   hasTorqueConverterCreep: 0
   idleCreepEngagement: 0
-  biteRPM: 1400
-  lockRPM: 2200
-  upshiftRPM: 7200
-  downshiftRPM: 3500
-  shiftDuration: 0.25
+  biteRPM: 1800
+  lockRPM: 2800
+  upshiftRPM: 7500
+  downshiftRPM: 4200
+  shiftDuration: 0.15

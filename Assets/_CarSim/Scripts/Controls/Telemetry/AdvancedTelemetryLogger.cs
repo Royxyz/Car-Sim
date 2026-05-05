@@ -98,7 +98,6 @@ public class AdvancedTelemetryLogger : MonoBehaviour
                .Append(Mathf.Abs(aero.y).ToString("F0")).Append(",")
                .Append(Mathf.Abs(aero.z).ToString("F0"));
 
-        // 2. High-Res Corner Data
         for (int i = 0; i < 4; i++)
         {
             var corner = sim.corners[i];
@@ -111,7 +110,6 @@ public class AdvancedTelemetryLogger : MonoBehaviour
             float slip = corner.wheel.longitudinalSlip;
             float slipAngle = corner.wheel.slipAngle * Mathf.Rad2Deg;
             
-            // Calculate delta to theoretical Pacejka Peak (approx 1/B coefficient)
             float optimalLongSlip = 1f / corner.tire.tireData.longB;
             float optimalLatSlip = (1f / corner.tire.tireData.latB) * Mathf.Rad2Deg;
             

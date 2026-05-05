@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: SleeperFrontSuspension
   m_EditorClassIdentifier: Assembly-CSharp::SuspensionData
   targetRideHeight: 0.45
-  bumpTravel: 0.12
+  bumpTravel: 0.15
   droopTravel: 0.1
-  springStiffness: 55000
-  bumpDamping: 3400
-  reboundDamping: 5500
+  springStiffness: 45000
+  bumpDamping: 5500
+  reboundDamping: 7000
   bumpStopGap: 0.02
   bumpStopStiffness: 150000
   absoluteMaxForce: 150000
-  camberGainPerMeter: 5
-  bumpSteerPerMeter: 0
+  camberGainPerMeter: 10
+  bumpSteerPerMeter: -1

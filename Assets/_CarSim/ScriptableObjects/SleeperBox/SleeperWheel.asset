@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e332f323e9f2fbe4c871e58ca75210e9, type: 3}
   m_Name: SleeperWheel
   m_EditorClassIdentifier: Assembly-CSharp::WheelData
-  mass: 21
+  mass: 18
   radius: 0.32
-  inertia: 1.1
+  inertia: 1

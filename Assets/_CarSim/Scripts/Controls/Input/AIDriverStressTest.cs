@@ -117,22 +117,29 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
         }
         else
         {
-            // Optimal Launch & Acceleration logic
+            // Optimal Launch & Touge Acceleration logic
             Brake = 0f;
             
-            // Check Rear Tire Slip (Index 2 and 3)
+            // 1. Calculate how much the rear is slipping
             float maxSlip = Mathf.Max(Mathf.Abs(sim.corners[2].wheel.longitudinalSlip), Mathf.Abs(sim.corners[3].wheel.longitudinalSlip));
-            float optimalSlipLimit = 1f / sim.corners[2].tire.tireData.longB; // Usually ~0.10 to 0.15
+            
+            // 2. The mathematical peak of grip. (For longB = 10, this is 0.10 slip)
+            float mathematicalPeakSlip = 1f / sim.corners[2].tire.tireData.longB; 
+            
+            // 3. TOUGE TUNE: Allow the AI to push 80% past the peak grip before panicking!
+            float tougeSlipLimit = mathematicalPeakSlip * 1.8f; 
 
-            if (maxSlip > optimalSlipLimit)
+            if (maxSlip > tougeSlipLimit)
             {
-                // Traction Control: Feather throttle based on slip error
-                Throttle = Mathf.MoveTowards(Throttle, 0.2f, Time.fixedDeltaTime * 5f); 
+                // Soft rev-limiter style throttle cut instead of slamming it shut
+                // Drops throttle to 60% to maintain the slide, rather than 20% to kill it.
+                Throttle = Mathf.MoveTowards(Throttle, 0.6f, Time.fixedDeltaTime * 10f); 
             }
             else
             {
-                // Power down based on available friction circle
-                Throttle = Mathf.Clamp01(remainingLongG / 1.0f); 
+                // Overdrive the friction circle slightly to initiate power-on oversteer exiting corners
+                float aggressiveThrottleRequest = (remainingLongG / 1.0f) * 1.2f; 
+                Throttle = Mathf.Clamp01(aggressiveThrottleRequest); 
             }
         }
     }
