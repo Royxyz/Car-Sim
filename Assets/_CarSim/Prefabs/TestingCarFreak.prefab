@@ -179,6 +179,7 @@ MonoBehaviour:
       diffData: {fileID: 11400000, guid: 9c08d8ab292fe734e91277f3ba1f9292, type: 2}
   aerodynamics:
     aeroData: {fileID: 11400000, guid: b6e6a007b45637b4385ff590487dbeed, type: 2}
+  brakeBias: 0.65
   isAutomatic: 1
   useSmartReverseAssist: 0
   corners:
@@ -285,7 +286,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ea9503320a4ebd40bb2aebd777ecb94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdvancedTelemetryLogger
-  saveDirectory: _CarSim/Telemetry
+  saveDirectory: _CarSim/Databases/Telemetry
 --- !u!114 &1133893251777695426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,14 +299,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6deeb16ff6fd4df4d881a6724901f04e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIDriverStressTest
-  targetLaunchSpeedKmh: 150
-  slalomSpeedKmh: 60
-  slalomDuration: 6
-  slalomFrequency: 2.5
-  topSpeedRunDuration: 18
-  steeringKp: 0.03
   telemetryLogger: {fileID: 8837832929164473937}
-  carRb: {fileID: 3862868878325186754}
+  sim: {fileID: 461268895402666365}
+  lookaheadDistance: 15
+  lookaheadSpeedScaling: 0.5
+  steeringKp: 0.03
+  targetGripUtilization: 0.95
+  waypoints: []
 --- !u!114 &7877763132802103185
 MonoBehaviour:
   m_ObjectHideFlags: 0

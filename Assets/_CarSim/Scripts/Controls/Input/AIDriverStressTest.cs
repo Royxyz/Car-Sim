@@ -1,189 +1,149 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class AIDriverStressTest : MonoBehaviour, IVehicleInput
 {
-    [Header("Test Configuration")]
-    public float targetLaunchSpeedKmh = 120f; 
-    public float slalomSpeedKmh = 80f; 
-    public float slalomDuration = 6f;
-    public float slalomFrequency = 2.5f;
-    public float topSpeedRunDuration = 8f; 
-
-    [Header("AI Control Parameters")]
-    [Tooltip("Proportional gain for high-speed straight-line steering correction.")]
-    public float steeringKp = 0.03f; 
-    private float targetHeading;
-
     [Header("Dependencies")]
     public AdvancedTelemetryLogger telemetryLogger;
-    public Rigidbody carRb;
+    public SimulationController sim;
+
+    [Header("AI Tuning")]
+    public float lookaheadDistance = 15f;
+    public float lookaheadSpeedScaling = 0.5f;
+    public float steeringKp = 0.05f;
+    public float targetGripUtilization = 0.95f; // Pushes to 95% of the tire's physical limit
 
     // --- IVehicleInput Implementation ---
     public float Steering { get; private set; }
     public float Throttle { get; private set; }
     public float Brake { get; private set; }
     public float Clutch { get; private set; }
-    public float Handbrake { get; private set; } // NEW
+    public float Handbrake { get; private set; }
     public bool ShiftUp { get; private set; }
     public bool ShiftDown { get; private set; }
 
-    public enum TestState { Idle, Launching, PanicBraking, ReLaunching, Slalom, TopSpeedRun, Finished }
-    public TestState currentState { get; private set; } = TestState.Idle;
-    
-    // --- Benchmark Tracking ---
-    private float stateTimer = 0f;
-    private float launchStartTime = 0f;
-    private Vector3 brakingStartPosition;
-    
-    public float timeTo100Kmh { get; private set; } = 0f;
-    public float brakingDistance { get; private set; } = 0f;
-    private bool reached100 = false;
-
-    private float currentSpeedKmh => carRb.linearVelocity.magnitude * 3.6f;
-    private CarController controls;
-
-    private void Awake() { controls = new CarController(); }
-    private void OnEnable() { controls.Driving.Enable(); }
-    private void OnDisable() { controls.Driving.Disable(); }
+    public List<Vector3> waypoints = new List<Vector3>();
+    private int currentWaypointIndex = 0;
+    private bool isTesting = false;
 
     private void Start()
     {
-        ResetInputs();
-        Brake = 1f; 
+        GenerateBenchmarkCircuit();
+        Invoke("BeginTest", 2.0f); // Give the car 2 seconds to settle on the suspension
     }
 
-    private void Update()
+    private void GenerateBenchmarkCircuit()
     {
-        if (currentState == TestState.Idle && controls.Driving.Throttle.ReadValue<float>() > 0.5f)
-        {
-            StartStressTest();
-        }
-
-        RunStateMachine();
+        Vector3 start = sim.rb.position;
+        // 1. The Launch Straight (400m - Tests 0-100, Top Speed, Aero Drag)
+        waypoints.Add(start + new Vector3(0, 0, 400));
+        // 2. Heavy Trail Braking into Hairpin (Tests ABS, Damper Dive, Bump Steer)
+        waypoints.Add(start + new Vector3(-20, 0, 420));
+        waypoints.Add(start + new Vector3(-40, 0, 400));
+        waypoints.Add(start + new Vector3(-40, 0, 380));
+        // 3. Transient Slalom Section (Tests ARBs, Roll inertia, Yaw response)
+        waypoints.Add(start + new Vector3(-20, 0, 340));
+        waypoints.Add(start + new Vector3(-60, 0, 300));
+        waypoints.Add(start + new Vector3(-20, 0, 260));
+        waypoints.Add(start + new Vector3(-60, 0, 220));
+        // 4. Steady-State Sweeper (Tests Max Lateral G, Tire Load Dropoff, Camber Gain)
+        waypoints.Add(start + new Vector3(-100, 0, 150));
+        waypoints.Add(start + new Vector3(-150, 0, 100));
+        waypoints.Add(start + new Vector3(-150, 0, 50));
+        waypoints.Add(start + new Vector3(-100, 0, 0));
+        // 5. Return to start
+        waypoints.Add(start);
     }
 
-    private void StartStressTest()
+    private void BeginTest()
     {
-        Debug.Log("<color=green><b>[Benchmark]</b> Test Initiated: Stage 1 - 0-100 LAUNCH</color>");
-        targetHeading = carRb.rotation.eulerAngles.y;
-        currentState = TestState.Launching;
-        launchStartTime = Time.time;
-        
+        Debug.Log("<color=green><b>[AI]</b> Test Initiated: Commencing Pure Pursuit Circuit.</color>");
+        isTesting = true;
         if (telemetryLogger != null) telemetryLogger.StartLogging();
     }
 
-    private void RunStateMachine()
+    private void FixedUpdate()
     {
-        switch (currentState)
+        if (!isTesting) return;
+        
+        float speed = sim.rb.linearVelocity.magnitude;
+        Vector3 currentPos = sim.rb.position;
+
+        // 1. Waypoint Progression
+        if (Vector3.Distance(currentPos, waypoints[currentWaypointIndex]) < 10f)
         {
-            case TestState.Idle:
-                break;
+            currentWaypointIndex++;
+            if (currentWaypointIndex >= waypoints.Count)
+            {
+                FinishTest();
+                return;
+            }
+        }
 
-            case TestState.Launching:
-                // 1. Calculate required steering first
-                MaintainHeading(); 
-                
-                // 2. Traction Control: Lift throttle if fighting torque steer
-                Throttle = 1f - (Mathf.Abs(Steering) * 0.7f); 
-                Brake = 0f; 
+        // 2. Pure Pursuit Steering
+        Vector3 targetPoint = waypoints[currentWaypointIndex];
+        float dynamicLookahead = lookaheadDistance + (speed * lookaheadSpeedScaling);
+        Vector3 localTarget = sim.transform.InverseTransformPoint(targetPoint);
+        
+        // Calculate the arc required to hit the lookahead point
+        float steerError = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
+        Steering = Mathf.Clamp(steerError * steeringKp, -1f, 1f);
 
-                if (!reached100 && currentSpeedKmh >= 100f)
-                {
-                    timeTo100Kmh = Time.time - launchStartTime;
-                    reached100 = true;
-                    Debug.Log($"<color=cyan><b>[Benchmark]</b> 0-100 km/h: {timeTo100Kmh:F2} seconds</color>");
-                }
+        // 3. Friction Circle & Slip Management (The AI Brain)
+        ManageTractionAndBraking(localTarget, speed);
+    }
 
-                if (currentSpeedKmh >= targetLaunchSpeedKmh)
-                {
-                    Debug.Log("<color=yellow><b>[Benchmark]</b> Stage 2 - 100-0 PANIC BRAKING</color>");
-                    brakingStartPosition = carRb.position;
-                    currentState = TestState.PanicBraking;
-                }
-                break;
+    private void ManageTractionAndBraking(Vector3 localTarget, float speed)
+    {
+        // How sharp is the corner approaching?
+        float distanceToCorner = localTarget.magnitude;
+        float cornerSharpness = Mathf.Abs(localTarget.x) / Mathf.Max(distanceToCorner, 0.1f); 
+        
+        // Assume maximum physical tire grip is approx 1.1G (from Pacejka)
+        float maxAvailableG = 1.1f * targetGripUtilization;
+        
+        // Calculate current lateral G used by cornering
+        Vector3 localAccel = sim.transform.InverseTransformDirection((sim.rb.linearVelocity - sim.rb.position) / Time.fixedDeltaTime); // Crude estimate
+        float currentLatG = Mathf.Abs(sim.rb.angularVelocity.y * speed) / 9.81f; 
 
-            case TestState.PanicBraking:
-                MaintainHeading(); 
-                
-             
-                Brake = Mathf.Clamp01(1f - Mathf.Abs(Steering));
-                Throttle = 0f; 
+        // Friction Circle Equation: remaining grip for acceleration/braking
+        float remainingLongG = Mathf.Sqrt(Mathf.Max(0f, (maxAvailableG * maxAvailableG) - (currentLatG * currentLatG)));
 
-                if (currentSpeedKmh <= 2f) 
-                {
-                    brakingDistance = Vector3.Distance(brakingStartPosition, carRb.position);
-                    Debug.Log($"<color=cyan><b>[Benchmark]</b> Braking Distance: {brakingDistance:F1} meters</color>");
-                    
-                    Debug.Log("<color=orange><b>[Benchmark]</b> Stage 3 - RE-LAUNCH TO SLALOM</color>");
-                    currentState = TestState.ReLaunching;
-                }
-                break;
+        if (cornerSharpness > 0.3f && distanceToCorner < (speed * 2f)) 
+        {
+            // Trail Braking logic: Smoothly trade brake for steering
+            Throttle = 0f;
+            Brake = Mathf.Clamp01(remainingLongG / 1.0f); // Blend brake off as lateral G builds
+        }
+        else
+        {
+            // Optimal Launch & Acceleration logic
+            Brake = 0f;
+            
+            // Check Rear Tire Slip (Index 2 and 3)
+            float maxSlip = Mathf.Max(Mathf.Abs(sim.corners[2].wheel.longitudinalSlip), Mathf.Abs(sim.corners[3].wheel.longitudinalSlip));
+            float optimalSlipLimit = 1f / sim.corners[2].tire.tireData.longB; // Usually ~0.10 to 0.15
 
-            case TestState.ReLaunching:
-                MaintainHeading();
-                Throttle = 0.8f - (Mathf.Abs(Steering) * 0.5f); 
-                Brake = 0f; 
-
-                if (currentSpeedKmh >= slalomSpeedKmh)
-                {
-                    Debug.Log("<color=orange><b>[Benchmark]</b> Stage 4 - LATERAL SLALOM SWEEP</color>");
-                    currentState = TestState.Slalom;
-                    stateTimer = 0f;
-                }
-                break;
-
-            case TestState.Slalom:
-                stateTimer += Time.deltaTime;
-                
-                // 4. Smooth analog steering input
-                Steering = Mathf.Sin(stateTimer * slalomFrequency);
-                
-                // 5. Power Oversteer Management: Lift throttle smoothly at peak steering angles
-                Throttle = Mathf.Lerp(1.0f, 0.1f, Mathf.Abs(Steering));
-                Brake = 0f; 
-
-                if (stateTimer >= slalomDuration)
-                {
-                    Debug.Log("<color=magenta><b>[Benchmark]</b> Stage 5 - TOP SPEED AERO RUN</color>");
-                    targetHeading = carRb.rotation.eulerAngles.y; 
-                    currentState = TestState.TopSpeedRun;
-                    stateTimer = 0f;
-                }
-                break;
-
-            case TestState.TopSpeedRun:
-                MaintainHeading();
-                
-                // Prevent violent high-speed overcorrection
-                Throttle = 1f - (Mathf.Abs(Steering) * 0.4f); 
-                Brake = 0f; 
-                stateTimer += Time.deltaTime;
-
-                if (stateTimer >= topSpeedRunDuration)
-                {
-                    Debug.Log("<color=red><b>[Benchmark]</b> Test Complete. Generating Report.</color>");
-                    currentState = TestState.Finished;
-                    
-                    if (telemetryLogger != null) telemetryLogger.StopLoggingAndSave(this);
-                }
-                break;
-
-            case TestState.Finished:
-                Throttle = 0f; Brake = 1f; Steering = 0f;
-                break;
+            if (maxSlip > optimalSlipLimit)
+            {
+                // Traction Control: Feather throttle based on slip error
+                Throttle = Mathf.MoveTowards(Throttle, 0.2f, Time.fixedDeltaTime * 5f); 
+            }
+            else
+            {
+                // Power down based on available friction circle
+                Throttle = Mathf.Clamp01(remainingLongG / 1.0f); 
+            }
         }
     }
 
-    private void MaintainHeading()
+    private void FinishTest()
     {
-        float currentHeading = carRb.rotation.eulerAngles.y;
-        float error = Mathf.DeltaAngle(currentHeading, targetHeading);
-        Steering = Mathf.Clamp(error * steeringKp, -1f, 1f);
-    }
-
-    private void ResetInputs()
-    {
-        Steering = 0f; Throttle = 0f; Brake = 0f; Clutch = 0f;
-        ShiftUp = false; ShiftDown = false;
+        isTesting = false;
+        Throttle = 0f;
+        Brake = 1f;
+        Steering = 0f;
+        Debug.Log("<color=red><b>[AI]</b> Circuit Complete. Stopping.</color>");
+        if (telemetryLogger != null) telemetryLogger.StopLoggingAndSave();
     }
 }

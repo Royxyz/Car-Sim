@@ -37,21 +37,24 @@ public class Wheel
         longitudinalSlip = (wheelLinearSpeed - forwardSpeed) / absForward;
     }
 
-    public void UpdatePhysics(float driveTorque, float brakeTorque, float tireGripTorque, float dt)
+    public void UpdatePhysics(float driveTorque, float brakeTorque, float tireGripTorque, float dt, float rollingResTorque = 0f)
     {
         float directionalBrakeTorque = 0f;
+        float directionalRRTorque = 0f;
 
         if (Mathf.Abs(angularVelocity) > 0.01f)
         {
             directionalBrakeTorque = Mathf.Sign(angularVelocity) * brakeTorque;
+            directionalRRTorque = Mathf.Sign(angularVelocity) * rollingResTorque;
         }
 
-        float netTorque = driveTorque - directionalBrakeTorque - tireGripTorque;
+        float netTorque = driveTorque - directionalBrakeTorque - directionalRRTorque - tireGripTorque;
 
         float angularAcceleration = netTorque / wheelData.inertia;
         angularVelocity += angularAcceleration * dt;
 
-        if (brakeTorque > 0f && Mathf.Abs(angularVelocity) < 0.1f && Mathf.Abs(netTorque) < brakeTorque)
+        float totalResistiveTorque = brakeTorque + rollingResTorque;
+        if (totalResistiveTorque > 0f && Mathf.Abs(angularVelocity) < 0.1f && Mathf.Abs(driveTorque - tireGripTorque) < totalResistiveTorque)
         {
             angularVelocity = 0f;
         }

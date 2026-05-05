@@ -10,8 +10,8 @@ public class PowerTrain
     public float engineRPM { get; private set; }
     public float transmissionInputRPM { get; private set; }
     public float currentNetTorque { get; private set; }
-
     private float _lastReactionTorque; 
+    private bool _ignitionCutActive = false; 
 
     public void Initialize()
     {
@@ -32,9 +32,23 @@ public class PowerTrain
         float idleThrottle = idleError > 0f ? Mathf.Clamp01(idleError * 0.005f) : 0f;
         float actualThrottle = Mathf.Max(throttle, idleThrottle);
         
-        if (engineRPM >= engine._engineData.redlineRPM) actualThrottle = 0f;
+
+        if (engineRPM >= engine._engineData.redlineRPM)
+        {
+            _ignitionCutActive = true;
+        }
+        else if (engineRPM < engine._engineData.redlineRPM - 150f) 
+        {
+            _ignitionCutActive = false; 
+        }
 
         float engineGeneratedTorque = engine.CalculateDynamicGeneratedTorque(actualThrottle, engineRPM, dt);
+        
+        if (_ignitionCutActive)
+        {
+            engineGeneratedTorque = -150f; 
+        }
+
         float engineInternalLoss = engine._engineData.GetLossTorque(engineRPM);
         
         currentNetTorque = engineGeneratedTorque - engineInternalLoss;

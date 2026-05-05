@@ -328,12 +328,22 @@ public class SimulationController : MonoBehaviour
             
             gripForceWorld = (gripDirLong * gripForceLocal.x) + (gripDirLat * gripForceLocal.y); 
 
+            float rollingResForce = corner.tire.GetRollingResistanceForce(effectiveFrictionLoad);
+
+            if (Mathf.Abs(corner.wheel.forwardSpeed) > 0.1f)
+            {
+                gripForceWorld += gripDirLong * (-Mathf.Sign(corner.wheel.forwardSpeed) * rollingResForce);
+            }
+
             float tireGripTorque = gripForceLocal.x * corner.wheel.wheelData.radius; 
-            corner.wheel.UpdatePhysics(driveTorque, brakeTorque, tireGripTorque, dt);
+
+            float rollingResTorque = rollingResForce * corner.wheel.wheelData.radius;
+
+            corner.wheel.UpdatePhysics(driveTorque, brakeTorque, tireGripTorque, dt, rollingResTorque);
         }
         else
         {
-            corner.wheel.UpdatePhysics(driveTorque, corner.brake.CalculateBrakeTorque(activeBrake, cornerHandbrake, biasMultiplier, 0f), 0f, dt);
+            corner.wheel.UpdatePhysics(driveTorque, corner.brake.CalculateBrakeTorque(activeBrake, cornerHandbrake, biasMultiplier, 0f), 0f, dt, 0f);
         }
 
         Vector3 totalCornerForce = suspensionForceWorld + gripForceWorld;

@@ -9,24 +9,18 @@ public class AdvancedTelemetryLogger : MonoBehaviour
     public string saveDirectory = "_CarSim/Telemetry";
     
     private SimulationController sim;
-    private AIDriverStressTest aiDriver; 
     private StringBuilder csvRows;
     private bool isLogging = false;
 
     // --- Peak Stat Tracking ---
     private Vector3 lastVelocity;
-    private float peakAccelG = 0f;
-    private float peakBrakeG = 0f;
-    private float peakLatG = 0f;
-    private float peakBoost = 0f;
-    private float peakRPM = 0f;
-    private float topSpeedKmh = 0f;
-    private float peakDownforce = 0f;
+    private float[] lastSuspensionTravel = new float[4];
+    private float totalDistanceTraveled = 0f;
+    private Vector3 lastPosition;
 
     private void Awake()
     {
         sim = GetComponent<SimulationController>();
-        aiDriver = GetComponent<AIDriverStressTest>();
         csvRows = new StringBuilder();
     }
 
@@ -34,18 +28,20 @@ public class AdvancedTelemetryLogger : MonoBehaviour
     {
         csvRows.Clear();
         
-        // Massive Header Construction
-        string header = "Time,TestStage,SpeedKmh,Accel_Long_G,Accel_Lat_G,Steer,Throttle,Brake,Clutch,Gear,RPM,Torque_Nm,Boost_Bar,Pitch,Roll,YawRate,Aero_Downforce_N,Aero_Drag_N";
+        string header = "Time_s,Distance_m,PosX,PosY,PosZ,Speed_Kmh,Accel_Long_G,Accel_Lat_G,Raw_Steer,Raw_Throttle,Raw_Brake,Clutch,Gear,RPM,Torque_Nm,Boost_Bar,Pitch,Roll,YawRate,Aero_DownN,Aero_DragN";
         
         string[] corners = { "FL", "FR", "RL", "RR" };
         foreach (string c in corners)
         {
-            header += $",{c}_Load_N,{c}_Travel_m,{c}_Slip,{c}_SlipAng_deg,{c}_RPM,{c}_LongForce_N,{c}_LatForce_N,{c}_BrakeTrq_Nm,{c}_ABS_Active";
+            // Added Damper Velocity and Slip Delta (Margin to peak grip)
+            header += $",{c}_Load_N,{c}_Travel_m,{c}_DamperVel_ms,{c}_Slip,{c}_SlipDelta,{c}_SlipAng_deg,{c}_LatDelta,{c}_WheelRPM,{c}_LongForce_N,{c}_LatForce_N,{c}_ActBrakeTrq_Nm,{c}_ABS_Active";
         }
         
         csvRows.AppendLine(header);
         
         lastVelocity = sim.rb.linearVelocity;
+        lastPosition = sim.rb.position;
+        for(int i=0; i<4; i++) lastSuspensionTravel[i] = 0f;
         isLogging = true;
     }
 
@@ -55,7 +51,11 @@ public class AdvancedTelemetryLogger : MonoBehaviour
 
         float dt = Time.fixedDeltaTime;
 
-        // 1. Core Chassis & G-Forces
+        // 1. Spatial & Chassis Dynamics
+        Vector3 currentPos = sim.rb.position;
+        totalDistanceTraveled += Vector3.Distance(lastPosition, currentPos);
+        lastPosition = currentPos;
+
         Vector3 currentVel = sim.rb.linearVelocity;
         Vector3 localAccel = sim.transform.InverseTransformDirection((currentVel - lastVelocity) / dt);
         float longG = localAccel.z / 9.81f;
@@ -64,138 +64,90 @@ public class AdvancedTelemetryLogger : MonoBehaviour
 
         float speedKmh = currentVel.magnitude * 3.6f;
         
-        // --- Track Benchmark Peaks ---
-        if (longG > peakAccelG) peakAccelG = longG;
-        if (longG < peakBrakeG) peakBrakeG = longG; 
-        if (Mathf.Abs(latG) > peakLatG) peakLatG = Mathf.Abs(latG);
-        if (speedKmh > topSpeedKmh) topSpeedKmh = speedKmh;
-        
-        float rpm = sim.powerTrain.engineRPM;
-        float boost = sim.powerTrain.engine.currentManifoldPressure;
-        if (rpm > peakRPM) peakRPM = rpm;
-        if (boost > peakBoost) peakBoost = boost;
-
-        // 2. Body Attitude & Powertrain
-        Vector3 eulerAngles = sim.rb.rotation.eulerAngles;
-        float pitch = eulerAngles.x > 180 ? eulerAngles.x - 360 : eulerAngles.x;
-        float roll = eulerAngles.z > 180 ? eulerAngles.z - 360 : eulerAngles.z;
+        Vector3 euler = sim.rb.rotation.eulerAngles;
+        float pitch = euler.x > 180 ? euler.x - 360 : euler.x;
+        float roll = euler.z > 180 ? euler.z - 360 : euler.z;
         float yawRate = sim.rb.angularVelocity.y * Mathf.Rad2Deg;
 
-        int gear = sim.powerTrain.transmission.currentGear;
-        float netTorque = sim.powerTrain.currentNetTorque;
-        float clutchEng = sim.powerTrain.clutch.engagement;
-        
-        // Calculate Aerodynamics (Using the new Flight-Sim Logic)
-        Vector3 aeroForcesLocal = sim.aerodynamics.CalculateAerodynamicForces(sim.rb.linearVelocity, sim.transform);
-        float downforceN = Mathf.Abs(aeroForcesLocal.y);
-        float dragN = Mathf.Abs(aeroForcesLocal.z);
-        if (downforceN > peakDownforce) peakDownforce = downforceN;
+        // Powertrain & Aero
+        float rpm = sim.powerTrain.engineRPM;
+        float boost = sim.powerTrain.engine.currentManifoldPressure;
+        Vector3 aero = sim.aerodynamics.CalculateAerodynamicForces(currentVel, sim.transform);
 
-        string currentStage = aiDriver != null ? aiDriver.currentState.ToString() : "Manual";
+        var input = sim.GetComponent<IVehicleInput>();
 
-        // FIX 4: Zero-allocation string building for chassis data
         csvRows.Append(Time.time.ToString("F3")).Append(",")
-               .Append(currentStage).Append(",")
+               .Append(totalDistanceTraveled.ToString("F1")).Append(",")
+               .Append(currentPos.x.ToString("F2")).Append(",")
+               .Append(currentPos.y.ToString("F2")).Append(",")
+               .Append(currentPos.z.ToString("F2")).Append(",")
                .Append(speedKmh.ToString("F1")).Append(",")
                .Append(longG.ToString("F2")).Append(",")
                .Append(latG.ToString("F2")).Append(",")
-               .Append(sim.GetComponent<IVehicleInput>().Steering.ToString("F2")).Append(",")
-               .Append(sim.GetComponent<IVehicleInput>().Throttle.ToString("F2")).Append(",")
-               .Append(sim.GetComponent<IVehicleInput>().Brake.ToString("F2")).Append(",")
-               .Append(clutchEng.ToString("F2")).Append(",")
-               .Append(gear).Append(",")
+               .Append(input.Steering.ToString("F2")).Append(",")
+               .Append(input.Throttle.ToString("F2")).Append(",")
+               .Append(input.Brake.ToString("F2")).Append(",")
+               .Append(sim.powerTrain.clutch.engagement.ToString("F2")).Append(",")
+               .Append(sim.powerTrain.transmission.currentGear).Append(",")
                .Append(rpm.ToString("F0")).Append(",")
-               .Append(netTorque.ToString("F1")).Append(",")
+               .Append(sim.powerTrain.currentNetTorque.ToString("F1")).Append(",")
                .Append(boost.ToString("F2")).Append(",")
                .Append(pitch.ToString("F2")).Append(",")
                .Append(roll.ToString("F2")).Append(",")
                .Append(yawRate.ToString("F2")).Append(",")
-               .Append(downforceN.ToString("F0")).Append(",")
-               .Append(dragN.ToString("F0"));
+               .Append(Mathf.Abs(aero.y).ToString("F0")).Append(",")
+               .Append(Mathf.Abs(aero.z).ToString("F0"));
 
-        // 3. Corner Data (High-Resolution Extraction)
+        // 2. High-Res Corner Data
         for (int i = 0; i < 4; i++)
         {
             var corner = sim.corners[i];
             
-            // Suspension & Wheel Kinematics
             float load = corner.suspension.currentNormalLoad;
-            float travel = corner.suspension.suspData.targetRideHeight- corner.suspension.currentLength; 
+            float travel = corner.suspension.suspData.targetRideHeight - corner.suspension.currentLength; 
+            float damperVel = (travel - lastSuspensionTravel[i]) / dt;
+            lastSuspensionTravel[i] = travel;
+
             float slip = corner.wheel.longitudinalSlip;
             float slipAngle = corner.wheel.slipAngle * Mathf.Rad2Deg;
-            float wheelRpm = corner.wheel.angularVelocity * (30f / Mathf.PI);
-
-     
-            Vector2 gripForces = corner.tire.CalculateGripForces(
-                load, 
-                corner.wheel.longitudinalSlip, 
-                corner.wheel.slipAngle,
-                corner.wheel.forwardSpeed,
-                corner.wheel.wheelLinearSpeed,
-                0f 
-            );
             
-            float longForceFx = gripForces.x;
-            float latForceFy = gripForces.y;
+            // Calculate delta to theoretical Pacejka Peak (approx 1/B coefficient)
+            float optimalLongSlip = 1f / corner.tire.tireData.longB;
+            float optimalLatSlip = (1f / corner.tire.tireData.latB) * Mathf.Rad2Deg;
+            
+            float slipDelta = Mathf.Abs(slip) - optimalLongSlip;
+            float latDelta = Mathf.Abs(slipAngle) - optimalLatSlip;
 
-            // Brake specific data
-            float brakeTorque = corner.brake.currentAppliedTorque;
-            int absActive = corner.brake.isABSDriveActive ? 1 : 0;
+            Vector2 gripForces = corner.tire.CalculateGripForces(load, slip, corner.wheel.slipAngle, corner.wheel.forwardSpeed, corner.wheel.wheelLinearSpeed, 0f);
 
-            // FIX 4: Zero-allocation string building for corner data
             csvRows.Append(",")
                    .Append(load.ToString("F0")).Append(",")
-                   .Append(travel.ToString("F3")).Append(",")
+                   .Append(travel.ToString("F4")).Append(",")
+                   .Append(damperVel.ToString("F3")).Append(",")
                    .Append(slip.ToString("F3")).Append(",")
+                   .Append(slipDelta.ToString("F3")).Append(",")
                    .Append(slipAngle.ToString("F2")).Append(",")
-                   .Append(wheelRpm.ToString("F0")).Append(",")
-                   .Append(longForceFx.ToString("F0")).Append(",")
-                   .Append(latForceFy.ToString("F0")).Append(",")
-                   .Append(brakeTorque.ToString("F0")).Append(",")
-                   .Append(absActive.ToString());
+                   .Append(latDelta.ToString("F2")).Append(",")
+                   .Append((corner.wheel.angularVelocity * (30f/Mathf.PI)).ToString("F0")).Append(",")
+                   .Append(gripForces.x.ToString("F0")).Append(",")
+                   .Append(gripForces.y.ToString("F0")).Append(",")
+                   .Append(corner.brake.currentAppliedTorque.ToString("F0")).Append(",")
+                   .Append(corner.brake.isABSDriveActive ? "1" : "0");
         }
-
         csvRows.AppendLine();
     }
 
-    public void StopLoggingAndSave(AIDriverStressTest aiDriverRef)
+    public void StopLoggingAndSave()
     {
         isLogging = false;
-
-        // Construct the Benchmark Summary Header
-        StringBuilder finalOutput = new StringBuilder();
-        finalOutput.AppendLine("===== VEHICLE DYNAMICS BENCHMARK REPORT =====");
-        finalOutput.AppendLine($"Test Weight: {sim.rb.mass} kg");
-        finalOutput.AppendLine($"0-100 km/h Time: {aiDriverRef.timeTo100Kmh:F2} sec");
-        finalOutput.AppendLine($"Braking Distance (100-0): {aiDriverRef.brakingDistance:F1} meters");
-        finalOutput.AppendLine($"Peak Acceleration: {peakAccelG:F2} G");
-        finalOutput.AppendLine($"Peak Braking: {Mathf.Abs(peakBrakeG):F2} G");
-        finalOutput.AppendLine($"Peak Lateral Grip: {peakLatG:F2} G");
-        finalOutput.AppendLine($"Peak Downforce Generated: {peakDownforce:F0} N (approx {(peakDownforce/9.81f):F0} kg)");
-        finalOutput.AppendLine($"Peak Engine Speed: {peakRPM:F0} RPM");
-        finalOutput.AppendLine($"Peak Manifold Pressure: {peakBoost:F2} Bar");
-        finalOutput.AppendLine($"Top Speed Reached: {topSpeedKmh:F1} km/h");
-        finalOutput.AppendLine("=============================================\n");
-        
-        finalOutput.Append(csvRows.ToString());
-
-        // Manage Directories and Run Numbers
         string dirPath = Path.Combine(Application.dataPath, saveDirectory);
-        if (!Directory.Exists(dirPath))
-        {
-            Directory.CreateDirectory(dirPath);
-        }
+        if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
-        int runNumber = 1;
-        string filePath;
-        do
-        {
-            filePath = Path.Combine(dirPath, $"Run_{runNumber:D3}.csv");
-            runNumber++;
-        } while (File.Exists(filePath));
+        int run = 1;
+        string path;
+        do { path = Path.Combine(dirPath, $"Telemetry_Run_{run:D3}.csv"); run++; } while (File.Exists(path));
 
-        File.WriteAllText(filePath, finalOutput.ToString());
-        
-        Debug.Log($"<color=cyan><b>[Telemetry]</b> Granular Benchmark Saved to: {filePath}</color>");
+        File.WriteAllText(path, csvRows.ToString());
+        Debug.Log($"<color=cyan><b>[Telemetry]</b> MoTeC-Grade Data Saved to: {path}</color>");
     }
 }
