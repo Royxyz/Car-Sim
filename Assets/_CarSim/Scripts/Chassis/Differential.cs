@@ -31,7 +31,11 @@ public class Differential
         float speedDelta = leftSpeed - rightSpeed;
         float currentFriction = isOnPower ? diffData.lockingFriction : (diffData.lockingFriction * diffData.coastLockingMultiplier);
 
-        float frictionTorque = (diffData.preloadLSD * Mathf.Abs(outputTorque)) + (speedDelta * currentFriction);
+        float preloadDirection = speedDelta > 0.1f ? 1f : (speedDelta < -0.1f ? -1f : 0f);
+        float preloadTorque = preloadDirection * (diffData.preloadLSD * Mathf.Abs(outputTorque));
+        
+        float dynamicFrictionTorque = speedDelta * currentFriction;
+        float frictionTorque = preloadTorque + dynamicFrictionTorque;
 
         float maxLock = Mathf.Abs(outputTorque);
         frictionTorque = Mathf.Clamp(frictionTorque, -maxLock, maxLock);

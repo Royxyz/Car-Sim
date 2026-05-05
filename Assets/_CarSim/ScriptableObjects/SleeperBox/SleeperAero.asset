@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: SleeperAero
   m_EditorClassIdentifier: Assembly-CSharp::AeroData
   airDensity: 1.225
-  frontalArea: 2
-  sideArea: 4.5
+  frontalArea: 1.9
+  sideArea: 4.2
   topArea: 5.5
   centerOfPressureOffset: {x: 0, y: 0.2, z: -0.6}
   optimalRideHeight: 0.15

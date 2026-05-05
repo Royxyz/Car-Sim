@@ -1,13 +1,13 @@
 Category,Component,Parameter,Value
 Chassis,Base Dynamics,totalMass,1680
-Chassis,Base Dynamics,centerOfMassOffset,0.00 | -0.22 | 0.20
+Chassis,Base Dynamics,centerOfMassOffset,0.00 | 0.40 | 0.20
 Chassis,Base Dynamics,inertiaTensorBoxSize,2.00 | 1.10 | 4.80
 Chassis,Base Dynamics,maxSafeTorqueMultiplier,120
 Chassis,Steering,maxSteerAngle,42
 Chassis,Steering,ackermannInnerMultiplier,1.12
 Chassis,Steering,ackermannOuterMultiplier,0.88
-Chassis,Anti-Roll Bars,frontAntiRoll,12000
-Chassis,Anti-Roll Bars,rearAntiRoll,8000
+Chassis,Anti-Roll Bars,frontAntiRoll,10000
+Chassis,Anti-Roll Bars,rearAntiRoll,9500
 Aerodynamics,Aero Settings,airDensity,1.225
 Aerodynamics,Aero Settings,frontalArea,2.35
 Aerodynamics,Aero Settings,sideArea,5.2

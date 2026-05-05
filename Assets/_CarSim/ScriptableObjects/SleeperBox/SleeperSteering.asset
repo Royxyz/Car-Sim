@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b3fbe41ac6ae454793ea9b76f62341f, type: 3}
   m_Name: SleeperSteering
   m_EditorClassIdentifier: Assembly-CSharp::SteeringData
-  maxSteerAngle: 40
-  ackermannInnerMultiplier: 1.12
-  ackermannOuterMultiplier: 0.88
+  maxSteerAngle: 42
+  ackermannInnerMultiplier: 1.05
+  ackermannOuterMultiplier: 0.95

@@ -12,17 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10274d706a37d8246a199d1cb7865c7e, type: 3}
   m_Name: SleeperTire
   m_EditorClassIdentifier: Assembly-CSharp::TireData
-  maxLoadCapacity: 8500
-  frictionMultiplier: 1.15
+  maxLoadCapacity: 10000
+  frictionMultiplier: 1
   rollingResistance: 0.015
   loadSensitivity: 0.15
   longRelaxationLength: 0.12
-  latRelaxationLength: 0.18
-  longB: 14
-  longC: 1.6
-  longD: 1
-  longE: 0.4
-  latB: 15
-  latC: 1.35
+  latRelaxationLength: 0.2
+  longB: 10
+  longC: 1.9
+  longD: 1.1
+  longE: 0.97
+  latB: 9.5
+  latC: 1.3
   latD: 1
-  latE: -0.8
+  latE: -0.5

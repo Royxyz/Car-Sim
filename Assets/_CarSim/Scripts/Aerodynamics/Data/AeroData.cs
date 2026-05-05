@@ -47,7 +47,7 @@ public class AeroData : ScriptableObject
         downforceVsAoA.AddKey(new Keyframe(30f, -0.20f)); 
 
         // 2. Drag Coefficient (Y) vs Pitch Angle (X)
-        // Base drag coefficient for an early 90s coupe is ~0.33. Pitching exposes more surface area.
+        
         dragVsAoA = new AnimationCurve();
         dragVsAoA.AddKey(new Keyframe(-15f, 0.45f)); 
         dragVsAoA.AddKey(new Keyframe(-5f, 0.36f));
@@ -56,7 +56,7 @@ public class AeroData : ScriptableObject
         dragVsAoA.AddKey(new Keyframe(15f, 0.48f));
 
         // 3. Sideforce Coefficient (Y) vs Yaw Slip Angle (X)
-        // Stabilizing force when drifting/sliding.
+       
         sideforceVsSlipAngle = new AnimationCurve();
         sideforceVsSlipAngle.AddKey(new Keyframe(-90f, -0.80f));
         sideforceVsSlipAngle.AddKey(new Keyframe(-45f, -0.60f));

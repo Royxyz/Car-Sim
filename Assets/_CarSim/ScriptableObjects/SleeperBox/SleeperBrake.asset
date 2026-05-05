@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SleeperBrake
   m_EditorClassIdentifier: Assembly-CSharp::BrakeData
   maxBrakeTorque: 3800
-  maxHandbrakeTorque: 5000
+  maxHandbrakeTorque: 4500
   hasABS: 1
-  absSlipThreshold: 0.18
-  absReleaseMultiplier: 0.35
+  absSlipThreshold: 0.15
+  absReleaseMultiplier: 0.3

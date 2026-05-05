@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DifferentialData
   diffType: 2
   gearRatio: 1
-  inertia: 0.08
+  inertia: 0.15
   powerBias: 0.5
-  preloadLSD: 0.15
-  lockingFriction: 600
+  preloadLSD: 0.05
+  lockingFriction: 250
   lockingStiffness: 5000
-  coastLockingMultiplier: 0.35
+  coastLockingMultiplier: 0.15

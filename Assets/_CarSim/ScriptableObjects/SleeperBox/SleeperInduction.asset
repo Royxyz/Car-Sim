@@ -15,7 +15,7 @@ MonoBehaviour:
   type: 2
   maxPressureBar: 2
   superchargerParasiticDrag: 30
-  boostThresholdRPM: 2800
-  optimalBoostRPM: 4000
-  turboSpoolRate: 3.5
+  boostThresholdRPM: 2000
+  optimalBoostRPM: 3800
+  turboSpoolRate: 4.5
   blowOffRate: 20
