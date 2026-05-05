@@ -5,12 +5,16 @@ using System.IO;
 [RequireComponent(typeof(SimulationController))]
 public class AdvancedTelemetryLogger : MonoBehaviour
 {
+    [Header("Dependencies")]
+    public DynamicTestDirector director; // MUST BE ASSIGNED IN INSPECTOR
+
     [Header("File Settings")]
     public string saveDirectory = "_CarSim/Telemetry";
     
     private SimulationController sim;
     private StringBuilder csvRows;
     private bool isLogging = false;
+    private bool hasSaved = false; // Prevents re-triggering after the test ends
 
     // --- Peak Stat Tracking ---
     private Vector3 lastVelocity;
@@ -24,16 +28,16 @@ public class AdvancedTelemetryLogger : MonoBehaviour
         csvRows = new StringBuilder();
     }
 
-    public void StartLogging()
+    private void StartLogging()
     {
         csvRows.Clear();
         
-        string header = "Time_s,Distance_m,PosX,PosY,PosZ,Speed_Kmh,Accel_Long_G,Accel_Lat_G,Raw_Steer,Raw_Throttle,Raw_Brake,Clutch,Gear,RPM,Torque_Nm,Boost_Bar,Pitch,Roll,YawRate,Aero_DownN,Aero_DragN";
+        // Injected "TestPhase" right after Time_s
+        string header = "Time_s,TestPhase,Distance_m,PosX,PosY,PosZ,Speed_Kmh,Accel_Long_G,Accel_Lat_G,Raw_Steer,Raw_Throttle,Raw_Brake,Clutch,Gear,RPM,Torque_Nm,Boost_Bar,Pitch,Roll,YawRate,Aero_DownN,Aero_DragN";
         
         string[] corners = { "FL", "FR", "RL", "RR" };
         foreach (string c in corners)
         {
-            // Added Damper Velocity and Slip Delta (Margin to peak grip)
             header += $",{c}_Load_N,{c}_Travel_m,{c}_DamperVel_ms,{c}_Slip,{c}_SlipDelta,{c}_SlipAng_deg,{c}_LatDelta,{c}_WheelRPM,{c}_LongForce_N,{c}_LatForce_N,{c}_ActBrakeTrq_Nm,{c}_ABS_Active";
         }
         
@@ -41,17 +45,38 @@ public class AdvancedTelemetryLogger : MonoBehaviour
         
         lastVelocity = sim.rb.linearVelocity;
         lastPosition = sim.rb.position;
-        for(int i=0; i<4; i++) lastSuspensionTravel[i] = 0f;
+        for(int i = 0; i < 4; i++) lastSuspensionTravel[i] = 0f;
+        totalDistanceTraveled = 0f;
+        
         isLogging = true;
+        Debug.Log("<color=green><b>[Telemetry]</b> MoTeC Logging Auto-Started.</color>");
     }
 
     private void FixedUpdate()
     {
+        if (director == null) return;
+
+        // 1. AUTO-START LOGGING
+        // If we haven't saved yet, aren't logging, and the Director has started the test
+        if (!isLogging && !hasSaved && director.currentPhase != TestPhase.Idle && director.currentPhase != TestPhase.Finished)
+        {
+            StartLogging();
+        }
+
+        // 2. AUTO-STOP LOGGING
+        // Triggered by the new boolean you added to the Director
+        if (isLogging && director.stopLogging)
+        {
+            StopLoggingAndSave();
+            return; // Exit out of this frame so we don't log after stopping
+        }
+
+        // 3. CONTINUOUS LOGGING EXECUTION
         if (!isLogging) return;
 
         float dt = Time.fixedDeltaTime;
 
-        // 1. Spatial & Chassis Dynamics
+        // Spatial & Chassis Dynamics
         Vector3 currentPos = sim.rb.position;
         totalDistanceTraveled += Vector3.Distance(lastPosition, currentPos);
         lastPosition = currentPos;
@@ -76,7 +101,11 @@ public class AdvancedTelemetryLogger : MonoBehaviour
 
         var input = sim.GetComponent<IVehicleInput>();
 
+        // Cast the TestPhase enum to an integer so it graphs cleanly in Excel/MoTeC (Idle=0, Launch=1, Brake=2, etc.)
+        int currentPhaseInt = (int)director.currentPhase;
+
         csvRows.Append(Time.time.ToString("F3")).Append(",")
+               .Append(currentPhaseInt).Append(",") // <--- NEW DATA POINT
                .Append(totalDistanceTraveled.ToString("F1")).Append(",")
                .Append(currentPos.x.ToString("F2")).Append(",")
                .Append(currentPos.y.ToString("F2")).Append(",")
@@ -135,9 +164,11 @@ public class AdvancedTelemetryLogger : MonoBehaviour
         csvRows.AppendLine();
     }
 
-    public void StopLoggingAndSave()
+    private void StopLoggingAndSave()
     {
         isLogging = false;
+        hasSaved = true; // Lock it so it doesn't accidentally restart
+        
         string dirPath = Path.Combine(Application.dataPath, saveDirectory);
         if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
@@ -147,5 +178,10 @@ public class AdvancedTelemetryLogger : MonoBehaviour
 
         File.WriteAllText(path, csvRows.ToString());
         Debug.Log($"<color=cyan><b>[Telemetry]</b> MoTeC-Grade Data Saved to: {path}</color>");
+        
+        // Optional: Pause the Unity Editor automatically so you know the test finished
+        #if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPaused = true;
+        #endif
     }
 }
