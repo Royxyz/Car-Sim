@@ -16,7 +16,7 @@ MonoBehaviour:
   gearRatio: 3.73
   inertia: 0.05
   powerBias: 0.5
-  preloadLSD: 0.5
+  preloadLSD: 0.2
   lockingFriction: 600
   lockingStiffness: 5000
-  coastLockingMultiplier: 0.8
+  coastLockingMultiplier: 0.25

@@ -111,6 +111,8 @@ GameObject:
   - component: {fileID: 8837832929164473937}
   - component: {fileID: 1133893251777695426}
   - component: {fileID: 7877763132802103185}
+  - component: {fileID: 5893033734027575318}
+  - component: {fileID: 6597315437230187896}
   m_Layer: 0
   m_Name: TestingCarFreak
   m_TagString: Untagged
@@ -149,19 +151,77 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimulationController
   rb: {fileID: 3862868878325186754}
-  chassisData: {fileID: 11400000, guid: 6e85d2bd3c800884a8dc2624f7fcf7ca, type: 2}
-  steeringData: {fileID: 11400000, guid: 02856ea05eb3fc34b81f839e3e131615, type: 2}
-  antiRollBar:
-    antiRollBarData: {fileID: 11400000, guid: 9047d380f34c9e84d82d0b93336bfdeb, type: 2}
-  powerTrain:
-    engine:
-      _engineData: {fileID: 11400000, guid: 3eff90e2f66bde2468f24f667d39afb2, type: 2}
-    clutch:
-      clutchData: {fileID: 11400000, guid: 74f63dc22ea881e45a5cd0034e33fe0f, type: 2}
-    transmission:
-      transmissionData: {fileID: 11400000, guid: d3cd8caeb0e3a3f4792249ba9d2196da, type: 2}
-  autoController:
-    logicData: {fileID: 11400000, guid: 6f24146f42c510b4893200abaa4b6e6f, type: 2}
+  chassis:
+    chassisData: {fileID: 11400000, guid: 6e85d2bd3c800884a8dc2624f7fcf7ca, type: 2}
+    steeringData: {fileID: 11400000, guid: 02856ea05eb3fc34b81f839e3e131615, type: 2}
+    antiRollBar:
+      antiRollBarData: {fileID: 11400000, guid: 9047d380f34c9e84d82d0b93336bfdeb, type: 2}
+    corners:
+    - suspensionMountPoint: {fileID: 3197763149410410488}
+      visualMesh: {fileID: 6363747349379342645}
+      isSteerable: 1
+      ackermannSteeringAngle: 0
+      suspension:
+        suspData: {fileID: 11400000, guid: 10971c69494dcb74d87ae48a644e4107, type: 2}
+      wheel:
+        wheelData: {fileID: 11400000, guid: 17c5d1ad942630b4dab8a9721d372d1a, type: 2}
+      brake:
+        brakeData: {fileID: 11400000, guid: a50821f657f679a42b3a68df393f4c4d, type: 2}
+      tire:
+        tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
+      contact:
+        rayOriginOffset: 1
+        castRadius: 0.12
+    - suspensionMountPoint: {fileID: 3158217996682816213}
+      visualMesh: {fileID: 7049148680117552901}
+      isSteerable: 1
+      ackermannSteeringAngle: 0
+      suspension:
+        suspData: {fileID: 11400000, guid: 10971c69494dcb74d87ae48a644e4107, type: 2}
+      wheel:
+        wheelData: {fileID: 11400000, guid: 17c5d1ad942630b4dab8a9721d372d1a, type: 2}
+      brake:
+        brakeData: {fileID: 11400000, guid: a50821f657f679a42b3a68df393f4c4d, type: 2}
+      tire:
+        tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
+      contact:
+        rayOriginOffset: 1
+        castRadius: 0.12
+    - suspensionMountPoint: {fileID: 7873057826041935838}
+      visualMesh: {fileID: 1404682118514806297}
+      isSteerable: 0
+      ackermannSteeringAngle: 0
+      suspension:
+        suspData: {fileID: 11400000, guid: cf421ef4a682e7e43b9fc688d7c44a01, type: 2}
+      wheel:
+        wheelData: {fileID: 11400000, guid: 17c5d1ad942630b4dab8a9721d372d1a, type: 2}
+      brake:
+        brakeData: {fileID: 11400000, guid: a50821f657f679a42b3a68df393f4c4d, type: 2}
+      tire:
+        tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
+      contact:
+        rayOriginOffset: 1
+        castRadius: 0.12
+    - suspensionMountPoint: {fileID: 3902794036923935523}
+      visualMesh: {fileID: 7827062454524928314}
+      isSteerable: 0
+      ackermannSteeringAngle: 0
+      suspension:
+        suspData: {fileID: 11400000, guid: cf421ef4a682e7e43b9fc688d7c44a01, type: 2}
+      wheel:
+        wheelData: {fileID: 11400000, guid: 17c5d1ad942630b4dab8a9721d372d1a, type: 2}
+      brake:
+        brakeData: {fileID: 11400000, guid: a50821f657f679a42b3a68df393f4c4d, type: 2}
+      tire:
+        tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
+      contact:
+        rayOriginOffset: 1
+        castRadius: 0.12
+    brakeBias: 0.65
+    trackMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  powertrain:
     powerTrain:
       engine:
         _engineData: {fileID: 11400000, guid: 3eff90e2f66bde2468f24f667d39afb2, type: 2}
@@ -169,84 +229,28 @@ MonoBehaviour:
         clutchData: {fileID: 11400000, guid: 74f63dc22ea881e45a5cd0034e33fe0f, type: 2}
       transmission:
         transmissionData: {fileID: 11400000, guid: d3cd8caeb0e3a3f4792249ba9d2196da, type: 2}
-  drivetrain:
-    drivetrainData: {fileID: 11400000, guid: db56bcb40b52a0e4fa450075a4a23428, type: 2}
-    frontDiff:
-      diffData: {fileID: 11400000, guid: 79d9ccbe1959bd04080b098e47e619ea, type: 2}
-    rearDiff:
-      diffData: {fileID: 11400000, guid: e478fcf9e093da74b88f7f7680c1c882, type: 2}
-    centerDiff:
-      diffData: {fileID: 11400000, guid: 9c08d8ab292fe734e91277f3ba1f9292, type: 2}
+    drivetrain:
+      drivetrainData: {fileID: 11400000, guid: db56bcb40b52a0e4fa450075a4a23428, type: 2}
+      frontDiff:
+        diffData: {fileID: 11400000, guid: 79d9ccbe1959bd04080b098e47e619ea, type: 2}
+      rearDiff:
+        diffData: {fileID: 11400000, guid: e478fcf9e093da74b88f7f7680c1c882, type: 2}
+      centerDiff:
+        diffData: {fileID: 11400000, guid: 9c08d8ab292fe734e91277f3ba1f9292, type: 2}
+    autoController:
+      logicData: {fileID: 11400000, guid: 6f24146f42c510b4893200abaa4b6e6f, type: 2}
+      powerTrain:
+        engine:
+          _engineData: {fileID: 11400000, guid: 3eff90e2f66bde2468f24f667d39afb2, type: 2}
+        clutch:
+          clutchData: {fileID: 11400000, guid: 74f63dc22ea881e45a5cd0034e33fe0f, type: 2}
+        transmission:
+          transmissionData: {fileID: 11400000, guid: d3cd8caeb0e3a3f4792249ba9d2196da, type: 2}
   aerodynamics:
     aeroData: {fileID: 11400000, guid: b6e6a007b45637b4385ff590487dbeed, type: 2}
-  brakeBias: 0.65
-  isAutomatic: 1
-  useSmartReverseAssist: 0
-  corners:
-  - suspensionMountPoint: {fileID: 3197763149410410488}
-    visualMesh: {fileID: 6363747349379342645}
-    isSteerable: 1
-    ackermannSteeringAngle: 0
-    suspension:
-      suspData: {fileID: 11400000, guid: 10971c69494dcb74d87ae48a644e4107, type: 2}
-    wheel:
-      wheelData: {fileID: 11400000, guid: 17c5d1ad942630b4dab8a9721d372d1a, type: 2}
-    brake:
-      brakeData: {fileID: 11400000, guid: a50821f657f679a42b3a68df393f4c4d, type: 2}
-    tire:
-      tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
-    contact:
-      rayOriginOffset: 1
-      castRadius: 0.12
-  - suspensionMountPoint: {fileID: 3158217996682816213}
-    visualMesh: {fileID: 7049148680117552901}
-    isSteerable: 1
-    ackermannSteeringAngle: 0
-    suspension:
-      suspData: {fileID: 11400000, guid: 10971c69494dcb74d87ae48a644e4107, type: 2}
-    wheel:
-      wheelData: {fileID: 11400000, guid: 17c5d1ad942630b4dab8a9721d372d1a, type: 2}
-    brake:
-      brakeData: {fileID: 11400000, guid: a50821f657f679a42b3a68df393f4c4d, type: 2}
-    tire:
-      tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
-    contact:
-      rayOriginOffset: 1
-      castRadius: 0.12
-  - suspensionMountPoint: {fileID: 7873057826041935838}
-    visualMesh: {fileID: 1404682118514806297}
-    isSteerable: 0
-    ackermannSteeringAngle: 0
-    suspension:
-      suspData: {fileID: 11400000, guid: 10971c69494dcb74d87ae48a644e4107, type: 2}
-    wheel:
-      wheelData: {fileID: 11400000, guid: 17c5d1ad942630b4dab8a9721d372d1a, type: 2}
-    brake:
-      brakeData: {fileID: 11400000, guid: a50821f657f679a42b3a68df393f4c4d, type: 2}
-    tire:
-      tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
-    contact:
-      rayOriginOffset: 1
-      castRadius: 0.12
-  - suspensionMountPoint: {fileID: 3902794036923935523}
-    visualMesh: {fileID: 7827062454524928314}
-    isSteerable: 0
-    ackermannSteeringAngle: 0
-    suspension:
-      suspData: {fileID: 11400000, guid: 10971c69494dcb74d87ae48a644e4107, type: 2}
-    wheel:
-      wheelData: {fileID: 11400000, guid: 17c5d1ad942630b4dab8a9721d372d1a, type: 2}
-    brake:
-      brakeData: {fileID: 11400000, guid: a50821f657f679a42b3a68df393f4c4d, type: 2}
-    tire:
-      tireData: {fileID: 11400000, guid: ac2f35f3a14af4a479837d94b706ce54, type: 2}
-    contact:
-      rayOriginOffset: 1
-      castRadius: 0.12
   subSteps: 15
-  trackMask:
-    serializedVersion: 2
-    m_Bits: 55
+  isAutomatic: 1
+  useSmartReverseAssist: 1
 --- !u!54 &3862868878325186754
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -286,6 +290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ea9503320a4ebd40bb2aebd777ecb94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdvancedTelemetryLogger
+  director: {fileID: 0}
   saveDirectory: _CarSim/Databases/Telemetry
 --- !u!114 &1133893251777695426
 MonoBehaviour:
@@ -299,13 +304,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6deeb16ff6fd4df4d881a6724901f04e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIDriverStressTest
-  telemetryLogger: {fileID: 8837832929164473937}
+  director: {fileID: 0}
+  profile: {fileID: 11400000, guid: ce1b087208229d44caffe9a4f012dfec, type: 2}
   sim: {fileID: 461268895402666365}
-  lookaheadDistance: 15
-  lookaheadSpeedScaling: 0.5
-  steeringKp: 0.03
-  targetGripUtilization: 0.95
-  waypoints: []
 --- !u!114 &7877763132802103185
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -321,6 +322,138 @@ MonoBehaviour:
   guiScale: 1
   showWheelData: 1
   gForceSmoothTime: 0.15
+--- !u!96 &5893033734027575318
+TrailRenderer:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4593940780620531981}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_Time: 5
+  m_PreviewTimeScale: 1
+  m_Parameters:
+    serializedVersion: 3
+    widthMultiplier: 1
+    widthCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.9613051
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    colorGradient:
+      serializedVersion: 2
+      key0: {r: 1, g: 0, b: 0.18739271, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
+      key2: {r: 0, g: 0, b: 0, a: 0}
+      key3: {r: 0, g: 0, b: 0, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 4830
+      ctime1: 65535
+      ctime2: 0
+      ctime3: 0
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 2
+      m_ColorSpace: 0
+      m_NumColorKeys: 2
+      m_NumAlphaKeys: 2
+    numCornerVertices: 0
+    numCapVertices: 0
+    alignment: 0
+    textureMode: 0
+    textureScale: {x: 1, y: 1}
+    shadowBias: 0.5
+    generateLightingData: 0
+  m_MinVertexDistance: 0.1
+  m_Autodestruct: 1
+  m_Emitting: 1
+  m_ApplyActiveColorSpace: 1
+--- !u!114 &6597315437230187896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4593940780620531981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e2547d760af449439fb571fe824a2b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CarSpecSheetGenerator
+  fileName: FreakSpecSheet.csv
 --- !u!1 &5326109108830898298
 GameObject:
   m_ObjectHideFlags: 0

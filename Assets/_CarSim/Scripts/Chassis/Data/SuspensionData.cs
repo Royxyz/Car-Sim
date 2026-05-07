@@ -17,6 +17,7 @@ public class SuspensionData : ScriptableObject
     public float springStiffness = 35000f;
     public float bumpDamping = 3500f;
     public float reboundDamping = 4000f;
+    public float blendWindow  = 0.05f;
 
     [Header("Bump Stops")]
     public float bumpStopGap = 0.02f; 

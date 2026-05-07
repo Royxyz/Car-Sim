@@ -6,9 +6,13 @@ public enum DifferentialType { Open, Locked, LimitedSlip }
 public class DifferentialData : ScriptableObject
 {
     public DifferentialType diffType = DifferentialType.Open;
+
+    [Header("Slip Tolerance (rad/s)")]
+    public float slipTolerance = 2.0f; 
+
     public float gearRatio = 1.0f;
     public float inertia = 0.05f;
-
+    
     [Header("Torque Split")]
     [Tooltip("0.5 is 50/50. For a center diff, 0.2 means 20% to Front (Left) and 80% to Rear (Right).")]
     [Range(0f, 1f)]

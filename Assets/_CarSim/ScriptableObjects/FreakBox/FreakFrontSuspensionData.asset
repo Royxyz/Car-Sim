@@ -15,11 +15,11 @@ MonoBehaviour:
   targetRideHeight: 0.45
   bumpTravel: 0.15
   droopTravel: 0.1
-  springStiffness: 75000
+  springStiffness: 65000
   bumpDamping: 6000
   reboundDamping: 8500
   bumpStopGap: 0.03
   bumpStopStiffness: 250000
   absoluteMaxForce: 300000
-  camberGainPerMeter: 18
-  bumpSteerPerMeter: 1.5
+  camberGainPerMeter: 12
+  bumpSteerPerMeter: -1.5
