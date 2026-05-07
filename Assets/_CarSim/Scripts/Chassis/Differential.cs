@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 [System.Serializable]
 public class Differential
@@ -18,23 +19,22 @@ public class Differential
         }
 
         bool isOnPower = inputTorque > 10f;
+        float speedDelta = leftSpeed - rightSpeed;
+
+        float smoothDelta = (float)Math.Tanh(speedDelta / diffData.slipTolerance);
 
         if (diffData.diffType == DifferentialType.Locked)
         {
-            float speedDiff = leftSpeed - rightSpeed;
             float currentStiffness = isOnPower ? diffData.lockingStiffness : (diffData.lockingStiffness * diffData.coastLockingMultiplier);
-            
-            float lockingTorque = speedDiff * currentStiffness; 
+            float lockingTorque = smoothDelta * currentStiffness; 
             return new Vector2(leftBaseTorque - lockingTorque, rightBaseTorque + lockingTorque);
         }
 
-        float speedDelta = leftSpeed - rightSpeed;
         float currentFriction = isOnPower ? diffData.lockingFriction : (diffData.lockingFriction * diffData.coastLockingMultiplier);
 
-        float preloadDirection = speedDelta > 0.1f ? 1f : (speedDelta < -0.1f ? -1f : 0f);
-        float preloadTorque = preloadDirection * (diffData.preloadLSD * Mathf.Abs(outputTorque));
+        float preloadTorque = smoothDelta * (diffData.preloadLSD * Mathf.Abs(outputTorque));
+        float dynamicFrictionTorque = smoothDelta * currentFriction;
         
-        float dynamicFrictionTorque = speedDelta * currentFriction;
         float frictionTorque = preloadTorque + dynamicFrictionTorque;
 
         float maxLock = Mathf.Abs(outputTorque);
@@ -42,10 +42,11 @@ public class Differential
 
         return new Vector2(leftBaseTorque - frictionTorque, rightBaseTorque + frictionTorque);
     }
+    
     public float GetReflectedInertia(float leftInertia, float rightInertia)
     {
         float ratioSq = diffData.gearRatio * diffData.gearRatio;
-        return ((leftInertia + rightInertia) / (2f * ratioSq)) + diffData.inertia;
+        return ((leftInertia + rightInertia) / ratioSq) + diffData.inertia;
     }
 
     public float GetReflectedLoad(float leftLoad, float rightLoad)

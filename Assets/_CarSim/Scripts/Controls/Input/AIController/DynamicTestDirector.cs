@@ -24,14 +24,12 @@ public class DynamicTestDirector : MonoBehaviour
     private Vector3 lastVelocity;
     
     // Slalom State
-    private int slalomGatesPassed = 0;
     private float slalomFrequency = 0.05f; // How fast the sine wave oscillates
     private float slalomAmplitude = 12f;   // How wide the gates are
 
     // Skidpad State
     private Vector3 skidpadCenter;
     private const float SKIDPAD_RADIUS = 50f;
-    private float skidpadLapAngle = 0f;
     private float flatlineTimer = 0f;
     
 
@@ -70,18 +68,20 @@ public class DynamicTestDirector : MonoBehaviour
                 if (currentSpeedKmh >= 100f && timeTo100Kmh == 0f) timeTo100Kmh = phaseTimer;
                 
                 // Did we set a new top speed this frame?
-                if (currentSpeedKmh > peakSpeedKmh) 
+                if ((currentSpeedKmh - peakSpeedKmh) > 0.1f) 
                 {
                     peakSpeedKmh = currentSpeedKmh;
-                    flatlineTimer = 0f; // Reset the timer because we are still accelerating!
+                    flatlineTimer = 0f;
+                    //Debug.Log((currentSpeedKmh - peakSpeedKmh)); // Reset the timer because we are still accelerating!
                 }
                 else if (peakSpeedKmh > 100f) 
                 {
 
                     flatlineTimer += dt;
+                    Debug.Log(flatlineTimer);
 
                     // If 3 seconds pass without setting a new top speed record, we're done.
-                    if (flatlineTimer > 3.0f) 
+                    if (flatlineTimer > 2.0f) 
                     {
                         Debug.Log($"<color=cyan><b>[Director]</b> V-Max Confirmed: {peakSpeedKmh:F1} km/h. Initiating Panic Stop.</color>");
                         TransitionToPhase(TestPhase.Brake);
@@ -145,7 +145,6 @@ public class DynamicTestDirector : MonoBehaviour
         {
             // Position the skidpad center exactly 50m to the left of the car's entry point
             skidpadCenter = sim.rb.position + (-sim.transform.right * SKIDPAD_RADIUS);
-            skidpadLapAngle = 0f;
         }
     }
 

@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f0540dfc6bee7e42b20fd844efd6934, type: 3}
   m_Name: FreakARBData
   m_EditorClassIdentifier: Assembly-CSharp::AntiRollBarData
-  frontAntiRoll: 10000
-  rearAntiRoll: 9500
+  frontAntiRoll: 9000
+  rearAntiRoll: 15000

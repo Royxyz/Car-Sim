@@ -8,10 +8,10 @@ public class Drivetrain
     [SerializeField] public Differential rearDiff;
     [SerializeField] public Differential centerDiff;
 
+    private float[] wheelTorques = new float[4];
+
     public float[] RouteTorque(float transOutputTorque, float flSpeed, float frSpeed, float rlSpeed, float rrSpeed)
     {
-        float[] wheelTorques = new float[4]; 
-
         switch (drivetrainData.driveType)
         {
             case DriveType.FWD:
@@ -74,6 +74,7 @@ public class Drivetrain
         float rearLoad = rearDiff.GetReflectedLoad(loadRL, loadRR);
         return centerDiff.GetReflectedLoad(frontLoad, rearLoad);
     }   
+
     public float CalculateInputSpeed(float flSpeed, float frSpeed, float rlSpeed, float rrSpeed)
     {
         switch (drivetrainData.driveType)
@@ -93,5 +94,4 @@ public class Drivetrain
                 return 0f;
         }
     }
-
 }

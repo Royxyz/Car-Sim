@@ -34,9 +34,7 @@ public class Suspension
             return 0f;
         }
 
-        
         float deviation = suspData.targetRideHeight - currentLength;
-
         float springForce = staticPreloadForce + (deviation * suspData.springStiffness);
         springForce = Mathf.Max(0f, springForce); 
 
@@ -47,15 +45,15 @@ public class Suspension
             springForce += bumpStopCompression * suspData.bumpStopStiffness; 
         }
 
-        float dampingForce = compressionVelocity > 0f 
-            ? compressionVelocity * suspData.bumpDamping 
-            : compressionVelocity * suspData.reboundDamping;
-            
+        float blendFactor = Mathf.InverseLerp(-suspData.blendWindow, suspData.blendWindow, compressionVelocity);
+        float activeDamping = Mathf.Lerp(suspData.reboundDamping, suspData.bumpDamping, blendFactor);
+        float dampingForce = compressionVelocity * activeDamping;
 
+    
         if (compressionVelocity <= 0f) dampingForce = Mathf.Max(dampingForce, -springForce * 0.8f);
 
         float totalForce = springForce + dampingForce;
-     
+    
         currentNormalLoad = Mathf.Clamp(totalForce, 0f, suspData.absoluteMaxForce); 
         this.currentLength = Mathf.Clamp(currentLength, maxBumpLength, maxDroopLength);
         

@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
+[CreateAssetMenu(fileName = "NewTireData", menuName = "Vehicle Physics/Tire Data")]
 public class TireData : ScriptableObject
 {
     [Header("Physical Properties")]

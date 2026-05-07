@@ -49,6 +49,7 @@ Powertrain,Auto Controller,downshiftRPM,3200
 Powertrain,Auto Controller,shiftDuration,0.15
 Drivetrain,Layout,driveType,AWD
 Drivetrain,Front Differential,diffType,LimitedSlip
+Drivetrain,Front Differential,slipTolerance,2
 Drivetrain,Front Differential,gearRatio,3.73
 Drivetrain,Front Differential,inertia,0.05
 Drivetrain,Front Differential,powerBias,0.5
@@ -57,6 +58,7 @@ Drivetrain,Front Differential,lockingFriction,30
 Drivetrain,Front Differential,lockingStiffness,1800
 Drivetrain,Front Differential,coastLockingMultiplier,0.05
 Drivetrain,Center Differential,diffType,LimitedSlip
+Drivetrain,Center Differential,slipTolerance,2
 Drivetrain,Center Differential,gearRatio,1
 Drivetrain,Center Differential,inertia,0.05
 Drivetrain,Center Differential,powerBias,0.2
@@ -65,6 +67,7 @@ Drivetrain,Center Differential,lockingFriction,35
 Drivetrain,Center Differential,lockingStiffness,5000
 Drivetrain,Center Differential,coastLockingMultiplier,0.05
 Drivetrain,Rear Differential,diffType,LimitedSlip
+Drivetrain,Rear Differential,slipTolerance,2
 Drivetrain,Rear Differential,gearRatio,3.73
 Drivetrain,Rear Differential,inertia,0.05
 Drivetrain,Rear Differential,powerBias,0.5
@@ -100,6 +103,7 @@ Front Axle,Suspension,droopTravel,0.1
 Front Axle,Suspension,springStiffness,65000
 Front Axle,Suspension,bumpDamping,6000
 Front Axle,Suspension,reboundDamping,8500
+Front Axle,Suspension,blendWindow,0.05
 Front Axle,Suspension,bumpStopGap,0.03
 Front Axle,Suspension,bumpStopStiffness,250000
 Front Axle,Suspension,absoluteMaxForce,300000
@@ -133,6 +137,7 @@ Rear Axle,Suspension,droopTravel,0.1
 Rear Axle,Suspension,springStiffness,85000
 Rear Axle,Suspension,bumpDamping,6000
 Rear Axle,Suspension,reboundDamping,8500
+Rear Axle,Suspension,blendWindow,0.05
 Rear Axle,Suspension,bumpStopGap,0.02
 Rear Axle,Suspension,bumpStopStiffness,250000
 Rear Axle,Suspension,absoluteMaxForce,300000
