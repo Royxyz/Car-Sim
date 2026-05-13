@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Reflection;
 using System.Text;
 using System.IO;
+using System.Text.RegularExpressions;
 
 [RequireComponent(typeof(SimulationController))]
 public class CarSpecSheetGenerator : MonoBehaviour
@@ -9,38 +10,51 @@ public class CarSpecSheetGenerator : MonoBehaviour
     [Header("Settings")]
     public string fileName = "CarSpecSheet.csv";
 
-    // Right-click the component in the Inspector to run this
     [ContextMenu("Generate Spec Sheet CSV")]
     public void GenerateCSV()
     {
         SimulationController car = GetComponent<SimulationController>();
         StringBuilder csv = new StringBuilder();
 
-        // 1. Setup CSV Headers
+        // Setup CSV Headers
         csv.AppendLine("Category,Component,Parameter,Value");
 
-        // 2. Extract Data using Reflection
+        // 1. Chassis & Aero
         ExtractScriptableObject(car.chassisData, "Chassis", "Base Dynamics", csv);
         ExtractScriptableObject(car.steeringData, "Chassis", "Steering", csv);
         ExtractScriptableObject(car.antiRollBar.antiRollBarData, "Chassis", "Anti-Roll Bars", csv);
-
         ExtractScriptableObject(car.aerodynamics.aeroData, "Aerodynamics", "Aero Settings", csv);
 
+        // 2. Powertrain
         ExtractScriptableObject(car.powerTrain.engine._engineData, "Powertrain", "Engine", csv);
-        if (car.powerTrain.engine._engineData != null)
+        
+        // Custom Induction Extraction: Only write parameters relevant to the selected induction type
+        if (car.powerTrain.engine._engineData != null && car.powerTrain.engine._engineData.induction != null)
         {
-            ExtractScriptableObject(car.powerTrain.engine._engineData.induction, "Powertrain", "Forced Induction", csv);
+            ExtractInductionData(car.powerTrain.engine._engineData.induction, "Powertrain", "Forced Induction", csv);
         }
 
         ExtractScriptableObject(car.powerTrain.clutch.clutchData, "Powertrain", "Clutch", csv);
         ExtractScriptableObject(car.powerTrain.transmission.transmissionData, "Powertrain", "Transmission", csv);
         ExtractScriptableObject(car.autoController.logicData, "Powertrain", "Auto Controller", csv);
 
-        ExtractScriptableObject(car.drivetrain.drivetrainData, "Drivetrain", "Layout", csv);
-        ExtractScriptableObject(car.drivetrain.frontDiff.diffData, "Drivetrain", "Front Differential", csv);
-        ExtractScriptableObject(car.drivetrain.centerDiff.diffData, "Drivetrain", "Center Differential", csv);
-        ExtractScriptableObject(car.drivetrain.rearDiff.diffData, "Drivetrain", "Rear Differential", csv);
+        // 3. Drivetrain Layout Validation: Only fetch diffs that actually receive torque
+        if (car.drivetrain.drivetrainData != null)
+        {
+            ExtractScriptableObject(car.drivetrain.drivetrainData, "Drivetrain", "Layout", csv);
+            DriveType driveType = car.drivetrain.drivetrainData.driveType;
 
+            if (driveType == DriveType.FWD || driveType == DriveType.AWD)
+                ExtractScriptableObject(car.drivetrain.frontDiff.diffData, "Drivetrain", "Front Differential", csv);
+
+            if (driveType == DriveType.AWD)
+                ExtractScriptableObject(car.drivetrain.centerDiff.diffData, "Drivetrain", "Center Differential", csv);
+
+            if (driveType == DriveType.RWD || driveType == DriveType.AWD)
+                ExtractScriptableObject(car.drivetrain.rearDiff.diffData, "Drivetrain", "Rear Differential", csv);
+        }
+
+        // 4. Corners
         if (car.corners != null && car.corners.Length >= 4)
         {
             if (car.corners[0] != null)
@@ -60,17 +74,38 @@ public class CarSpecSheetGenerator : MonoBehaviour
             }
         }
 
-        // 3. Save to Disk
+        // Save to Disk
         string path = Path.Combine(Application.dataPath, fileName);
         File.WriteAllText(path, csv.ToString());
         Debug.Log($"<color=cyan><b>[Spec Sheet]</b> Generated successfully at: {path}</color>");
+    }
+
+    private void ExtractInductionData(InductionData induction, string category, string componentName, StringBuilder csv)
+    {
+        AddRow(csv, category, componentName, "Induction Type", induction.type.ToString());
+
+        if (induction.type != InductionType.NaturallyAspirated)
+        {
+            AddRow(csv, category, componentName, "Max Pressure Bar", induction.maxPressureBar.ToString("F2"));
+        }
+
+        if (induction.type == InductionType.Supercharged)
+        {
+            AddRow(csv, category, componentName, "Supercharger Parasitic Drag", induction.superchargerParasiticDrag.ToString("F1"));
+        }
+        else if (induction.type == InductionType.Turbocharged)
+        {
+            AddRow(csv, category, componentName, "Boost Threshold RPM", induction.boostThresholdRPM.ToString("F0"));
+            AddRow(csv, category, componentName, "Optimal Boost RPM", induction.optimalBoostRPM.ToString("F0"));
+            AddRow(csv, category, componentName, "Turbo Spool Rate", induction.turboSpoolRate.ToString("F2"));
+            AddRow(csv, category, componentName, "Blow Off Rate", induction.blowOffRate.ToString("F2"));
+        }
     }
 
     private void ExtractScriptableObject(ScriptableObject so, string category, string componentName, StringBuilder csv)
     {
         if (so == null) return;
 
-        // Grab all public fields from the ScriptableObject using Reflection
         FieldInfo[] fields = so.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
 
         foreach (var field in fields)
@@ -78,7 +113,6 @@ public class CarSpecSheetGenerator : MonoBehaviour
             object val = field.GetValue(so);
             string valStr = val != null ? val.ToString() : "null";
 
-            // Special formatting to prevent Arrays (like your gear ratios) from breaking the CSV
             if (val is float[] floatArray)
             {
                 valStr = string.Join(" : ", floatArray);
@@ -100,10 +134,19 @@ public class CarSpecSheetGenerator : MonoBehaviour
                 valStr = $"CSV File: {textAsset.name}";
             }
 
-            // Strip out any commas that might exist in the string values to prevent column shifting
             valStr = valStr.Replace(",", ".");
+            
+            // Regex to format camelCase into readable Title Case
+            string humanizedName = Regex.Replace(field.Name, "(\\B[A-Z])", " $1");
+            humanizedName = char.ToUpper(humanizedName[0]) + humanizedName.Substring(1);
 
-            csv.AppendLine($"{category},{componentName},{field.Name},{valStr}");
+            AddRow(csv, category, componentName, humanizedName, valStr);
         }
+    }
+
+    // Helper method to keep line building clean
+    private void AddRow(StringBuilder csv, string category, string component, string parameter, string value)
+    {
+        csv.AppendLine($"{category},{component},{parameter},{value}");
     }
 }

@@ -77,7 +77,9 @@ public class ChassisManager
         float compressionVel = (corner.suspension.currentLength - expectedLength) / dt;
 
         float suspForceMag = corner.suspension.CalculateForce(corner.contact.isGrounded, corner.contact.hitDistance, compressionVel);
-        Vector3 suspensionForceWorld = mountUp * suspForceMag;
+        Vector3 suspensionForceWorld = corner.contact.isGrounded ? 
+        (corner.contact.contactNormal * suspForceMag) : 
+        (mountUp * suspForceMag);
         Vector3 gripForceWorld = Vector3.zero;
 
         float biasMultiplier = (index < 2) ? (brakeBias * 2f) : ((1f - brakeBias) * 2f);

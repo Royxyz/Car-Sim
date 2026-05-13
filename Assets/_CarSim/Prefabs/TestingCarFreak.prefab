@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2881797779771963167}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Wheels
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -44,7 +44,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7873057826041935838}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: WheelRL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -75,7 +75,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2030383724435556822}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: CameraFollow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -112,8 +112,7 @@ GameObject:
   - component: {fileID: 1133893251777695426}
   - component: {fileID: 7877763132802103185}
   - component: {fileID: 5893033734027575318}
-  - component: {fileID: 6597315437230187896}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: TestingCarFreak
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -159,6 +158,8 @@ MonoBehaviour:
     corners:
     - suspensionMountPoint: {fileID: 3197763149410410488}
       visualMesh: {fileID: 6363747349379342645}
+      wheelSpinMesh: {fileID: 0}
+      meshRotationOffset: {x: 0, y: 0, z: 0}
       isSteerable: 1
       ackermannSteeringAngle: 0
       suspension:
@@ -174,6 +175,8 @@ MonoBehaviour:
         castRadius: 0.12
     - suspensionMountPoint: {fileID: 3158217996682816213}
       visualMesh: {fileID: 7049148680117552901}
+      wheelSpinMesh: {fileID: 0}
+      meshRotationOffset: {x: 0, y: 0, z: 0}
       isSteerable: 1
       ackermannSteeringAngle: 0
       suspension:
@@ -189,6 +192,8 @@ MonoBehaviour:
         castRadius: 0.12
     - suspensionMountPoint: {fileID: 7873057826041935838}
       visualMesh: {fileID: 1404682118514806297}
+      wheelSpinMesh: {fileID: 0}
+      meshRotationOffset: {x: 0, y: 0, z: 0}
       isSteerable: 0
       ackermannSteeringAngle: 0
       suspension:
@@ -204,6 +209,8 @@ MonoBehaviour:
         castRadius: 0.12
     - suspensionMountPoint: {fileID: 3902794036923935523}
       visualMesh: {fileID: 7827062454524928314}
+      wheelSpinMesh: {fileID: 0}
+      meshRotationOffset: {x: 0, y: 0, z: 0}
       isSteerable: 0
       ackermannSteeringAngle: 0
       suspension:
@@ -441,19 +448,6 @@ TrailRenderer:
   m_Autodestruct: 1
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
---- !u!114 &6597315437230187896
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4593940780620531981}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e2547d760af449439fb571fe824a2b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CarSpecSheetGenerator
-  fileName: FreakSpecSheet.csv
 --- !u!1 &5326109108830898298
 GameObject:
   m_ObjectHideFlags: 0
@@ -463,7 +457,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3197763149410410488}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: WheelFL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -494,7 +488,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3158217996682816213}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: WheelFR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -525,7 +519,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3902794036923935523}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: WheelRR
   m_TagString: Untagged
   m_Icon: {fileID: 0}

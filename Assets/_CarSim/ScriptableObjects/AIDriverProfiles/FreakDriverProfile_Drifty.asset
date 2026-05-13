@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07f2dc195db039a418a66ff79eeb7dd6, type: 3}
   m_Name: FreakDriverProfile_Drifty
   m_EditorClassIdentifier: Assembly-CSharp::AIDriverProfileData
-  targetGripUtilization: 1.4
+  targetGripUtilization: 1.25
   baseLookaheadDistance: 10
   lookaheadSpeedScaling: 0.3
   yawToleranceAngle: 45

@@ -19,6 +19,6 @@ MonoBehaviour:
   - 1
   - 0.838
   reverseGear: 3.382
-  finalDrive: 4.363
-  efficiency: 0.85
-  transmissionInertia: 0.12
+  finalDrive: 4.083
+  efficiency: 0.88
+  transmissionInertia: 0.15

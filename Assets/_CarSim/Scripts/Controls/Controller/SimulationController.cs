@@ -29,6 +29,11 @@ public class SimulationController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        
+        // FIX: Disable Unity's native gravity to prevent the "Double Gravity" glitch!
+        // VirtualDynamics handles gravity internally during sub-stepping.
+        rb.useGravity = false; 
+
         cachedRoot = transform.root;
         vehicleInput = GetComponent<IVehicleInput>();
 
@@ -75,11 +80,16 @@ public class SimulationController : MonoBehaviour
         if (!isAutomatic) powertrain.powerTrain.clutch.engagement = Mathf.Clamp01(1f - vehicleInput.Clutch);
 
         vDynamics.SyncFromRigidbody(rb);
+        Vector3 aeroForcesLocal = aerodynamics.CalculateAerodynamicForces(rb.linearVelocity, transform);
+        Vector3 aeroForcesWorld = transform.TransformDirection(aeroForcesLocal);
+        Vector3 centerOfPressureWorld = transform.TransformPoint(aerodynamics.aeroData.centerOfPressureOffset);
 
         for (int step = 0; step < subSteps; step++)
         {
             vDynamics.ResetStepAccumulators();
             float stepFraction = (step + 1f) / subSteps;
+
+            vDynamics.AddForceAtPosition(aeroForcesWorld, centerOfPressureWorld);
 
             float[] driveTorques = powertrain.ProcessTorqueRouting(chassis.corners, activeThrottle, activeBrake, isAutomatic, subDt);
             
@@ -90,11 +100,8 @@ public class SimulationController : MonoBehaviour
         }
 
         vDynamics.SyncToRigidbody(rb);
-
         chassis.UpdateSteeringInterpolation(targetSteer);
         
-
-        ApplyAerodynamics();
     }
 
     private void Update()
@@ -109,13 +116,5 @@ public class SimulationController : MonoBehaviour
     {
         if (vehicleInput.ShiftUp) powertrain.powerTrain.transmission.ShiftUp();
         if (vehicleInput.ShiftDown) powertrain.powerTrain.transmission.ShiftDown();
-    }
-
-    private void ApplyAerodynamics()
-    {
-        Vector3 aeroForcesLocal = aerodynamics.CalculateAerodynamicForces(rb.linearVelocity, transform);
-        Vector3 aeroForcesWorld = transform.TransformDirection(aeroForcesLocal);
-        Vector3 centerOfPressureWorld = transform.TransformPoint(aerodynamics.aeroData.centerOfPressureOffset);
-        rb.AddForceAtPosition(aeroForcesWorld, centerOfPressureWorld);
     }
 }

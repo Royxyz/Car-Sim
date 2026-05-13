@@ -445,6 +445,7 @@ GameObject:
   - component: {fileID: 6792011755207439505}
   - component: {fileID: 3765813821921315995}
   - component: {fileID: 5150192323938341603}
+  - component: {fileID: 8406958439742008008}
   - component: {fileID: 2014306854992822808}
   m_Layer: 0
   m_Name: PlayerCarfreak
@@ -485,11 +486,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InputManager
   applyToKeyboardOnly: 1
   enableSteeringAssist: 1
-  enableTractionControl: 1
+  enableTractionControl: 0
   enableThrottleSmoothing: 1
   enableBrakeSmoothing: 1
-  steerTurnSpeed: 3
-  steerReturnSpeed: 5
+  steerTurnSpeed: 1.5
+  steerReturnSpeed: 2
   speedSteerLimit:
     serializedVersion: 2
     m_Curve:
@@ -539,6 +540,8 @@ MonoBehaviour:
     corners:
     - suspensionMountPoint: {fileID: 8601038594073501477}
       visualMesh: {fileID: 5546920366938746584}
+      wheelSpinMesh: {fileID: 0}
+      meshRotationOffset: {x: 0, y: 0, z: 0}
       isSteerable: 1
       ackermannSteeringAngle: 0
       suspension:
@@ -554,6 +557,8 @@ MonoBehaviour:
         castRadius: 0.12
     - suspensionMountPoint: {fileID: 3085046770139381753}
       visualMesh: {fileID: 4186085289854664423}
+      wheelSpinMesh: {fileID: 0}
+      meshRotationOffset: {x: 0, y: 0, z: 0}
       isSteerable: 1
       ackermannSteeringAngle: 0
       suspension:
@@ -569,6 +574,8 @@ MonoBehaviour:
         castRadius: 0.12
     - suspensionMountPoint: {fileID: 5686765570159508859}
       visualMesh: {fileID: 2417900782220448862}
+      wheelSpinMesh: {fileID: 0}
+      meshRotationOffset: {x: 0, y: 0, z: 0}
       isSteerable: 0
       ackermannSteeringAngle: 0
       suspension:
@@ -584,6 +591,8 @@ MonoBehaviour:
         castRadius: 0.12
     - suspensionMountPoint: {fileID: 4694435239788870144}
       visualMesh: {fileID: 9222830600859753546}
+      wheelSpinMesh: {fileID: 0}
+      meshRotationOffset: {x: 0, y: 0, z: 0}
       isSteerable: 0
       ackermannSteeringAngle: 0
       suspension:
@@ -600,7 +609,7 @@ MonoBehaviour:
     brakeBias: 0.65
     trackMask:
       serializedVersion: 2
-      m_Bits: 55
+      m_Bits: 119
   powertrain:
     powerTrain:
       engine:
@@ -646,6 +655,22 @@ MonoBehaviour:
   guiScale: 1
   showWheelData: 1
   gForceSmoothTime: 0.15
+--- !u!114 &8406958439742008008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4323978353638480029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fafd7672b042ab04b885153d89294890, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerTelemetryLogger
+  saveDirectory: _CarSim/Databases/Telemetry/PlayerTelemetry
+  maxRecordingTime: 120
+  sampleRateHz: 10
+  toggleRecordAction: {fileID: -1641061915177577699, guid: 0536f9455dc0f514ca0d84ae39a67d8d, type: 3}
 --- !u!54 &2014306854992822808
 Rigidbody:
   m_ObjectHideFlags: 0

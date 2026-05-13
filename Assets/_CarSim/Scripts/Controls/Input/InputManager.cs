@@ -108,13 +108,14 @@ public class InputManager : MonoBehaviour, IVehicleInput
             filteredBrake = rawBrake;
         }
 
+        // 1. Apply smoothing only if assists are allowed
         float targetThrottle = rawThrottle;
-
         if (applyAssists && enableThrottleSmoothing)
         {
             targetThrottle = Mathf.MoveTowards(filteredThrottle, rawThrottle, throttleSmoothSpeed * dt);
         }
 
+        // 2. ALWAYS apply TCS to the target throttle if TCS is enabled
         if (enableTractionControl && targetThrottle > 0.01f)
         {
             float maxDrivenSlip = GetMaxDrivenLongitudinalSlip();
@@ -125,6 +126,7 @@ public class InputManager : MonoBehaviour, IVehicleInput
                 float slipExcess = maxDrivenSlip - tcsSlipThreshold;
                 float throttleCut = slipExcess * tcsAggressiveness;
 
+                // Cut the throttle
                 targetThrottle = Mathf.Clamp01(targetThrottle - throttleCut);
             }
             else
@@ -137,7 +139,8 @@ public class InputManager : MonoBehaviour, IVehicleInput
             isTcsActive = false;
         }
 
-        filteredThrottle = applyAssists ? targetThrottle : rawThrottle;
+        // 3. Directly assign the fully processed targetThrottle!
+        filteredThrottle = targetThrottle;
     }
     private float GetMaxDrivenLongitudinalSlip()
 {

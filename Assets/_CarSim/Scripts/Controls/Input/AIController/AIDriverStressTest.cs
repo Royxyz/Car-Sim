@@ -127,7 +127,7 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
             
             Brake = Mathf.Clamp01(baseBrake + modulation);
         }
-        else if (phase == TestPhase.Slalom || phase == TestPhase.Skidpad)
+        else if (phase == TestPhase.Slalom || phase == TestPhase.Skidpad || phase == TestPhase.TrackRun)
         {
             float maxAvailableG = 1.1f * profile.targetGripUtilization;
             float currentLatG = Mathf.Abs(sim.rb.angularVelocity.y * speed) / 9.81f; 

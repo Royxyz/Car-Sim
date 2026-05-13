@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: FreakDriverProfile_Grippy
   m_EditorClassIdentifier: Assembly-CSharp::AIDriverProfileData
   targetGripUtilization: 1
-  baseLookaheadDistance: 22
-  lookaheadSpeedScaling: 0.6
-  yawToleranceAngle: 2.5
+  baseLookaheadDistance: 30
+  lookaheadSpeedScaling: 1
+  yawToleranceAngle: 20
   counterSteerKp: 0.08
   counterSteerKd: 0.03
   headingHoldKp: 0.02

@@ -1,6 +1,10 @@
 using UnityEngine;
+using System.Reflection;
+using System.Text;
+using System.IO;
+using System.Text.RegularExpressions;
 
-public enum TestPhase { Idle, Launch, Brake, Slalom, Skidpad, Finished }
+public enum TestPhase { Idle, Launch, Brake, Slalom, Skidpad, TrackRun, Finished }
 
 public class DynamicTestDirector : MonoBehaviour
 {
@@ -9,6 +13,30 @@ public class DynamicTestDirector : MonoBehaviour
     
     [Header("Live Test State")]
     public TestPhase currentPhase = TestPhase.Idle;
+
+    [Header("Track Run Settings")]
+    public string trackCsvFileName = "TrackData.csv";
+    
+    [Header("Dynamic Racing Line")]
+    [Tooltip("How aggressively the car hugs the inside of a corner (Apex).")]
+    public float apexAggression = 1.2f;
+    [Tooltip("How much the car swings to the OUTSIDE before a corner to open up the entry.")]
+    public float entrySwingAggression = 1.0f;
+    [Tooltip("How fast the AI transitions across the width of the track.")]
+    public float lineSmoothingSpeed = 1.5f;
+    [Tooltip("Absolute minimum distance the target point can be from the physical track edge.")]
+    public float wallSafetyMargin = 2.5f; 
+    
+    private float smoothedApexBias = 0.5f;
+    
+    // GC-Friendly Struct implementation
+    private struct TrackWaypoint 
+    {
+        public Vector3 position;
+        public Vector3 forward;
+        public Vector3 leftEdge;
+        public Vector3 rightEdge;
+    }
     
     [Header("Benchmark Metrics")]
     public float peakSpeedKmh;
@@ -31,6 +59,10 @@ public class DynamicTestDirector : MonoBehaviour
     private Vector3 skidpadCenter;
     private const float SKIDPAD_RADIUS = 50f;
     private float flatlineTimer = 0f;
+
+    private TrackWaypoint[] trackWaypoints;
+    private int currentWaypointIndex = 0;
+    private int totalWaypoints = 0;
     
 
     public void StartBenchmark()
@@ -45,6 +77,10 @@ public class DynamicTestDirector : MonoBehaviour
         phaseTimer = 0f;
         
         Debug.Log("<color=green><b>[Director]</b> Test Commenced: Phase 1 (Launch & V-Max)</color>");
+    }
+    private void Awake()
+    {
+        LoadTrackCSV();
     }
 
     private void FixedUpdate()
@@ -165,20 +201,20 @@ public class DynamicTestDirector : MonoBehaviour
     /// </summary>
     public Vector3 GetDynamicTargetPoint(float lookaheadDistance)
     {
-        Vector3 forward = Quaternion.Euler(0, launchHeading, 0) * Vector3.forward;
+        Vector3 forwardUniversal = Quaternion.Euler(0, launchHeading, 0) * Vector3.forward;
 
         switch (currentPhase)
         {
             case TestPhase.Launch:
             case TestPhase.Brake:
                 // Project a point infinitely far away on the launch heading
-                return sim.rb.position + (forward * 1000f);
+                return sim.rb.position + (forwardUniversal * 1000f);
 
             case TestPhase.Slalom:
                 // Mathematically generate a Sine Wave path
                 float zDistance = Vector3.Distance(phaseStartPosition, sim.rb.position) + lookaheadDistance;
                 float xOffset = Mathf.Sin(zDistance * slalomFrequency) * slalomAmplitude;
-                Vector3 basePoint = phaseStartPosition + (forward * zDistance);
+                Vector3 basePoint = phaseStartPosition + (forwardUniversal * zDistance);
                 Vector3 rightDir = Quaternion.Euler(0, launchHeading, 0) * Vector3.right;
                 return basePoint + (rightDir * xOffset);
 
@@ -197,9 +233,163 @@ public class DynamicTestDirector : MonoBehaviour
                 float targetZ = skidpadCenter.z + (Mathf.Sin(targetAngle) * SKIDPAD_RADIUS);
                 
                 return new Vector3(targetX, sim.rb.position.y, targetZ);
+            
+            case TestPhase.TrackRun:
+                if (totalWaypoints == 0) return sim.rb.position + (sim.transform.forward * lookaheadDistance);
 
+                // 1. Fast closest waypoint search
+                float closestDistSq = float.MaxValue;
+                int closestIdx = currentWaypointIndex;
+                int searchWindow = Mathf.Min(30, totalWaypoints);
+                for (int i = 0; i < searchWindow; i++)
+                {
+                    int checkIdx = (currentWaypointIndex + i) % totalWaypoints;
+                    float distSq = (trackWaypoints[checkIdx].position - sim.rb.position).sqrMagnitude;
+                    if (distSq < closestDistSq)
+                    {
+                        closestDistSq = distSq;
+                        closestIdx = checkIdx;
+                    }
+                }
+                currentWaypointIndex = closestIdx;
+
+                // 2. Walk forward to find the lookahead target (Continuous Interpolation)
+                float accumulatedDist = 0f;
+                int targetIdx = currentWaypointIndex;
+                int prevIdx = currentWaypointIndex;
+                float segmentDist = 0f;
+
+                for (int i = 0; i < 50; i++) 
+                {
+                    int nextIdx = (targetIdx + 1) % totalWaypoints;
+                    segmentDist = Vector3.Distance(trackWaypoints[targetIdx].position, trackWaypoints[nextIdx].position);
+                    
+                    if (accumulatedDist + segmentDist >= lookaheadDistance)
+                    {
+                        prevIdx = targetIdx;
+                        targetIdx = nextIdx;
+                        break;
+                    }
+                    
+                    accumulatedDist += segmentDist;
+                    targetIdx = nextIdx;
+                }
+
+                float remainingDist = lookaheadDistance - accumulatedDist;
+                float t = segmentDist > 0f ? Mathf.Clamp01(remainingDist / segmentDist) : 0f;
+
+                Vector3 center = Vector3.Lerp(trackWaypoints[prevIdx].position, trackWaypoints[targetIdx].position, t);
+                Vector3 left = Vector3.Lerp(trackWaypoints[prevIdx].leftEdge, trackWaypoints[targetIdx].leftEdge, t);
+                Vector3 right = Vector3.Lerp(trackWaypoints[prevIdx].rightEdge, trackWaypoints[targetIdx].rightEdge, t);
+                Vector3 forward = Vector3.Lerp(trackWaypoints[prevIdx].forward, trackWaypoints[targetIdx].forward, t).normalized;
+
+                // --- 3. DYNAMIC RACING LINE (ENTRY SWING & APEX HUGGING) ---
+                
+                // Curvature ahead of the target (Are we approaching a corner?)
+                int futureIdx = (targetIdx + 15) % totalWaypoints; 
+                Vector3 toFuture = (trackWaypoints[futureIdx].position - center).normalized;
+                Vector3 rightDirTrack = Vector3.Cross(Vector3.up, forward).normalized;
+                float targetCurve = Vector3.Dot(toFuture, rightDirTrack); // Positive = Right Turn
+                
+                // Curvature at the car's current position (Are we currently IN a corner?)
+                int carFutureIdx = (closestIdx + 15) % totalWaypoints;
+                Vector3 carToFuture = (trackWaypoints[carFutureIdx].position - trackWaypoints[closestIdx].position).normalized;
+                Vector3 carRightDir = Vector3.Cross(Vector3.up, trackWaypoints[closestIdx].forward).normalized;
+                float carCurve = Vector3.Dot(carToFuture, carRightDir);
+
+                float targetApexBias = 0.5f;
+
+                // Logic: If the curve coming up is sharper than the curve we are currently on -> Corner Entry.
+                if (Mathf.Abs(targetCurve) > Mathf.Abs(carCurve) + 0.02f)
+                {
+                    // Swing OUTSIDE. (If turning right (+), subtract from 0.5 to move left).
+                    targetApexBias = 0.5f - (targetCurve * entrySwingAggression);
+                }
+                else
+                {
+                    // We are IN the corner (or on a straight). Hug the INSIDE.
+                    targetApexBias = 0.5f + (carCurve * apexAggression);
+                }
+
+                targetApexBias = Mathf.Clamp01(targetApexBias);
+                
+                if (Application.isPlaying)
+                    smoothedApexBias = Mathf.MoveTowards(smoothedApexBias, targetApexBias, Time.fixedDeltaTime * lineSmoothingSpeed);
+                else
+                    smoothedApexBias = targetApexBias;
+
+                // --- 4. HARD CEILING WALL MARGINS ---
+                float distLeft = Vector3.Distance(center, left);
+                float distRight = Vector3.Distance(center, right);
+
+                Vector3 safeLeft = Vector3.MoveTowards(left, center, Mathf.Min(wallSafetyMargin, distLeft));
+                Vector3 safeRight = Vector3.MoveTowards(right, center, Mathf.Min(wallSafetyMargin, distRight));
+
+                return Vector3.Lerp(safeLeft, safeRight, smoothedApexBias);
             default:
                 return sim.rb.position + (sim.transform.forward * 10f);
         }
+    }
+    private void LoadTrackCSV()
+    {
+        string path = Path.Combine(Application.dataPath, trackCsvFileName);
+        if (!File.Exists(path))
+        {
+            Debug.LogWarning($"[Director] No track CSV found at {path}. TrackRun phase will not work.");
+            return;
+        }
+
+        // We only do this string parsing once on init, so GC spikes here are acceptable.
+        string[] lines = File.ReadAllLines(path);
+        if (lines.Length <= 1) return;
+
+        totalWaypoints = lines.Length - 1;
+        trackWaypoints = new TrackWaypoint[totalWaypoints]; // Allocate exactly once
+
+        for (int i = 1; i < lines.Length; i++)
+        {
+            string[] cols = lines[i].Split(',');
+            if (cols.Length >= 12) // Ensure we are reading all 12 columns now
+            {
+                trackWaypoints[i - 1] = new TrackWaypoint
+                {
+                    position = new Vector3(float.Parse(cols[0]), float.Parse(cols[1]), float.Parse(cols[2])),
+                    forward = new Vector3(float.Parse(cols[3]), float.Parse(cols[4]), float.Parse(cols[5])),
+                    leftEdge = new Vector3(float.Parse(cols[6]), float.Parse(cols[7]), float.Parse(cols[8])),
+                    rightEdge = new Vector3(float.Parse(cols[9]), float.Parse(cols[10]), float.Parse(cols[11]))
+                };
+            }
+        }
+        Debug.Log($"<color=green>[Director] Loaded {totalWaypoints} waypoints into memory.</color>");
+    }
+    private void OnDrawGizmos()
+    {
+        if (!Application.isPlaying || trackWaypoints == null || totalWaypoints == 0) return;
+        if (currentPhase != TestPhase.TrackRun) return;
+
+        int waypointsToDraw = Mathf.Min(15, totalWaypoints);
+
+        for (int i = 0; i < waypointsToDraw; i++)
+        {
+            int drawIdx = (currentWaypointIndex + i) % totalWaypoints;
+            int nextDrawIdx = (drawIdx + 1) % totalWaypoints;
+
+            Vector3 wpPos = trackWaypoints[drawIdx].position;
+            Vector3 nextWpPos = trackWaypoints[nextDrawIdx].position;
+
+            // Draw track width limits in gray
+            Gizmos.color = new Color(0.5f, 0.5f, 0.5f, 0.3f);
+            Gizmos.DrawLine(trackWaypoints[drawIdx].leftEdge, trackWaypoints[drawIdx].rightEdge);
+
+            // Draw center line in cyan
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(wpPos, nextWpPos);
+        }
+
+        // Draw the calculated dynamic target point in green!
+        Gizmos.color = Color.green;
+        Vector3 dynamicTarget = GetDynamicTargetPoint(sim.GetComponent<AIDriverStressTest>().profile.baseLookaheadDistance);
+        Gizmos.DrawWireSphere(dynamicTarget, 1.5f);
+        Gizmos.DrawLine(sim.transform.position, dynamicTarget);
     }
 }

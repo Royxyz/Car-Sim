@@ -1,13 +1,13 @@
 Category,Component,Parameter,Value
 Chassis,Base Dynamics,totalMass,1680
-Chassis,Base Dynamics,centerOfMassOffset,0.00 | 0.40 | 0.20
+Chassis,Base Dynamics,centerOfMassOffset,0.00 | 0.35 | -0.05
 Chassis,Base Dynamics,inertiaTensorBoxSize,2.00 | 1.10 | 4.80
 Chassis,Base Dynamics,maxSafeTorqueMultiplier,120
 Chassis,Steering,maxSteerAngle,42
 Chassis,Steering,ackermannInnerMultiplier,1.12
 Chassis,Steering,ackermannOuterMultiplier,0.88
-Chassis,Anti-Roll Bars,frontAntiRoll,10000
-Chassis,Anti-Roll Bars,rearAntiRoll,9500
+Chassis,Anti-Roll Bars,frontAntiRoll,9000
+Chassis,Anti-Roll Bars,rearAntiRoll,15000
 Aerodynamics,Aero Settings,airDensity,1.225
 Aerodynamics,Aero Settings,frontalArea,2.35
 Aerodynamics,Aero Settings,sideArea,5.2
@@ -49,29 +49,32 @@ Powertrain,Auto Controller,downshiftRPM,3200
 Powertrain,Auto Controller,shiftDuration,0.15
 Drivetrain,Layout,driveType,AWD
 Drivetrain,Front Differential,diffType,LimitedSlip
+Drivetrain,Front Differential,slipTolerance,2
 Drivetrain,Front Differential,gearRatio,3.73
 Drivetrain,Front Differential,inertia,0.05
 Drivetrain,Front Differential,powerBias,0.5
 Drivetrain,Front Differential,preloadLSD,0.05
-Drivetrain,Front Differential,lockingFriction,80
+Drivetrain,Front Differential,lockingFriction,30
 Drivetrain,Front Differential,lockingStiffness,1800
-Drivetrain,Front Differential,coastLockingMultiplier,0.15
+Drivetrain,Front Differential,coastLockingMultiplier,0.05
 Drivetrain,Center Differential,diffType,LimitedSlip
+Drivetrain,Center Differential,slipTolerance,2
 Drivetrain,Center Differential,gearRatio,1
 Drivetrain,Center Differential,inertia,0.05
 Drivetrain,Center Differential,powerBias,0.2
-Drivetrain,Center Differential,preloadLSD,0.1
-Drivetrain,Center Differential,lockingFriction,150
+Drivetrain,Center Differential,preloadLSD,0.05
+Drivetrain,Center Differential,lockingFriction,35
 Drivetrain,Center Differential,lockingStiffness,5000
-Drivetrain,Center Differential,coastLockingMultiplier,0.2
+Drivetrain,Center Differential,coastLockingMultiplier,0.05
 Drivetrain,Rear Differential,diffType,LimitedSlip
+Drivetrain,Rear Differential,slipTolerance,2
 Drivetrain,Rear Differential,gearRatio,3.73
 Drivetrain,Rear Differential,inertia,0.05
 Drivetrain,Rear Differential,powerBias,0.5
-Drivetrain,Rear Differential,preloadLSD,0.5
+Drivetrain,Rear Differential,preloadLSD,0.2
 Drivetrain,Rear Differential,lockingFriction,600
 Drivetrain,Rear Differential,lockingStiffness,5000
-Drivetrain,Rear Differential,coastLockingMultiplier,0.8
+Drivetrain,Rear Differential,coastLockingMultiplier,0.25
 Front Axle,Wheel Config,mass,28
 Front Axle,Wheel Config,radius,0.38
 Front Axle,Wheel Config,inertia,2
@@ -97,14 +100,15 @@ Front Axle,Brakes,absReleaseMultiplier,0.3
 Front Axle,Suspension,targetRideHeight,0.45
 Front Axle,Suspension,bumpTravel,0.15
 Front Axle,Suspension,droopTravel,0.1
-Front Axle,Suspension,springStiffness,75000
+Front Axle,Suspension,springStiffness,65000
 Front Axle,Suspension,bumpDamping,6000
 Front Axle,Suspension,reboundDamping,8500
+Front Axle,Suspension,blendWindow,0.05
 Front Axle,Suspension,bumpStopGap,0.03
 Front Axle,Suspension,bumpStopStiffness,250000
 Front Axle,Suspension,absoluteMaxForce,300000
-Front Axle,Suspension,camberGainPerMeter,18
-Front Axle,Suspension,bumpSteerPerMeter,1.5
+Front Axle,Suspension,camberGainPerMeter,12
+Front Axle,Suspension,bumpSteerPerMeter,-1.5
 Rear Axle,Wheel Config,mass,28
 Rear Axle,Wheel Config,radius,0.38
 Rear Axle,Wheel Config,inertia,2
@@ -127,14 +131,15 @@ Rear Axle,Brakes,maxHandbrakeTorque,6000
 Rear Axle,Brakes,hasABS,True
 Rear Axle,Brakes,absSlipThreshold,0.12
 Rear Axle,Brakes,absReleaseMultiplier,0.3
-Rear Axle,Suspension,targetRideHeight,0.45
+Rear Axle,Suspension,targetRideHeight,0.46
 Rear Axle,Suspension,bumpTravel,0.15
 Rear Axle,Suspension,droopTravel,0.1
-Rear Axle,Suspension,springStiffness,75000
+Rear Axle,Suspension,springStiffness,85000
 Rear Axle,Suspension,bumpDamping,6000
 Rear Axle,Suspension,reboundDamping,8500
-Rear Axle,Suspension,bumpStopGap,0.03
+Rear Axle,Suspension,blendWindow,0.05
+Rear Axle,Suspension,bumpStopGap,0.02
 Rear Axle,Suspension,bumpStopStiffness,250000
 Rear Axle,Suspension,absoluteMaxForce,300000
-Rear Axle,Suspension,camberGainPerMeter,18
-Rear Axle,Suspension,bumpSteerPerMeter,1.5
+Rear Axle,Suspension,camberGainPerMeter,6
+Rear Axle,Suspension,bumpSteerPerMeter,0

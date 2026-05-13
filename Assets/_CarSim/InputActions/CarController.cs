@@ -154,6 +154,15 @@ public partial class @CarController: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Aux1"",
+                    ""type"": ""Button"",
+                    ""id"": ""e824cf99-3362-4498-9449-1d8b5c0ec91b"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -387,6 +396,28 @@ public partial class @CarController: IInputActionCollection2, IDisposable
                     ""action"": ""Handbrake"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f7735e4b-8de0-4879-b7f7-e08723481941"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Aux1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b14cd693-5b82-49be-9f13-d0ec3dcfda3b"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Aux1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -402,6 +433,7 @@ public partial class @CarController: IInputActionCollection2, IDisposable
         m_Driving_ShiftUp = m_Driving.FindAction("ShiftUp", throwIfNotFound: true);
         m_Driving_ShiftDown = m_Driving.FindAction("ShiftDown", throwIfNotFound: true);
         m_Driving_Handbrake = m_Driving.FindAction("Handbrake", throwIfNotFound: true);
+        m_Driving_Aux1 = m_Driving.FindAction("Aux1", throwIfNotFound: true);
     }
 
     ~@CarController()
@@ -489,6 +521,7 @@ public partial class @CarController: IInputActionCollection2, IDisposable
     private readonly InputAction m_Driving_ShiftUp;
     private readonly InputAction m_Driving_ShiftDown;
     private readonly InputAction m_Driving_Handbrake;
+    private readonly InputAction m_Driving_Aux1;
     /// <summary>
     /// Provides access to input actions defined in input action map "Driving".
     /// </summary>
@@ -528,6 +561,10 @@ public partial class @CarController: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Driving/Handbrake".
         /// </summary>
         public InputAction @Handbrake => m_Wrapper.m_Driving_Handbrake;
+        /// <summary>
+        /// Provides access to the underlying input action "Driving/Aux1".
+        /// </summary>
+        public InputAction @Aux1 => m_Wrapper.m_Driving_Aux1;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -575,6 +612,9 @@ public partial class @CarController: IInputActionCollection2, IDisposable
             @Handbrake.started += instance.OnHandbrake;
             @Handbrake.performed += instance.OnHandbrake;
             @Handbrake.canceled += instance.OnHandbrake;
+            @Aux1.started += instance.OnAux1;
+            @Aux1.performed += instance.OnAux1;
+            @Aux1.canceled += instance.OnAux1;
         }
 
         /// <summary>
@@ -607,6 +647,9 @@ public partial class @CarController: IInputActionCollection2, IDisposable
             @Handbrake.started -= instance.OnHandbrake;
             @Handbrake.performed -= instance.OnHandbrake;
             @Handbrake.canceled -= instance.OnHandbrake;
+            @Aux1.started -= instance.OnAux1;
+            @Aux1.performed -= instance.OnAux1;
+            @Aux1.canceled -= instance.OnAux1;
         }
 
         /// <summary>
@@ -696,5 +739,12 @@ public partial class @CarController: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnHandbrake(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Aux1" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnAux1(InputAction.CallbackContext context);
     }
 }

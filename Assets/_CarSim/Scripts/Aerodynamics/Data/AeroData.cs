@@ -33,40 +33,40 @@ public class AeroData : ScriptableObject
     public AnimationCurve sideforceVsSlipAngle = AnimationCurve.Linear(-90f, -1.2f, 90f, 1.2f);
 
     #if UNITY_EDITOR
-    [ContextMenu("Populate Aero Curves")]
+    [ContextMenu("Populate Aero Curves for 90s FR")]
     public void GenerateAeroCurves()
     {
-        // 1. Downforce / Lift Coefficient (Y) vs Pitch Angle (X)
-        // 90s Street car: Mostly neutral. Slight downforce under heavy braking (nose dive), slight lift under hard acceleration.
+        // 1. Lift Coefficient (Y) vs Pitch Angle (X)
+        // Note: In your system, negative cL creates LIFT (upward force). Positive creates DOWNFORCE.
+        // A stock S13 generates lift at speed. Nose dive (-5 AoA) shifts it closer to neutral.
         downforceVsAoA = new AnimationCurve();
-        downforceVsAoA.AddKey(new Keyframe(-15f, 0.25f)); 
-        downforceVsAoA.AddKey(new Keyframe(-5f, 0.15f));  
-        downforceVsAoA.AddKey(new Keyframe(0f, 0.05f));   
-        downforceVsAoA.AddKey(new Keyframe(5f, -0.05f));  
-        downforceVsAoA.AddKey(new Keyframe(15f, -0.15f)); 
-        downforceVsAoA.AddKey(new Keyframe(30f, -0.20f)); 
+        downforceVsAoA.AddKey(new Keyframe(-15f, 0.10f));  // Hard braking: slight downforce
+        downforceVsAoA.AddKey(new Keyframe(-5f, 0.02f));   // Normal braking: mostly neutral
+        downforceVsAoA.AddKey(new Keyframe(0f, -0.05f));   // Level cruising: generating LIFT
+        downforceVsAoA.AddKey(new Keyframe(5f, -0.12f));   // Hard acceleration (squat): generating heavy LIFT
+        downforceVsAoA.AddKey(new Keyframe(15f, -0.20f));  // Massive squat/airborne
 
         // 2. Drag Coefficient (Y) vs Pitch Angle (X)
-        
+        // 90s boxy coupes are not slippery. High base drag.
         dragVsAoA = new AnimationCurve();
         dragVsAoA.AddKey(new Keyframe(-15f, 0.45f)); 
-        dragVsAoA.AddKey(new Keyframe(-5f, 0.36f));
-        dragVsAoA.AddKey(new Keyframe(0f, 0.33f));   
-        dragVsAoA.AddKey(new Keyframe(5f, 0.37f));
+        dragVsAoA.AddKey(new Keyframe(-5f, 0.38f));
+        dragVsAoA.AddKey(new Keyframe(0f, 0.35f));   // Base drag coefficient for an S13
+        dragVsAoA.AddKey(new Keyframe(5f, 0.39f));
         dragVsAoA.AddKey(new Keyframe(15f, 0.48f));
 
         // 3. Sideforce Coefficient (Y) vs Yaw Slip Angle (X)
-       
+        // Standard profile. Air pushes back hard when you're sideways.
         sideforceVsSlipAngle = new AnimationCurve();
-        sideforceVsSlipAngle.AddKey(new Keyframe(-90f, -0.80f));
-        sideforceVsSlipAngle.AddKey(new Keyframe(-45f, -0.60f));
-        sideforceVsSlipAngle.AddKey(new Keyframe(-10f, -0.15f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(-90f, -1.0f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(-45f, -0.75f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(-10f, -0.2f));
         sideforceVsSlipAngle.AddKey(new Keyframe(0f, 0f));
-        sideforceVsSlipAngle.AddKey(new Keyframe(10f, 0.15f));
-        sideforceVsSlipAngle.AddKey(new Keyframe(45f, 0.60f));
-        sideforceVsSlipAngle.AddKey(new Keyframe(90f, 0.80f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(10f, 0.2f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(45f, 0.75f));
+        sideforceVsSlipAngle.AddKey(new Keyframe(90f, 1.0f));
 
-        // Smooth out the tangents for realistic fluid dynamics
+        // Smooth out the tangents
         for (int i = 0; i < downforceVsAoA.length; i++) UnityEditor.AnimationUtility.SetKeyLeftTangentMode(downforceVsAoA, i, UnityEditor.AnimationUtility.TangentMode.Auto);
         for (int i = 0; i < dragVsAoA.length; i++) UnityEditor.AnimationUtility.SetKeyLeftTangentMode(dragVsAoA, i, UnityEditor.AnimationUtility.TangentMode.Auto);
         for (int i = 0; i < sideforceVsSlipAngle.length; i++) UnityEditor.AnimationUtility.SetKeyLeftTangentMode(sideforceVsSlipAngle, i, UnityEditor.AnimationUtility.TangentMode.Auto);

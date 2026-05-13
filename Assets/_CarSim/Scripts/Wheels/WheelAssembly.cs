@@ -6,8 +6,15 @@ public class WheelAssembly
     [Header("Hierarchy & Spatial")]
     [Tooltip("The empty GameObject representing where the suspension attaches to the chassis.")]
     public Transform suspensionMountPoint; 
-    [Tooltip("The graphical mesh of the wheel/tire.")]
+    
+    [Tooltip("The main graphical mesh. If 'Wheel Spin Mesh' is assigned, this acts as the non-spinning hub/enclosure (steer & camber only).")]
     public Transform visualMesh;
+
+    [Tooltip("(Optional) The specific mesh that rotates. If left empty, 'Visual Mesh' will handle the spinning.")]
+    public Transform wheelSpinMesh;
+
+    [Tooltip("Correction for mesh export orientations (e.g., set X to -90 for Blender meshes). Leave at 0,0,0 for your standard cars.")]
+    public Vector3 meshRotationOffset = Vector3.zero;
 
     [Header("Corner Configurations")]
     public bool isSteerable = false;
@@ -51,7 +58,8 @@ public class WheelAssembly
         float lerpSpeed = 25f;
         smoothedSuspensionLength = Mathf.Lerp(smoothedSuspensionLength, suspension.currentLength, Time.deltaTime * lerpSpeed);
 
-        visualMesh.position = suspensionMountPoint.position - (suspensionMountPoint.up * smoothedSuspensionLength);
+        Vector3 targetPosition = suspensionMountPoint.position - (suspensionMountPoint.up * smoothedSuspensionLength);
+        visualMesh.position = targetPosition;
 
         float compressionDistance = suspension.suspData.targetRideHeight - smoothedSuspensionLength;
         float camberAngle = -compressionDistance * suspension.suspData.camberGainPerMeter;
@@ -59,10 +67,29 @@ public class WheelAssembly
         Quaternion steerRotation = Quaternion.AngleAxis(ackermannSteeringAngle, Vector3.up);
         Quaternion camberRotation = Quaternion.AngleAxis(camberAngle, Vector3.forward);
         Quaternion spinRotation = Quaternion.AngleAxis(wheel.rotationAngle * Mathf.Rad2Deg, Vector3.right); 
+        
+        // Create the correction quaternion from the inspector vector
+        Quaternion meshCorrection = Quaternion.Euler(meshRotationOffset); 
 
-        Quaternion targetRotation = suspensionMountPoint.rotation * steerRotation * camberRotation * spinRotation;
+        if (wheelSpinMesh != null)
+        {
+            Quaternion hubTargetRotation = suspensionMountPoint.rotation * steerRotation * camberRotation;
+            smoothedRotation = Quaternion.Slerp(smoothedRotation, hubTargetRotation, Time.deltaTime * lerpSpeed);
+            
+            // Append the correction at the very end
+            visualMesh.rotation = smoothedRotation * meshCorrection; 
 
-        smoothedRotation = Quaternion.Slerp(smoothedRotation, targetRotation, Time.deltaTime * lerpSpeed);
-        visualMesh.rotation = smoothedRotation;
+            wheelSpinMesh.position = targetPosition;
+            // Spin happens first, then the mesh correction realigns the vertices
+            wheelSpinMesh.rotation = smoothedRotation * spinRotation * meshCorrection; 
+        }
+        else
+        {
+            Quaternion fullTargetRotation = suspensionMountPoint.rotation * steerRotation * camberRotation * spinRotation;
+            smoothedRotation = Quaternion.Slerp(smoothedRotation, fullTargetRotation, Time.deltaTime * lerpSpeed);
+            
+            // Append the correction at the very end
+            visualMesh.rotation = smoothedRotation * meshCorrection; 
+        }
     }
 }

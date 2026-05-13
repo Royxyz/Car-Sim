@@ -19,10 +19,10 @@ MonoBehaviour:
   longRelaxationLength: 0.12
   latRelaxationLength: 0.2
   longB: 10
-  longC: 1.9
-  longD: 1.1
-  longE: 0.97
-  latB: 9.5
+  longC: 1.65
+  longD: 1
+  longE: 0.5
+  latB: 8
   latC: 1.3
-  latD: 1
+  latD: 0.95
   latE: -0.5
