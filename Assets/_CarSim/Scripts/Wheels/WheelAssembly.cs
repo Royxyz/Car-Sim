@@ -67,28 +67,24 @@ public class WheelAssembly
         Quaternion steerRotation = Quaternion.AngleAxis(ackermannSteeringAngle, Vector3.up);
         Quaternion camberRotation = Quaternion.AngleAxis(camberAngle, Vector3.forward);
         Quaternion spinRotation = Quaternion.AngleAxis(wheel.rotationAngle * Mathf.Rad2Deg, Vector3.right); 
-        
-        // Create the correction quaternion from the inspector vector
+
         Quaternion meshCorrection = Quaternion.Euler(meshRotationOffset); 
 
         if (wheelSpinMesh != null)
         {
             Quaternion hubTargetRotation = suspensionMountPoint.rotation * steerRotation * camberRotation;
             smoothedRotation = Quaternion.Slerp(smoothedRotation, hubTargetRotation, Time.deltaTime * lerpSpeed);
-            
-            // Append the correction at the very end
+
             visualMesh.rotation = smoothedRotation * meshCorrection; 
 
             wheelSpinMesh.position = targetPosition;
-            // Spin happens first, then the mesh correction realigns the vertices
             wheelSpinMesh.rotation = smoothedRotation * spinRotation * meshCorrection; 
         }
         else
         {
             Quaternion fullTargetRotation = suspensionMountPoint.rotation * steerRotation * camberRotation * spinRotation;
             smoothedRotation = Quaternion.Slerp(smoothedRotation, fullTargetRotation, Time.deltaTime * lerpSpeed);
-            
-            // Append the correction at the very end
+
             visualMesh.rotation = smoothedRotation * meshCorrection; 
         }
     }

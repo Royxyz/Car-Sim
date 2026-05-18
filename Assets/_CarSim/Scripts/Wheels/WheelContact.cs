@@ -22,7 +22,6 @@ public class WheelContact
         Vector3 rayStartPos = mountPos + (mountUp * rayOriginOffset);
         float maxSweepLength = maxSuspensionLength + wheelRadius + rayOriginOffset;
 
-        // FIX: Re-enable the SphereCast, which is much more stable than a pure Raycast for vehicles
         int hitCount = Physics.SphereCastNonAlloc(rayStartPos, castRadius, -mountUp, hitBuffer, maxSweepLength, trackMask);
 
         bool foundValidHit = false;
@@ -31,7 +30,6 @@ public class WheelContact
 
         for (int i = 0; i < hitCount; i++)
         {
-            // Crucial: Ignore the car's own body colliders
             if (hitBuffer[i].collider.transform.root != vehicleRoot)
             {
                 if (hitBuffer[i].distance < closestDistance)
@@ -46,10 +44,6 @@ public class WheelContact
         if (foundValidHit)
         {
             isGrounded = true;
-            
-            // FIX: validHit.distance is the sweep distance of the center of the sphere.
-            // The physical bottom of the sphere is lower by exactly 'castRadius'.
-            // We add castRadius to find the true depth of the ground, then subtract offset and wheelRadius.
             hitDistance = validHit.distance + castRadius - rayOriginOffset - wheelRadius;
             
             contactPoint = validHit.point;

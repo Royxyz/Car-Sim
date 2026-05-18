@@ -715,8 +715,7 @@ MonoBehaviour:
   chassis:
     chassisData: {fileID: 11400000, guid: 492ac6b027ece364eaf9de9046023abe, type: 2}
     steeringData: {fileID: 11400000, guid: ce097f589f8ecef41aa7d1e65db063dd, type: 2}
-    antiRollBar:
-      antiRollBarData: {fileID: 11400000, guid: 0bdfbac46248f42448631684cacb44ba, type: 2}
+    antiRollBarData: {fileID: 11400000, guid: 0bdfbac46248f42448631684cacb44ba, type: 2}
     corners:
     - suspensionMountPoint: {fileID: 5547672314202630500}
       visualMesh: {fileID: 2297834472743634171}
@@ -858,31 +857,31 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0.36363602
-      value: 1.0012245
-      inSlope: 0.00008861643
-      outSlope: 0.00008861643
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.11920168
+      outWeight: 0.08328537
     - serializedVersion: 3
-      time: 139.19545
-      value: 0.79581153
-      inSlope: -0.0044121128
-      outSlope: -0.0044121128
+      time: 174.98312
+      value: 0.7998252
+      inSlope: -0.0022653977
+      outSlope: -0.0022653977
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.0723256
-      outWeight: 0.33333334
+      inWeight: 0.20963661
+      outWeight: 0.11288499
     - serializedVersion: 3
-      time: 200
-      value: 0.25
-      inSlope: -0.012795858
-      outSlope: -0.012795858
+      time: 356.58017
+      value: 0.27541876
+      inSlope: -0.002007006
+      outSlope: -0.002007006
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.08246484
+      inWeight: 0.12195711
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2

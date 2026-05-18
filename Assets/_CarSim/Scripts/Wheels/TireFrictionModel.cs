@@ -47,17 +47,7 @@ public class TireFrictionModel
         float Fx = rawFxMag * (dynamicLongSlip / slipMagnitude);
         float Fy = rawFyMag * (dynamicSlipAngle / slipMagnitude);
 
-        float maxFx = Mathf.Max(tireData.longD * effectiveLoad * finalFrictionMult, 0.1f);
-        float maxFy = Mathf.Max(tireData.latD * effectiveLoad * finalFrictionMult, 0.1f);
-
-        float ellipseRadius = ((Fx * Fx) / (maxFx * maxFx)) + ((Fy * Fy) / (maxFy * maxFy));
-
-        if (ellipseRadius > 1.0f)
-        {
-            float scaleDown = Mathf.Sqrt(1.0f / ellipseRadius);
-            Fx *= scaleDown;
-            Fy *= scaleDown;
-        }
+        
 
         return new Vector2(Fx, Fy);
     }

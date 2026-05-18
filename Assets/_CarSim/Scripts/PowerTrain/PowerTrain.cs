@@ -89,16 +89,13 @@ public class PowerTrain
 
     public float GetWheelTorque()
     {
-        float engineRadPerSec = engineRPM * (Mathf.PI / 30f);
-        float transRadPerSec = transmissionInputRPM * (Mathf.PI / 30f);
-
-        float clutchTorque = clutch.CalculateSlippingTorque(engineRadPerSec, transRadPerSec);
-        
         if (clutch.isLocked)
         {
-             clutchTorque = _lastReactionTorque;
+            return transmission.GetOutputTorque(currentNetTorque);
         }
-        
-        return transmission.GetOutputTorque(clutchTorque);
+
+        float engineRadPerSec = engineRPM * (Mathf.PI / 30f);
+        float transRadPerSec = transmissionInputRPM * (Mathf.PI / 30f);
+        return transmission.GetOutputTorque(clutch.CalculateSlippingTorque(engineRadPerSec, transRadPerSec));
     }
 }

@@ -34,10 +34,12 @@ public class Transmission
         return ratio * transmissionData.finalDrive;
     }
 
-    public float GetOutputTorque(float inputTorque)
+   public float GetOutputTorque(float inputTorque)
     {
         float ratio = GetTotalRatio();
-        return inputTorque * ratio * transmissionData.efficiency;
+        float directionalEfficiency = (inputTorque >= 0f) ? transmissionData.efficiency : (1f / Mathf.Max(transmissionData.efficiency, 0.1f));
+        
+        return inputTorque * ratio * directionalEfficiency;
     }
 
     public float GetReflectedLoadTorque(float outputLoadTorque)
@@ -45,7 +47,9 @@ public class Transmission
         float ratio = GetTotalRatio();
         if (Mathf.Abs(ratio) < 0.001f) return 0f;
 
-        return outputLoadTorque / (ratio * transmissionData.efficiency);
+        float directionalEfficiency = (outputLoadTorque >= 0f) ? (1f / Mathf.Max(transmissionData.efficiency, 0.1f)) : transmissionData.efficiency;
+        
+        return (outputLoadTorque / ratio) * directionalEfficiency;
     }
 
     public float GetReflectedInertia(float outputInertia)

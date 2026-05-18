@@ -97,7 +97,7 @@ public class AdvancedTelemetryLogger : MonoBehaviour
         // Powertrain & Aero
         float rpm = sim.powerTrain.engineRPM;
         float boost = sim.powerTrain.engine.currentManifoldPressure;
-        Vector3 aero = sim.aerodynamics.CalculateAerodynamicForces(currentVel, sim.transform);
+        
 
         var input = sim.GetComponent<IVehicleInput>();
 
@@ -124,8 +124,8 @@ public class AdvancedTelemetryLogger : MonoBehaviour
                .Append(pitch.ToString("F2")).Append(",")
                .Append(roll.ToString("F2")).Append(",")
                .Append(yawRate.ToString("F2")).Append(",")
-               .Append(Mathf.Abs(aero.y).ToString("F0")).Append(",")
-               .Append(Mathf.Abs(aero.z).ToString("F0"));
+               .Append(Mathf.Abs(sim.TotalDownforce).ToString("F0")).Append(",")
+               .Append(Mathf.Abs(sim.TotalDragForce).ToString("F0"));
 
         for (int i = 0; i < 4; i++)
         {

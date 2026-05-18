@@ -37,7 +37,7 @@ public class Wheel
         longitudinalSlip = (wheelLinearSpeed - forwardSpeed) / absForward;
     }
 
-    public void UpdatePhysics(float driveTorque, float brakeTorque, float tireGripTorque, float dt, float rollingResTorque = 0f)
+    public void UpdatePhysics(float driveTorque, float brakeTorque, float tireGripTorque, float dt, float rollingResTorque = 0f, float upstreamDrivelineInertia = 0f)
     {
         float directionalBrakeTorque = 0f;
         float directionalRRTorque = 0f;
@@ -54,7 +54,9 @@ public class Wheel
         
         float netTorque = driveTorque - directionalBrakeTorque - directionalRRTorque - tireGripTorque;
 
-        float angularAcceleration = netTorque / wheelData.inertia;
+        float totalEffectiveInertia = wheelData.inertia + upstreamDrivelineInertia;
+        
+        float angularAcceleration = netTorque / totalEffectiveInertia;
         angularVelocity += angularAcceleration * dt;
 
         float totalResistiveTorque = brakeTorque + rollingResTorque;

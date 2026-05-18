@@ -5,7 +5,7 @@ public class ChassisManager
 {
     public ChassisData chassisData;
     public SteeringData steeringData;
-    public AntiRollBar antiRollBar = new AntiRollBar();
+    public AntiRollBarData antiRollBarData;
     public WheelAssembly[] corners = new WheelAssembly[4];
 
     [Range(0f, 1f)] public float brakeBias = 0.65f;
@@ -66,8 +66,8 @@ public class ChassisManager
             ProcessCornerForces(i, corner, vChassis, mountWorldPos, mountUp, driveTorques[i], activeBrake, activeHandbrake, dt);
         }
 
-        ApplySubStepARB(vChassis, corners[0], corners[1], antiRollBar.antiRollBarData.frontAntiRoll, 0, 1);
-        ApplySubStepARB(vChassis, corners[2], corners[3], antiRollBar.antiRollBarData.rearAntiRoll, 2, 3);
+        ApplySubStepARB(vChassis, corners[0], corners[1], antiRollBarData.frontAntiRoll, 0, 1);
+        ApplySubStepARB(vChassis, corners[2], corners[3], antiRollBarData.rearAntiRoll, 2, 3);
     }
 
     private void ProcessCornerForces(int index, WheelAssembly corner, VirtualDynamics vChassis, Vector3 mountPos, Vector3 mountUp, float driveTorque, float activeBrake, float activeHandbrake, float dt)
@@ -77,9 +77,7 @@ public class ChassisManager
         float compressionVel = (corner.suspension.currentLength - expectedLength) / dt;
 
         float suspForceMag = corner.suspension.CalculateForce(corner.contact.isGrounded, corner.contact.hitDistance, compressionVel);
-        Vector3 suspensionForceWorld = corner.contact.isGrounded ? 
-        (corner.contact.contactNormal * suspForceMag) : 
-        (mountUp * suspForceMag);
+        Vector3 suspensionForceWorld = (mountUp * suspForceMag);
         Vector3 gripForceWorld = Vector3.zero;
 
         float biasMultiplier = (index < 2) ? (brakeBias * 2f) : ((1f - brakeBias) * 2f);

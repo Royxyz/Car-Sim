@@ -1,47 +1,60 @@
 using UnityEngine;
 
+public struct AeroForces
+{
+    public float frontDownforce;
+    public float rearDownforce;
+    public Vector3 totalDragWorld;
+    public Vector3 totalSideforceWorld;
+}
+
 [System.Serializable]
 public class Aerodynamics
 {
     [SerializeField] public AeroData aeroData;
 
-    public Vector3 CalculateAerodynamicForces(Vector3 carVelocityWorld, Transform carTransform, Vector3 ambientWindWorld = default)
+    public AeroForces CalculateForces(Vector3 carVelocityWorld, Transform carTransform, float frontRideHeight, float rearRideHeight, Vector3 ambientWindWorld = default)
     {
+        AeroForces result = new AeroForces();
+        
         Vector3 airVelocityWorld = carVelocityWorld - ambientWindWorld;
         Vector3 localAirVelocity = carTransform.InverseTransformDirection(airVelocityWorld);
 
         float speedSquare = localAirVelocity.sqrMagnitude;
-        if (speedSquare < 0.1f) return Vector3.zero;
+        if (speedSquare < 0.1f) return result;
 
         float dynamicPressure = 0.5f * aeroData.airDensity * speedSquare;
-  
-        float aoa = Mathf.Atan2(-localAirVelocity.y, localAirVelocity.z) * Mathf.Rad2Deg; 
+
+        float pitchAngle = Mathf.Atan2(-localAirVelocity.y, localAirVelocity.z) * Mathf.Rad2Deg; 
         float slipAngle = Mathf.Atan2(localAirVelocity.x, localAirVelocity.z) * Mathf.Rad2Deg;
 
-        float cL = aeroData.downforceVsAoA.Evaluate(aoa);
-        float cD = aeroData.dragVsAoA.Evaluate(aoa);
-        float cS = aeroData.sideforceVsSlipAngle.Evaluate(slipAngle);
+        float frontCoef = aeroData.frontBaseDownforceCoef + (-pitchAngle * aeroData.frontPitchSensitivity);
+        float rearCoef = aeroData.rearBaseDownforceCoef - (-pitchAngle * aeroData.rearPitchSensitivity);
 
-        float downforce = dynamicPressure * aeroData.topArea * cL;
+        float avgRideHeight = Mathf.Max((frontRideHeight + rearRideHeight) * 0.5f, 0.01f);
+        float geEfficiency = Mathf.Clamp01(aeroData.optimalRideHeight / avgRideHeight);
+        float groundEffectCoef = aeroData.maxGroundEffectCoef * geEfficiency;
 
-        Vector3 centerOfPressureWorld = carTransform.TransformPoint(aeroData.centerOfPressureOffset);
-        float actualRideHeight = aeroData.optimalRideHeight;
+        frontCoef += groundEffectCoef * aeroData.groundEffectBias;
+        rearCoef += groundEffectCoef * (1- aeroData.groundEffectBias);
 
-        int trackLayerMask = ~LayerMask.GetMask("Vehicle"); 
-        if (Physics.Raycast(centerOfPressureWorld, -Vector3.up, out RaycastHit hit, 2.0f, trackLayerMask))
-        {
-            actualRideHeight = hit.distance - aeroData.centerOfPressureOffset.y;
-            actualRideHeight = Mathf.Max(actualRideHeight, 0.01f); 
-        }
+        result.frontDownforce = dynamicPressure * aeroData.planformArea * frontCoef;
+        result.rearDownforce = dynamicPressure * aeroData.planformArea * rearCoef;
 
-        float rideHeightFactor = Mathf.Clamp01(aeroData.optimalRideHeight / actualRideHeight);
-        downforce += (downforce * rideHeightFactor * aeroData.groundEffectMultiplier);
+        float dragCoef = aeroData.baseDragCoef + 
+                         (Mathf.Abs(pitchAngle) * aeroData.pitchDragSensitivity) + 
+                         (Mathf.Abs(slipAngle) * aeroData.yawDragSensitivity);
+                         
+        float dragMagnitude = dynamicPressure * aeroData.frontalArea * dragCoef;
 
-        float drag = dynamicPressure * aeroData.frontalArea * cD;
-        drag *= Mathf.Sign(localAirVelocity.z);
+        result.totalDragWorld = -airVelocityWorld.normalized * dragMagnitude;
 
-        float sideForce = dynamicPressure * aeroData.sideArea * cS;
+        float sideforceCoef = slipAngle * aeroData.yawSideforceSensitivity;
+        float sideForceMagnitude = dynamicPressure * aeroData.sideArea * sideforceCoef;
 
-        return new Vector3(-sideForce, -downforce, -drag);
+        Vector3 localSideforce = new Vector3(-sideForceMagnitude, 0f, 0f);
+        result.totalSideforceWorld = carTransform.TransformDirection(localSideforce);
+
+        return result;
     }
 }

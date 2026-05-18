@@ -22,7 +22,7 @@ public class CarSpecSheetGenerator : MonoBehaviour
         // 1. Chassis & Aero
         ExtractScriptableObject(car.chassisData, "Chassis", "Base Dynamics", csv);
         ExtractScriptableObject(car.steeringData, "Chassis", "Steering", csv);
-        ExtractScriptableObject(car.antiRollBar.antiRollBarData, "Chassis", "Anti-Roll Bars", csv);
+        ExtractScriptableObject(car.antiRollBarData, "Chassis", "Anti-Roll Bars", csv);
         ExtractScriptableObject(car.aerodynamics.aeroData, "Aerodynamics", "Aero Settings", csv);
 
         // 2. Powertrain

@@ -24,14 +24,15 @@ public class SimulationController : MonoBehaviour
     public WheelAssembly[] corners => chassis.corners;
     public ChassisData chassisData => chassis.chassisData;
     public SteeringData steeringData => chassis.steeringData;
-    public AntiRollBar antiRollBar => chassis.antiRollBar;
+    public AntiRollBarData antiRollBarData => chassis.antiRollBarData;
+
+    //Telemetry Properties
+    public float TotalDownforce  {get; private set;}
+    public float TotalDragForce  {get; private set;}
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        
-        // FIX: Disable Unity's native gravity to prevent the "Double Gravity" glitch!
-        // VirtualDynamics handles gravity internally during sub-stepping.
         rb.useGravity = false; 
 
         cachedRoot = transform.root;
@@ -80,16 +81,34 @@ public class SimulationController : MonoBehaviour
         if (!isAutomatic) powertrain.powerTrain.clutch.engagement = Mathf.Clamp01(1f - vehicleInput.Clutch);
 
         vDynamics.SyncFromRigidbody(rb);
-        Vector3 aeroForcesLocal = aerodynamics.CalculateAerodynamicForces(rb.linearVelocity, transform);
-        Vector3 aeroForcesWorld = transform.TransformDirection(aeroForcesLocal);
-        Vector3 centerOfPressureWorld = transform.TransformPoint(aerodynamics.aeroData.centerOfPressureOffset);
+
+        float frontRideHeight = (chassis.corners[0].suspension.currentLength + chassis.corners[1].suspension.currentLength) * 0.5f;
+        float rearRideHeight = (chassis.corners[2].suspension.currentLength + chassis.corners[3].suspension.currentLength) * 0.5f;
+
+        AeroForces aero = aerodynamics.CalculateForces(rb.linearVelocity, transform, frontRideHeight, rearRideHeight);
+
+        TotalDownforce = aero.frontDownforce + aero.rearDownforce;
+        TotalDragForce = Vector3.Magnitude(aero.totalDragWorld);
+
+        float frontZ = transform.InverseTransformPoint(chassis.corners[0].suspensionMountPoint.position).z;
+        float rearZ = transform.InverseTransformPoint(chassis.corners[2].suspensionMountPoint.position).z;
+
 
         for (int step = 0; step < subSteps; step++)
         {
             vDynamics.ResetStepAccumulators();
             float stepFraction = (step + 1f) / subSteps;
 
-            vDynamics.AddForceAtPosition(aeroForcesWorld, centerOfPressureWorld);
+            Vector3 frontAxleWorld = vDynamics.position + (vDynamics.rotation * new Vector3(0, 0, frontZ));
+            Vector3 rearAxleWorld = vDynamics.position + (vDynamics.rotation * new Vector3(0, 0, rearZ));
+            Vector3 aeroCenterWorld = vDynamics.position + (vDynamics.rotation * aerodynamics.aeroData.aeroCenterOffset);
+
+            Vector3 dynamicDragDir = -vDynamics.linearVelocity.normalized;
+            Vector3 dynamicSideforceWorld = vDynamics.rotation * new Vector3(-aero.totalSideforceWorld.magnitude * Mathf.Sign(Vector3.Dot(vDynamics.linearVelocity, vDynamics.rotation * Vector3.right)), 0, 0);
+
+            vDynamics.AddForceAtPosition(-transform.up * aero.frontDownforce, frontAxleWorld);
+            vDynamics.AddForceAtPosition(-transform.up * aero.rearDownforce, rearAxleWorld);
+            vDynamics.AddForceAtPosition(aero.totalDragWorld + aero.totalSideforceWorld, aeroCenterWorld);
 
             float[] driveTorques = powertrain.ProcessTorqueRouting(chassis.corners, activeThrottle, activeBrake, isAutomatic, subDt);
             

@@ -29,6 +29,8 @@ public class EngineData : ScriptableObject
     private float[] rpmAxis;
     private float[,] torqueTable;
     private bool isInitialized = false;
+    private int lastRpmIndex = 0;
+    private int lastThrottleIndex = 0;
 
     public void Initialize()
     {
@@ -77,8 +79,8 @@ public class EngineData : ScriptableObject
         currentRPM = Mathf.Clamp(currentRPM, rpmAxis[0], rpmAxis[rpmAxis.Length - 1]);
         throttlePosition = Mathf.Clamp(throttlePosition, throttleAxis[0], throttleAxis[throttleAxis.Length - 1]);
         
-        FindIndicesAndLerpFactor(rpmAxis, currentRPM, out int r0, out int r1, out float rLerp);
-        FindIndicesAndLerpFactor(throttleAxis, throttlePosition, out int t0, out int t1, out float tLerp);
+        FindIndicesAndLerpFactor(rpmAxis, currentRPM, ref lastRpmIndex, out int r0, out int r1, out float rLerp);
+        FindIndicesAndLerpFactor(throttleAxis, throttlePosition, ref lastThrottleIndex, out int t0, out int t1, out float tLerp);
         
         float q11 = torqueTable[r0, t0];
         float q12 = torqueTable[r1, t0]; 
@@ -96,14 +98,23 @@ public class EngineData : ScriptableObject
         return staticFriction + (dynamicFriction * currentRPM * (Mathf.PI / 30f));
     }
 
-    private void FindIndicesAndLerpFactor(float[] axisData, float targetValue, out int index0, out int index1, out float lerpFactor)
+    private void FindIndicesAndLerpFactor(float[] axisData, float targetValue, ref int lastIndex, out int index0, out int index1, out float lerpFactor)
     {
+        if (lastIndex < axisData.Length - 1 && targetValue >= axisData[lastIndex] && targetValue <= axisData[lastIndex + 1])
+        {
+            index0 = lastIndex;
+            index1 = lastIndex + 1;
+            lerpFactor = (targetValue - axisData[index0]) / (axisData[index1] - axisData[index0]);
+            return;
+        }
+
         for (int i = 0; i < axisData.Length - 1; i++)
         {
             if (targetValue >= axisData[i] && targetValue <= axisData[i + 1])
             {
                 index0 = i;
                 index1 = i + 1;
+                lastIndex = i; 
                 lerpFactor = (targetValue - axisData[i]) / (axisData[i + 1] - axisData[i]);
                 return;
             }
