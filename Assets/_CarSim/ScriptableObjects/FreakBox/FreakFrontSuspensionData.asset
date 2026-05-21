@@ -13,13 +13,14 @@ MonoBehaviour:
   m_Name: FreakFrontSuspensionData
   m_EditorClassIdentifier: Assembly-CSharp::SuspensionData
   targetRideHeight: 0.45
-  bumpTravel: 0.15
-  droopTravel: 0.1
-  springStiffness: 65000
-  bumpDamping: 6000
-  reboundDamping: 8500
+  bumpTravel: 0.18
+  droopTravel: 0.12
+  springStiffness: 55000
+  bumpDamping: 4500
+  reboundDamping: 6500
+  blendWindow: 0.05
   bumpStopGap: 0.03
   bumpStopStiffness: 250000
   absoluteMaxForce: 300000
-  camberGainPerMeter: 12
-  bumpSteerPerMeter: -1.5
+  camberGainPerMeter: 6
+  bumpSteerPerMeter: -2

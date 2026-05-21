@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: FreakClutchData
   m_EditorClassIdentifier: Assembly-CSharp::ClutchData
   maxTorqueCapacity: 1500
-  lockThreshold: 2.5
+  lockThreshold: 2

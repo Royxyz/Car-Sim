@@ -1,46 +1,40 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+public enum InputDeviceMode 
+{ 
+    Keyboard, 
+    Gamepad, 
+    Raw
+}
+
 [RequireComponent(typeof(SimulationController))]
 public class InputManager : MonoBehaviour, IVehicleInput
 {
-    private CarController controls;
+    public CarController controls;
     private SimulationController sim;
 
-    [Header("Assist Toggles")]
-    public bool applyToKeyboardOnly = true;
-    public bool enableSteeringAssist = true;
-    public bool enableTractionControl = true;
-    public bool enableThrottleSmoothing = true;
-    public bool enableBrakeSmoothing = true;
+    [Header("Device Management")]
+    public bool autoDetectDevice = true;
+    public InputDeviceMode currentDeviceMode = InputDeviceMode.Keyboard;
+    public bool applyInputFiltering = true;
 
-    [Header("Digital Steering Filter")]
-    [Tooltip("How fast the virtual steering wheel turns when holding A/D.")]
+    [Header("Keyboard Filtering")]
     public float steerTurnSpeed = 3.0f;
-    [Tooltip("How fast the virtual steering wheel centers when letting go.")]
     public float steerReturnSpeed = 5.0f;
-    [Tooltip("Reduces maximum steering angle at high speeds to prevent snap oversteer. (X = Speed km/h, Y = Max Steer Multiplier 0-1)")]
-    public AnimationCurve speedSteerLimit = AnimationCurve.Linear(0f, 1f, 200f, 0.25f);
-
-    [Header("Digital Pedals Filter")]
-    [Tooltip("Time it takes for the keyboard throttle to reach 100%. Prevents instant tire spinning.")]
     public float throttleSmoothSpeed = 5.0f;
-    [Tooltip("Time it takes for the keyboard brake to reach 100%.")]
     public float brakeSmoothSpeed = 5.0f;
 
-    [Header("Traction Control System (TCS)")]
-    [Tooltip("The longitudinal slip threshold before the ECU cuts power.")]
-    public float tcsSlipThreshold = 0.12f;
-    [Tooltip("How aggressively the throttle is cut when slip is detected.")]
-    public float tcsAggressiveness = 10.0f;
+    [Header("Gamepad Filtering")]
+    public float steeringGamma = 2.0f;
+    public float gamepadDampingSpeed = 15.0f;
 
-    public bool isTcsActive { get; private set; }
-    public float filteredSteering { get; private set; }
-    public float filteredThrottle { get; private set; }
-    public float filteredBrake { get; private set; }
-    public float Steering => filteredSteering;
-    public float Throttle => filteredThrottle;
-    public float Brake => filteredBrake;
+    [Header("Global Steering Assist")]
+    public AnimationCurve speedSteerLimit = AnimationCurve.Linear(0f, 1f, 200f, 0.25f);
+
+    public float Steering { get; private set; }
+    public float Throttle { get; private set; }
+    public float Brake { get; private set; }
     public float Clutch { get; private set; }
     public float Handbrake { get; private set; }
     public bool ShiftUp { get; private set; }
@@ -52,12 +46,49 @@ public class InputManager : MonoBehaviour, IVehicleInput
         sim = GetComponent<SimulationController>();
     }
 
-    private void OnEnable() { controls.Driving.Enable(); }
-    private void OnDisable() { controls.Driving.Disable(); }
+    private void OnEnable()
+    {
+        GameManager.OnStateChanged += HandleGameStateChange;
+        if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Race)
+            controls.Driving.Enable();
+        controls.Driving.ResetCar.performed += ResetVehicle;
+    }
+
+    private void OnDisable()
+    {
+        GameManager.OnStateChanged -= HandleGameStateChange;
+        controls.Driving.Disable();
+        controls.Driving.ResetCar.performed -= ResetVehicle;
+    }
+
+    private void HandleGameStateChange(GameState state)
+    {
+        if (state == GameState.Race) controls.Driving.Enable();
+        else controls.Driving.Disable();
+    }
 
     private void Update()
     {
-        ProcessInputs(Time.deltaTime);
+        if (GameManager.Instance.CurrentState != GameState.Race) return;
+        ProcessInputs(Time.deltaTime); 
+    }
+
+    private void ResetVehicle(InputAction.CallbackContext context)
+    {
+        sim.rb.linearVelocity = Vector3.zero;
+        sim.rb.angularVelocity = Vector3.zero;
+        sim.vDynamics.ResetStepAccumulators();
+        
+        for (int i = 0; i < 4; i++)
+        {
+            if (sim.corners[i] != null) sim.corners[i].tire.Initialize(); 
+        }
+
+        Vector3 currentPos = sim.rb.position;
+        sim.rb.position = new Vector3(currentPos.x, currentPos.y + 1.5f, currentPos.z);
+        
+        Vector3 euler = sim.rb.rotation.eulerAngles;
+        sim.rb.rotation = Quaternion.Euler(0f, euler.y, 0f);
     }
 
     private void ProcessInputs(float dt)
@@ -71,96 +102,43 @@ public class InputManager : MonoBehaviour, IVehicleInput
         ShiftUp = controls.Driving.ShiftUp.WasPressedThisFrame();
         ShiftDown = controls.Driving.ShiftDown.WasPressedThisFrame();
 
-        bool isKeyboard = false;
-        if (controls.Driving.Steering.activeControl != null)
+        if (autoDetectDevice && controls.Driving.Steering.activeControl != null)
         {
-            isKeyboard = controls.Driving.Steering.activeControl.device is Keyboard;
+            var activeDevice = controls.Driving.Steering.activeControl.device;
+            if (activeDevice is Keyboard && applyInputFiltering) currentDeviceMode = InputDeviceMode.Keyboard;
+            else if (activeDevice is Gamepad && applyInputFiltering) currentDeviceMode = InputDeviceMode.Gamepad;
+            else currentDeviceMode = InputDeviceMode.Raw; 
         }
 
-        bool applyAssists = !applyToKeyboardOnly || isKeyboard;
+        float speedKmh = sim.rb.linearVelocity.magnitude * 3.6f;
+        float maxAllowedSteer = speedSteerLimit.Evaluate(speedKmh);
 
-        if (applyAssists && enableSteeringAssist)
+        switch (currentDeviceMode)
         {
-            float speedKmh = sim.rb.linearVelocity.magnitude * 3.6f;
-            float maxAllowedSteer = speedSteerLimit.Evaluate(speedKmh);
-            float targetSteer = rawSteer * maxAllowedSteer;
+            case InputDeviceMode.Raw:
+                Steering = rawSteer;
+                Throttle = rawThrottle;
+                Brake = rawBrake;
+                break;
 
-            if (Mathf.Abs(rawSteer) > 0.01f)
-            {
-                filteredSteering = Mathf.MoveTowards(filteredSteering, targetSteer, steerTurnSpeed * dt);
-            }
-            else
-            {
-                filteredSteering = Mathf.MoveTowards(filteredSteering, 0f, steerReturnSpeed * dt);
-            }
-        }
-        else
-        {
-            filteredSteering = rawSteer;
-        }
+            case InputDeviceMode.Gamepad:
+                float curvedSteer = Mathf.Sign(rawSteer) * Mathf.Pow(Mathf.Abs(rawSteer), steeringGamma);
+                float targetGamepadSteer = curvedSteer * maxAllowedSteer;
+                Steering = Mathf.Lerp(Steering, targetGamepadSteer, gamepadDampingSpeed * dt);
+                Throttle = rawThrottle;
+                Brake = rawBrake;
+                break;
 
-        if (applyAssists && enableBrakeSmoothing)
-        {
-            filteredBrake = Mathf.MoveTowards(filteredBrake, rawBrake, brakeSmoothSpeed * dt);
-        }
-        else
-        {
-            filteredBrake = rawBrake;
-        }
+            case InputDeviceMode.Keyboard:
+                float targetKeyboardSteer = rawSteer * maxAllowedSteer;
+                if (Mathf.Abs(rawSteer) > 0.01f)
+                    Steering = Mathf.MoveTowards(Steering, targetKeyboardSteer, steerTurnSpeed * dt);
+                else
+                    Steering = Mathf.MoveTowards(Steering, 0f, steerReturnSpeed * dt);
 
-        float targetThrottle = rawThrottle;
-        if (applyAssists && enableThrottleSmoothing)
-        {
-            targetThrottle = Mathf.MoveTowards(filteredThrottle, rawThrottle, throttleSmoothSpeed * dt);
-        }
-
-        if (enableTractionControl && targetThrottle > 0.01f)
-        {
-            float maxDrivenSlip = GetMaxDrivenLongitudinalSlip();
-
-            if (maxDrivenSlip > tcsSlipThreshold)
-            {
-                isTcsActive = true;
-                float slipExcess = maxDrivenSlip - tcsSlipThreshold;
-                float throttleCut = slipExcess * tcsAggressiveness;
-
-                targetThrottle = Mathf.Clamp01(targetThrottle - throttleCut);
-            }
-            else
-            {
-                isTcsActive = false;
-            }
-        }
-        else
-        {
-            isTcsActive = false;
-        }
-
-        filteredThrottle = targetThrottle;
-    }
-    private float GetMaxDrivenLongitudinalSlip()
-{
-    float maxSlip = 0f;
-    DriveType driveType = sim.drivetrain.drivetrainData.driveType;
-
-    for (int i = 0; i < 4; i++)
-    {
-        if (driveType == DriveType.FWD && i > 1) continue; 
-        if (driveType == DriveType.RWD && i < 2) continue;
-
-        if (sim.corners[i] != null && sim.corners[i].contact.isGrounded)
-        {
-            float forwardSpeed = Mathf.Max(Mathf.Abs(sim.corners[i].wheel.forwardSpeed), 0.5f); 
-            float wheelSpeed = sim.corners[i].wheel.wheelLinearSpeed;
-            float instantaneousSlip = (wheelSpeed - sim.corners[i].wheel.forwardSpeed) / forwardSpeed;
-
-            float slip = Mathf.Abs(instantaneousSlip); 
-            if (slip > maxSlip)
-            {
-                maxSlip = slip;
-            }
+                Throttle = Mathf.MoveTowards(Throttle, rawThrottle, throttleSmoothSpeed * dt);
+                Brake = Mathf.MoveTowards(Brake, rawBrake, brakeSmoothSpeed * dt);
+                break;
         }
     }
-    return maxSlip;
-}
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(SimulationController))]
 public class LiveTelemetryDashboard : MonoBehaviour
@@ -10,6 +11,9 @@ public class LiveTelemetryDashboard : MonoBehaviour
     public int guiScale = 1;
     public bool showWheelData = true;
     public float gForceSmoothTime = 0.1f;
+    [Header("Input Bindings")]
+    public InputActionReference toggleTelemetryAction;
+    private bool showDashboard = false;
 
     // G-Force Smoothing
     private Vector3 lastVelocity;
@@ -35,6 +39,28 @@ public class LiveTelemetryDashboard : MonoBehaviour
         inputs = GetComponent<IVehicleInput>();
     }
 
+    private void OnEnable()
+    {
+        if (toggleTelemetryAction != null)
+        {
+            toggleTelemetryAction.action.Enable();
+            toggleTelemetryAction.action.performed += ToggleDashboard;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (toggleTelemetryAction != null)
+        {
+            toggleTelemetryAction.action.performed -= ToggleDashboard;
+            toggleTelemetryAction.action.Disable();
+        }
+    }
+
+    private void ToggleDashboard(InputAction.CallbackContext ctx)
+    {
+        showDashboard = !showDashboard;
+    }
     private void FixedUpdate()
     {
         if (sim == null || sim.rb == null) return;
@@ -51,7 +77,7 @@ public class LiveTelemetryDashboard : MonoBehaviour
 
     private void OnGUI()
     {
-        if (sim == null || inputs == null) return;
+        if (!showDashboard || sim == null || inputs == null) return;
 
         if (!stylesInitialized) InitStyles();
 

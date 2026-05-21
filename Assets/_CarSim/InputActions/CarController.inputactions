@@ -70,9 +70,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Aux1",
+                    "name": "ResetCar",
                     "type": "Button",
-                    "id": "e824cf99-3362-4498-9449-1d8b5c0ec91b",
+                    "id": "09e1c1b7-7fae-4a1e-8134-bad55ce14083",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -313,23 +313,144 @@
                 },
                 {
                     "name": "",
-                    "id": "f7735e4b-8de0-4879-b7f7-e08723481941",
-                    "path": "<Keyboard>/1",
+                    "id": "f6ac0309-1b11-4ac6-9d2f-00b4bcc65c7a",
+                    "path": "<Keyboard>/r",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Aux1",
+                    "action": "ResetCar",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "b14cd693-5b82-49be-9f13-d0ec3dcfda3b",
-                    "path": "",
+                    "id": "b5a59304-16ae-40a3-b27e-4849677e30d3",
+                    "path": "<Gamepad>/select",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Aux1",
+                    "action": "ResetCar",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Global",
+            "id": "f7a4449c-dc76-447c-9dc3-af16848ccadc",
+            "actions": [
+                {
+                    "name": "TogglePause",
+                    "type": "Button",
+                    "id": "f4b5f224-8b55-4ef7-b1c1-788f2b3a47cc",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleDashboard",
+                    "type": "Button",
+                    "id": "526bd569-a74e-4743-9207-bc8ae5baa36d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleRecording",
+                    "type": "Button",
+                    "id": "979c2704-19fd-4cda-a5c5-9ef904ec7b53",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Quit",
+                    "type": "Button",
+                    "id": "1889e1e1-a52a-488f-84c6-a4ca82f5c20f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "ae714ccb-999e-44be-8ea7-9b309ffbdbdf",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "TogglePause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "985fb7e7-4338-4dfa-ae9c-bc2a8b31c750",
+                    "path": "<Keyboard>/backspace",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "TogglePause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ee52bdd4-52a5-4530-99dc-d25c6c42bc09",
+                    "path": "<Gamepad>/dpad/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleDashboard",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "425d9e47-241f-4743-a105-c90ce7ddb1ea",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleDashboard",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3f7ffc06-e6ac-4d24-9c97-e0f4f2f6ce04",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleRecording",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ea192465-d020-4338-8917-cca06a709ec9",
+                    "path": "<Gamepad>/dpad/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleRecording",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ff52ac19-2569-4ef1-a55a-759d6ab8beb6",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Quit",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

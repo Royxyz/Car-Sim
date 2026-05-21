@@ -329,8 +329,7 @@ MonoBehaviour:
   chassis:
     chassisData: {fileID: 11400000, guid: 492ac6b027ece364eaf9de9046023abe, type: 2}
     steeringData: {fileID: 11400000, guid: ce097f589f8ecef41aa7d1e65db063dd, type: 2}
-    antiRollBar:
-      antiRollBarData: {fileID: 11400000, guid: 0bdfbac46248f42448631684cacb44ba, type: 2}
+    antiRollBarData: {fileID: 11400000, guid: 0bdfbac46248f42448631684cacb44ba, type: 2}
     corners:
     - suspensionMountPoint: {fileID: 2341033184623234169}
       visualMesh: {fileID: 5171509228748486050}

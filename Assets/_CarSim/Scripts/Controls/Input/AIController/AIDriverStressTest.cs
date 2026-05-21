@@ -90,7 +90,7 @@ public class AIDriverStressTest : MonoBehaviour, IVehicleInput
         for (int i = 0; i < 4; i++)
         {
             float wheelSlip = sim.corners[i].wheel.longitudinalSlip;
-            if (wheelSlip < 0f && Mathf.Abs(wheelSlip) > maxBrakingSlip) // Slip is negative when braking
+            if (wheelSlip < 0f && Mathf.Abs(wheelSlip) > maxBrakingSlip) 
             {
                 maxBrakingSlip = Mathf.Abs(wheelSlip);
             }

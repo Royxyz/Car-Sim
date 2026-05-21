@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85f33f38a3a125f4181eaa2846646a1e, type: 3}
   m_Name: FreakRearSuspension
   m_EditorClassIdentifier: Assembly-CSharp::SuspensionData
-  targetRideHeight: 0.46
+  targetRideHeight: 0.45
   bumpTravel: 0.15
-  droopTravel: 0.1
-  springStiffness: 85000
-  bumpDamping: 6000
-  reboundDamping: 8500
+  droopTravel: 0.15
+  springStiffness: 35000
+  bumpDamping: 3000
+  reboundDamping: 5500
+  blendWindow: 0.05
   bumpStopGap: 0.02
   bumpStopStiffness: 250000
   absoluteMaxForce: 300000
-  camberGainPerMeter: 6
+  camberGainPerMeter: 4
   bumpSteerPerMeter: 0

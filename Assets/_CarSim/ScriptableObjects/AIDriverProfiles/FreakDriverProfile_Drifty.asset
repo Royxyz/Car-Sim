@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: FreakDriverProfile_Drifty
   m_EditorClassIdentifier: Assembly-CSharp::AIDriverProfileData
   targetGripUtilization: 1.25
-  baseLookaheadDistance: 10
+  baseLookaheadDistance: 20
   lookaheadSpeedScaling: 0.3
-  yawToleranceAngle: 45
+  yawToleranceAngle: 25
   counterSteerKp: 0.03
   counterSteerKd: 0.01
   headingHoldKp: 0.02
   headingHoldKd: 0.005
-  throttleAggressionKp: 8
+  throttleAggressionKp: 10
   brakeAggressionKp: 6
   allowTrailBraking: 1
   allowHandbrakeEntry: 1

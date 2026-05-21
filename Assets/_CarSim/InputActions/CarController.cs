@@ -156,9 +156,9 @@ public partial class @CarController: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Aux1"",
+                    ""name"": ""ResetCar"",
                     ""type"": ""Button"",
-                    ""id"": ""e824cf99-3362-4498-9449-1d8b5c0ec91b"",
+                    ""id"": ""09e1c1b7-7fae-4a1e-8134-bad55ce14083"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -399,23 +399,144 @@ public partial class @CarController: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""f7735e4b-8de0-4879-b7f7-e08723481941"",
-                    ""path"": ""<Keyboard>/1"",
+                    ""id"": ""f6ac0309-1b11-4ac6-9d2f-00b4bcc65c7a"",
+                    ""path"": ""<Keyboard>/r"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Aux1"",
+                    ""action"": ""ResetCar"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
-                    ""id"": ""b14cd693-5b82-49be-9f13-d0ec3dcfda3b"",
-                    ""path"": """",
+                    ""id"": ""b5a59304-16ae-40a3-b27e-4849677e30d3"",
+                    ""path"": ""<Gamepad>/select"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Aux1"",
+                    ""action"": ""ResetCar"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""Global"",
+            ""id"": ""f7a4449c-dc76-447c-9dc3-af16848ccadc"",
+            ""actions"": [
+                {
+                    ""name"": ""TogglePause"",
+                    ""type"": ""Button"",
+                    ""id"": ""f4b5f224-8b55-4ef7-b1c1-788f2b3a47cc"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ToggleDashboard"",
+                    ""type"": ""Button"",
+                    ""id"": ""526bd569-a74e-4743-9207-bc8ae5baa36d"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ToggleRecording"",
+                    ""type"": ""Button"",
+                    ""id"": ""979c2704-19fd-4cda-a5c5-9ef904ec7b53"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Quit"",
+                    ""type"": ""Button"",
+                    ""id"": ""1889e1e1-a52a-488f-84c6-a4ca82f5c20f"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""ae714ccb-999e-44be-8ea7-9b309ffbdbdf"",
+                    ""path"": ""<Gamepad>/start"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""TogglePause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""985fb7e7-4338-4dfa-ae9c-bc2a8b31c750"",
+                    ""path"": ""<Keyboard>/backspace"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""TogglePause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ee52bdd4-52a5-4530-99dc-d25c6c42bc09"",
+                    ""path"": ""<Gamepad>/dpad/up"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleDashboard"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""425d9e47-241f-4743-a105-c90ce7ddb1ea"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleDashboard"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3f7ffc06-e6ac-4d24-9c97-e0f4f2f6ce04"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleRecording"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ea192465-d020-4338-8917-cca06a709ec9"",
+                    ""path"": ""<Gamepad>/dpad/down"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleRecording"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ff52ac19-2569-4ef1-a55a-759d6ab8beb6"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Quit"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -433,12 +554,19 @@ public partial class @CarController: IInputActionCollection2, IDisposable
         m_Driving_ShiftUp = m_Driving.FindAction("ShiftUp", throwIfNotFound: true);
         m_Driving_ShiftDown = m_Driving.FindAction("ShiftDown", throwIfNotFound: true);
         m_Driving_Handbrake = m_Driving.FindAction("Handbrake", throwIfNotFound: true);
-        m_Driving_Aux1 = m_Driving.FindAction("Aux1", throwIfNotFound: true);
+        m_Driving_ResetCar = m_Driving.FindAction("ResetCar", throwIfNotFound: true);
+        // Global
+        m_Global = asset.FindActionMap("Global", throwIfNotFound: true);
+        m_Global_TogglePause = m_Global.FindAction("TogglePause", throwIfNotFound: true);
+        m_Global_ToggleDashboard = m_Global.FindAction("ToggleDashboard", throwIfNotFound: true);
+        m_Global_ToggleRecording = m_Global.FindAction("ToggleRecording", throwIfNotFound: true);
+        m_Global_Quit = m_Global.FindAction("Quit", throwIfNotFound: true);
     }
 
     ~@CarController()
     {
         UnityEngine.Debug.Assert(!m_Driving.enabled, "This will cause a leak and performance issues, CarController.Driving.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_Global.enabled, "This will cause a leak and performance issues, CarController.Global.Disable() has not been called.");
     }
 
     /// <summary>
@@ -521,7 +649,7 @@ public partial class @CarController: IInputActionCollection2, IDisposable
     private readonly InputAction m_Driving_ShiftUp;
     private readonly InputAction m_Driving_ShiftDown;
     private readonly InputAction m_Driving_Handbrake;
-    private readonly InputAction m_Driving_Aux1;
+    private readonly InputAction m_Driving_ResetCar;
     /// <summary>
     /// Provides access to input actions defined in input action map "Driving".
     /// </summary>
@@ -562,9 +690,9 @@ public partial class @CarController: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Handbrake => m_Wrapper.m_Driving_Handbrake;
         /// <summary>
-        /// Provides access to the underlying input action "Driving/Aux1".
+        /// Provides access to the underlying input action "Driving/ResetCar".
         /// </summary>
-        public InputAction @Aux1 => m_Wrapper.m_Driving_Aux1;
+        public InputAction @ResetCar => m_Wrapper.m_Driving_ResetCar;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -612,9 +740,9 @@ public partial class @CarController: IInputActionCollection2, IDisposable
             @Handbrake.started += instance.OnHandbrake;
             @Handbrake.performed += instance.OnHandbrake;
             @Handbrake.canceled += instance.OnHandbrake;
-            @Aux1.started += instance.OnAux1;
-            @Aux1.performed += instance.OnAux1;
-            @Aux1.canceled += instance.OnAux1;
+            @ResetCar.started += instance.OnResetCar;
+            @ResetCar.performed += instance.OnResetCar;
+            @ResetCar.canceled += instance.OnResetCar;
         }
 
         /// <summary>
@@ -647,9 +775,9 @@ public partial class @CarController: IInputActionCollection2, IDisposable
             @Handbrake.started -= instance.OnHandbrake;
             @Handbrake.performed -= instance.OnHandbrake;
             @Handbrake.canceled -= instance.OnHandbrake;
-            @Aux1.started -= instance.OnAux1;
-            @Aux1.performed -= instance.OnAux1;
-            @Aux1.canceled -= instance.OnAux1;
+            @ResetCar.started -= instance.OnResetCar;
+            @ResetCar.performed -= instance.OnResetCar;
+            @ResetCar.canceled -= instance.OnResetCar;
         }
 
         /// <summary>
@@ -683,6 +811,135 @@ public partial class @CarController: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="DrivingActions" /> instance referencing this action map.
     /// </summary>
     public DrivingActions @Driving => new DrivingActions(this);
+
+    // Global
+    private readonly InputActionMap m_Global;
+    private List<IGlobalActions> m_GlobalActionsCallbackInterfaces = new List<IGlobalActions>();
+    private readonly InputAction m_Global_TogglePause;
+    private readonly InputAction m_Global_ToggleDashboard;
+    private readonly InputAction m_Global_ToggleRecording;
+    private readonly InputAction m_Global_Quit;
+    /// <summary>
+    /// Provides access to input actions defined in input action map "Global".
+    /// </summary>
+    public struct GlobalActions
+    {
+        private @CarController m_Wrapper;
+
+        /// <summary>
+        /// Construct a new instance of the input action map wrapper class.
+        /// </summary>
+        public GlobalActions(@CarController wrapper) { m_Wrapper = wrapper; }
+        /// <summary>
+        /// Provides access to the underlying input action "Global/TogglePause".
+        /// </summary>
+        public InputAction @TogglePause => m_Wrapper.m_Global_TogglePause;
+        /// <summary>
+        /// Provides access to the underlying input action "Global/ToggleDashboard".
+        /// </summary>
+        public InputAction @ToggleDashboard => m_Wrapper.m_Global_ToggleDashboard;
+        /// <summary>
+        /// Provides access to the underlying input action "Global/ToggleRecording".
+        /// </summary>
+        public InputAction @ToggleRecording => m_Wrapper.m_Global_ToggleRecording;
+        /// <summary>
+        /// Provides access to the underlying input action "Global/Quit".
+        /// </summary>
+        public InputAction @Quit => m_Wrapper.m_Global_Quit;
+        /// <summary>
+        /// Provides access to the underlying input action map instance.
+        /// </summary>
+        public InputActionMap Get() { return m_Wrapper.m_Global; }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+        public void Enable() { Get().Enable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+        public void Disable() { Get().Disable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+        public bool enabled => Get().enabled;
+        /// <summary>
+        /// Implicitly converts an <see ref="GlobalActions" /> to an <see ref="InputActionMap" /> instance.
+        /// </summary>
+        public static implicit operator InputActionMap(GlobalActions set) { return set.Get(); }
+        /// <summary>
+        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <param name="instance">Callback instance.</param>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+        /// </remarks>
+        /// <seealso cref="GlobalActions" />
+        public void AddCallbacks(IGlobalActions instance)
+        {
+            if (instance == null || m_Wrapper.m_GlobalActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_GlobalActionsCallbackInterfaces.Add(instance);
+            @TogglePause.started += instance.OnTogglePause;
+            @TogglePause.performed += instance.OnTogglePause;
+            @TogglePause.canceled += instance.OnTogglePause;
+            @ToggleDashboard.started += instance.OnToggleDashboard;
+            @ToggleDashboard.performed += instance.OnToggleDashboard;
+            @ToggleDashboard.canceled += instance.OnToggleDashboard;
+            @ToggleRecording.started += instance.OnToggleRecording;
+            @ToggleRecording.performed += instance.OnToggleRecording;
+            @ToggleRecording.canceled += instance.OnToggleRecording;
+            @Quit.started += instance.OnQuit;
+            @Quit.performed += instance.OnQuit;
+            @Quit.canceled += instance.OnQuit;
+        }
+
+        /// <summary>
+        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+        /// </remarks>
+        /// <seealso cref="GlobalActions" />
+        private void UnregisterCallbacks(IGlobalActions instance)
+        {
+            @TogglePause.started -= instance.OnTogglePause;
+            @TogglePause.performed -= instance.OnTogglePause;
+            @TogglePause.canceled -= instance.OnTogglePause;
+            @ToggleDashboard.started -= instance.OnToggleDashboard;
+            @ToggleDashboard.performed -= instance.OnToggleDashboard;
+            @ToggleDashboard.canceled -= instance.OnToggleDashboard;
+            @ToggleRecording.started -= instance.OnToggleRecording;
+            @ToggleRecording.performed -= instance.OnToggleRecording;
+            @ToggleRecording.canceled -= instance.OnToggleRecording;
+            @Quit.started -= instance.OnQuit;
+            @Quit.performed -= instance.OnQuit;
+            @Quit.canceled -= instance.OnQuit;
+        }
+
+        /// <summary>
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="GlobalActions.UnregisterCallbacks(IGlobalActions)" />.
+        /// </summary>
+        /// <seealso cref="GlobalActions.UnregisterCallbacks(IGlobalActions)" />
+        public void RemoveCallbacks(IGlobalActions instance)
+        {
+            if (m_Wrapper.m_GlobalActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        /// <summary>
+        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+        /// </remarks>
+        /// <seealso cref="GlobalActions.AddCallbacks(IGlobalActions)" />
+        /// <seealso cref="GlobalActions.RemoveCallbacks(IGlobalActions)" />
+        /// <seealso cref="GlobalActions.UnregisterCallbacks(IGlobalActions)" />
+        public void SetCallbacks(IGlobalActions instance)
+        {
+            foreach (var item in m_Wrapper.m_GlobalActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_GlobalActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    /// <summary>
+    /// Provides a new <see cref="GlobalActions" /> instance referencing this action map.
+    /// </summary>
+    public GlobalActions @Global => new GlobalActions(this);
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Driving" which allows adding and removing callbacks.
     /// </summary>
@@ -740,11 +997,47 @@ public partial class @CarController: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnHandbrake(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "Aux1" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "ResetCar" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnAux1(InputAction.CallbackContext context);
+        void OnResetCar(InputAction.CallbackContext context);
+    }
+    /// <summary>
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Global" which allows adding and removing callbacks.
+    /// </summary>
+    /// <seealso cref="GlobalActions.AddCallbacks(IGlobalActions)" />
+    /// <seealso cref="GlobalActions.RemoveCallbacks(IGlobalActions)" />
+    public interface IGlobalActions
+    {
+        /// <summary>
+        /// Method invoked when associated input action "TogglePause" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnTogglePause(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ToggleDashboard" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnToggleDashboard(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ToggleRecording" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnToggleRecording(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Quit" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnQuit(InputAction.CallbackContext context);
     }
 }

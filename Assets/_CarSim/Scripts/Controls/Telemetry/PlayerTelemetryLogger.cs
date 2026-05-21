@@ -90,7 +90,7 @@ public class PlayerTelemetryLogger : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!isLogging) return;
+        if (!isLogging || GameManager.Instance.CurrentState != GameState.Race) return;
 
         float dt = Time.fixedDeltaTime;
         currentRecordTime += dt;

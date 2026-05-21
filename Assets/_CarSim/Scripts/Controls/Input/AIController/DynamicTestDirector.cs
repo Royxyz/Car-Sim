@@ -127,7 +127,7 @@ public class DynamicTestDirector : MonoBehaviour
 
             case TestPhase.Brake:
                 // Exit Condition: Car comes to a complete halt
-                if (currentSpeedKmh < 1.0f)
+                if (currentSpeedKmh < 6.0f)
                 {
                     brakingDistanceMeters = Vector3.Distance(phaseStartPosition, sim.rb.position);
                     Debug.Log($"<color=cyan><b>[Director]</b> Braking Complete. Distance: {brakingDistanceMeters:F1}m. Initiating Slalom.</color>");

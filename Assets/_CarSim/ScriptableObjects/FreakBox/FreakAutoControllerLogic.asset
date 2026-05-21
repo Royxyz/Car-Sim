@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82fed78d6622df7489f30e6323dc09c0, type: 3}
   m_Name: FreakAutoControllerLogic
   m_EditorClassIdentifier: Assembly-CSharp::AutoControllerLogicData
-  hasTorqueConverterCreep: 0
-  idleCreepEngagement: 0
-  biteRPM: 1800
-  lockRPM: 3000
-  upshiftRPM: 6550
-  downshiftRPM: 3200
+  hasTorqueConverterCreep: 1
+  idleCreepEngagement: 0.08
+  biteRPM: 1000
+  lockRPM: 1800
+  upshiftRPM: 6300
+  downshiftRPM: 2800
   shiftDuration: 0.15

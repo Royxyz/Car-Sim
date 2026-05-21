@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: FreakCentreDifferential
   m_EditorClassIdentifier: Assembly-CSharp::DifferentialData
   diffType: 2
+  slipTolerance: 2
   gearRatio: 1
-  inertia: 0.05
-  powerBias: 0.2
-  preloadLSD: 0.05
-  lockingFriction: 35
+  inertia: 0.15
+  powerBias: 0.4
+  preloadLSD: 0.15
+  lockingFriction: 1500
   lockingStiffness: 5000
-  coastLockingMultiplier: 0.05
+  coastLockingMultiplier: 0.3

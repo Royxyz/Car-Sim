@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: FreakInductionData
   m_EditorClassIdentifier: Assembly-CSharp::InductionData
   type: 1
-  maxPressureBar: 1.4
-  superchargerParasiticDrag: 55
+  maxPressureBar: 1.6
+  superchargerParasiticDrag: 60
   boostThresholdRPM: 2500
   optimalBoostRPM: 4500
   turboSpoolRate: 2.5
