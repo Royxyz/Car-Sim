@@ -7,6 +7,8 @@ public class WheelContact
     public float rayOriginOffset = 1.0f;
     [Tooltip("The radius of the collision sphere. Prevents the wheel from falling through small cracks in the road.")]
     public float castRadius = 0.12f; 
+    [Tooltip("Angle (in deg) at which the surface becomes too steep for collision")]
+    public float critAngle = 73f;
 
     public bool isGrounded { get; private set; }
     public float hitDistance { get; private set; }
@@ -32,6 +34,11 @@ public class WheelContact
         {
             if (hitBuffer[i].collider.transform.root != vehicleRoot)
             {
+                if (Vector3.Dot(hitBuffer[i].normal, mountUp) < Mathf.Cos(Mathf.Deg2Rad * critAngle))
+                {
+                    continue; 
+                }
+                
                 if (hitBuffer[i].distance < closestDistance)
                 {
                     closestDistance = hitBuffer[i].distance;

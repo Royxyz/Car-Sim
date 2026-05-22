@@ -156,7 +156,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -250, y: 200}
+  m_AnchoredPosition: {x: -250, y: 144.7}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &20498242
@@ -478,7 +478,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3740975536715558258, guid: 81db1aa96f601f74bafd81b3bab68b6f, type: 3}
       propertyPath: field of view
-      value: 76.24709
+      value: 60.6376
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 234432587839193740, guid: 81db1aa96f601f74bafd81b3bab68b6f, type: 3}
@@ -486,6 +486,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 81db1aa96f601f74bafd81b3bab68b6f, type: 3}
+--- !u!1 &383227706
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 383227707}
+  m_Layer: 0
+  m_Name: SeaExit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &383227707
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 383227706}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 280.2, y: -23.591087, z: 132.3}
+  m_LocalScale: {x: 5, y: 1, z: 5}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1833362230}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &404454443
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -544,7 +575,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 414412, guid: 7d76ac986883f6e47b38d02e17432708, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 383227707}
+    - targetCorrespondingSourceObject: {fileID: 414412, guid: 7d76ac986883f6e47b38d02e17432708, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1419053273}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 189972, guid: 7d76ac986883f6e47b38d02e17432708, type: 3}
       insertIndex: -1
@@ -565,7 +602,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 404454445}
-  m_Material: {fileID: 13400000, guid: 8720e83da73cfa84f985aff644132611, type: 2}
+  m_Material: {fileID: 13400000, guid: ebe5aa2ae612d184cb7f8f38f6478586, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -727,6 +764,7 @@ GameObject:
   m_Component:
   - component: {fileID: 552927946}
   - component: {fileID: 552927945}
+  - component: {fileID: 552927947}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -761,6 +799,32 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &552927947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 552927944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fad0e935c895bd46828424b8a88b2ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GlobalAudioManager
+  bgmEvent:
+    Guid:
+      Data1: 1229562152
+      Data2: 1118715918
+      Data3: -521123958
+      Data4: -360371987
+    Path: event:/Music/CoastalTrackBGM
+  ambienceEvent:
+    Guid:
+      Data1: -1485750998
+      Data2: 1234156195
+      Data3: 827391930
+      Data4: -206214125
+    Path: event:/Ambience/CoastalAmbience
 --- !u!1 &562889476
 GameObject:
   m_ObjectHideFlags: 0
@@ -1702,6 +1766,61 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1119313464}
   m_CullTransparentMesh: 1
+--- !u!1 &1136086976
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1136086977}
+  - component: {fileID: 1136086978}
+  m_Layer: 0
+  m_Name: GlobalAudio
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1136086977
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1136086976}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.7369955, z: 0, w: 0.67589766}
+  m_LocalPosition: {x: 0, y: 1.3150101, z: -0.01899154}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4323978353030182319}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1136086978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1136086976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 344cd167052f8644fb5ae5953a5bbe55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoastalAmbienceManager
+  coastalAmbienceEvent:
+    Guid:
+      Data1: -1485750998
+      Data2: 1234156195
+      Data3: 827391930
+      Data4: -206214125
+    Path: event:/Ambience/CoastalAmbience
+  carRb: {fileID: 4323978353030182311}
+  straightEntry: {fileID: 1419053273}
+  straightExit: {fileID: 383227707}
+  maxSeaHearingDistance: 200
 --- !u!1 &1214543979
 GameObject:
   m_ObjectHideFlags: 0
@@ -1972,6 +2091,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1382741985}
   m_CullTransparentMesh: 1
+--- !u!1 &1419053272
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1419053273}
+  m_Layer: 0
+  m_Name: SeaEntry
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1419053273
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1419053272}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 23, y: -24.45, z: 137}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1833362230}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1438512826
 GameObject:
   m_ObjectHideFlags: 0
@@ -2729,7 +2879,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2740665696677076302, guid: 029bb96c9b7692749a8265dfacf6c506, type: 3}
       propertyPath: Lens.FieldOfView
-      value: 76.24709
+      value: 60.6376
       objectReference: {fileID: 0}
     - target: {fileID: 2740665696677076302, guid: 029bb96c9b7692749a8265dfacf6c506, type: 3}
       propertyPath: Target.TrackingTarget
@@ -2753,6 +2903,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2124725326}
   m_SourcePrefab: {fileID: 100100000, guid: 029bb96c9b7692749a8265dfacf6c506, type: 3}
+--- !u!4 &1833362230 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 414412, guid: 7d76ac986883f6e47b38d02e17432708, type: 3}
+  m_PrefabInstance: {fileID: 404454443}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1969211420
 GameObject:
   m_ObjectHideFlags: 0
@@ -3018,7 +3173,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 7291373216373048610, guid: e9af8008c8d7c944988be193557d8185, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1136086977}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5800412944456739525, guid: e9af8008c8d7c944988be193557d8185, type: 3}
       insertIndex: -1
@@ -3108,6 +3266,11 @@ MonoBehaviour:
       Data4: 1891619032
     Path: event:/Car/Tires/StreetSkid
   skidMaxMultiplier: 2.5
+--- !u!4 &4323978353030182319 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7291373216373048610, guid: e9af8008c8d7c944988be193557d8185, type: 3}
+  m_PrefabInstance: {fileID: 2941879359161083294}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5691988688588793191 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2026910068703285490, guid: e9af8008c8d7c944988be193557d8185, type: 3}

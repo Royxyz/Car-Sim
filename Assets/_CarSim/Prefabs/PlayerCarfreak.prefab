@@ -260,7 +260,7 @@ GameObject:
   - component: {fileID: 882071834928242610}
   - component: {fileID: 2114597722037683684}
   - component: {fileID: 5857253094090558195}
-  - component: {fileID: 3002098209156657054}
+  - component: {fileID: 5796289016526236183}
   m_Layer: 3
   m_Name: Body
   m_TagString: Untagged
@@ -341,8 +341,8 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &3002098209156657054
-BoxCollider:
+--- !u!64 &5796289016526236183
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -359,9 +359,10 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.85, y: 0.93, z: 4.34}
-  m_Center: {x: 0, y: 0.85, z: -0.018977284}
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 2959467708922500008, guid: 9ec6a8fc6925acb4abc5500eeecb8270, type: 3}
 --- !u!1 &4274744302969115598
 GameObject:
   m_ObjectHideFlags: 0
@@ -696,6 +697,7 @@ MonoBehaviour:
       contact:
         rayOriginOffset: 1
         castRadius: 0.12
+        critAngle: 73
     - suspensionMountPoint: {fileID: 1664771295509717870}
       visualMesh: {fileID: 3310751195157147601}
       wheelSpinMesh: {fileID: 0}
@@ -713,6 +715,7 @@ MonoBehaviour:
       contact:
         rayOriginOffset: 1
         castRadius: 0.12
+        critAngle: 73
     - suspensionMountPoint: {fileID: 8390449558710916184}
       visualMesh: {fileID: 600606300634634239}
       wheelSpinMesh: {fileID: 0}
@@ -730,6 +733,7 @@ MonoBehaviour:
       contact:
         rayOriginOffset: 1
         castRadius: 0.12
+        critAngle: 73
     - suspensionMountPoint: {fileID: 1453344847181769081}
       visualMesh: {fileID: 1843358134772931842}
       wheelSpinMesh: {fileID: 0}
@@ -747,6 +751,7 @@ MonoBehaviour:
       contact:
         rayOriginOffset: 1
         castRadius: 0.12
+        critAngle: 73
     brakeBias: 0.65
     trackMask:
       serializedVersion: 2

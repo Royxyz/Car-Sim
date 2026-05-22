@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7835517238261138454
+--- !u!114 &-9069310181371008903
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10,26 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
-  m_Name: event:/Car/Engines/V8_crossplane
+  m_Name: event:/Music/CoastalTrackBGM
   m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
-  Path: event:/Car/Engines/V8_crossplane
+  Path: event:/Music/CoastalTrackBGM
   Guid:
-    Data1: 949224386
-    Data2: 1143804465
-    Data3: -1571136077
-    Data4: -869046991
+    Data1: 1229562152
+    Data2: 1118715918
+    Data3: -521123958
+    Data4: -360371987
   Banks:
   - {fileID: 7137679806246582161}
-  IsStream: 0
+  IsStream: 1
   Is3D: 0
   IsOneShot: 0
   Parameters:
-  - {fileID: -849953888109163307}
-  - {fileID: 5077501993151465319}
+  - {fileID: 2377405531812275296}
   MinDistance: 1
   MaxDistance: 20
-  Length: 0
---- !u!114 &-7585379220363687345
+  Length: 2000
+--- !u!114 &-8099911927174801462
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -39,16 +38,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
-  m_Name: parameter:/SuperCharger/normRPM
+  m_Name: parameter:/StreetSkid/skidIntensity
   m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorParamRef
-  Name: normRPM
+  Name: skidIntensity
   StudioPath: 
   Min: 0
   Max: 1
   Default: 0
   ID:
-    data1: 831425106
-    data2: 1799329847
+    data1: 581151274
+    data2: 1699746805
   Type: 0
   IsGlobal: 0
   Labels: []
@@ -82,7 +81,7 @@ MonoBehaviour:
   MinDistance: 1
   MaxDistance: 20
   Length: 0
---- !u!114 &-5329518592756094252
+--- !u!114 &-6255634525574213670
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -106,8 +105,61 @@ MonoBehaviour:
   Is3D: 0
   IsOneShot: 1
   Parameters:
-  - {fileID: -7585379220363687345}
-  - {fileID: 361349800957013098}
+  - {fileID: 4621275241981985027}
+  - {fileID: 6805564166100380095}
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
+--- !u!114 &-6168576421274064834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
+  m_Name: parameter:/CoastalAmbience/carSpeed
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorParamRef
+  Name: carSpeed
+  StudioPath: 
+  Min: 0
+  Max: 300
+  Default: 0
+  ID:
+    data1: 1202224763
+    data2: 3832458586
+  Type: 0
+  IsGlobal: 0
+  Labels: []
+  Exists: 1
+--- !u!114 &-4803018211443203491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Ambience/CoastalAmbience
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Ambience/CoastalAmbience
+  Guid:
+    Data1: -1485750998
+    Data2: 1234156195
+    Data3: 827391930
+    Data4: -206214125
+  Banks:
+  - {fileID: 7137679806246582161}
+  IsStream: 1
+  Is3D: 0
+  IsOneShot: 1
+  Parameters:
+  - {fileID: 8462959468986429622}
+  - {fileID: -6168576421274064834}
   MinDistance: 1
   MaxDistance: 20
   Length: 0
@@ -135,82 +187,6 @@ MonoBehaviour:
   IsGlobal: 0
   Labels: []
   Exists: 1
---- !u!114 &-1109026460927134181
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
-  m_Name: parameter:/StreetSkid/skidIntensity
-  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorParamRef
-  Name: skidIntensity
-  StudioPath: 
-  Min: 0
-  Max: 1
-  Default: 0
-  ID:
-    data1: 581151274
-    data2: 1699746805
-  Type: 0
-  IsGlobal: 0
-  Labels: []
-  Exists: 1
---- !u!114 &-849953888109163307
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
-  m_Name: parameter:/V8_crossplane/normLoad
-  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorParamRef
-  Name: normLoad
-  StudioPath: 
-  Min: 0
-  Max: 1
-  Default: 0
-  ID:
-    data1: 3984571430
-    data2: 3262048987
-  Type: 0
-  IsGlobal: 0
-  Labels: []
-  Exists: 1
---- !u!114 &-726096670473780188
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
-  m_Name: event:/Car/Tires/StreetSkid
-  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
-  Path: event:/Car/Tires/StreetSkid
-  Guid:
-    Data1: 1969953258
-    Data2: 1233567950
-    Data3: -661195605
-    Data4: 1891619032
-  Banks:
-  - {fileID: 7137679806246582161}
-  IsStream: 0
-  Is3D: 0
-  IsOneShot: 0
-  Parameters:
-  - {fileID: -1109026460927134181}
-  MinDistance: 1
-  MaxDistance: 20
-  Length: 0
 --- !u!114 &-675593132300957052
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -235,6 +211,35 @@ MonoBehaviour:
   IsGlobal: 0
   Labels: []
   Exists: 1
+--- !u!114 &-249756470681557914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Car/Engines/V8_crossplane
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Car/Engines/V8_crossplane
+  Guid:
+    Data1: 949224386
+    Data2: 1143804465
+    Data3: -1571136077
+    Data4: -869046991
+  Banks:
+  - {fileID: 7137679806246582161}
+  IsStream: 0
+  Is3D: 0
+  IsOneShot: 0
+  Parameters:
+  - {fileID: 6303700079221700414}
+  - {fileID: 1517073644982563549}
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -251,17 +256,19 @@ MonoBehaviour:
   - {fileID: 7212733940434723451}
   - {fileID: 7137679806246582161}
   EditorEvents:
-  - {fileID: -5329518592756094252}
-  - {fileID: -7835517238261138454}
-  - {fileID: -726096670473780188}
+  - {fileID: -9069310181371008903}
+  - {fileID: -4803018211443203491}
+  - {fileID: -6255634525574213670}
+  - {fileID: -249756470681557914}
+  - {fileID: 2514598273834077003}
   EditorParameters: []
   MasterBanks:
   - {fileID: 7137679806246582161}
   StringsBanks:
   - {fileID: 7212733940434723451}
-  cacheTime: 639150004142551068
+  cacheTime: 639150116889723172
   cacheVersion: 131636
---- !u!114 &361349800957013098
+--- !u!114 &1517073644982563549
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -271,20 +278,72 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
-  m_Name: parameter:/SuperCharger/boostIntensity
+  m_Name: parameter:/V8_crossplane/normRPM
   m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorParamRef
-  Name: boostIntensity
+  Name: normRPM
   StudioPath: 
   Min: 0
   Max: 1
   Default: 0
   ID:
-    data1: 1116084202
-    data2: 2907210357
+    data1: 831425106
+    data2: 1799329847
   Type: 0
   IsGlobal: 0
   Labels: []
   Exists: 1
+--- !u!114 &2377405531812275296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
+  m_Name: parameter:/CoastalTrackBGM/GameState
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorParamRef
+  Name: GameState
+  StudioPath: 
+  Min: 0
+  Max: 10
+  Default: 0
+  ID:
+    data1: 2278968091
+    data2: 4116250616
+  Type: 1
+  IsGlobal: 0
+  Labels: []
+  Exists: 1
+--- !u!114 &2514598273834077003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Car/Tires/StreetSkid
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Car/Tires/StreetSkid
+  Guid:
+    Data1: 1969953258
+    Data2: 1233567950
+    Data3: -661195605
+    Data4: 1891619032
+  Banks:
+  - {fileID: 7137679806246582161}
+  IsStream: 0
+  Is3D: 0
+  IsOneShot: 0
+  Parameters:
+  - {fileID: -8099911927174801462}
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
 --- !u!114 &3386551139973220135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -329,7 +388,7 @@ MonoBehaviour:
   IsGlobal: 0
   Labels: []
   Exists: 1
---- !u!114 &5077501993151465319
+--- !u!114 &4621275241981985027
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -339,7 +398,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
-  m_Name: parameter:/V8_crossplane/normRPM
+  m_Name: parameter:/SuperCharger/normRPM
   m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorParamRef
   Name: normRPM
   StudioPath: 
@@ -354,6 +413,30 @@ MonoBehaviour:
   Labels: []
   Exists: 1
 --- !u!114 &5875361835745260994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
+  m_Name: parameter:/V8_crossplane/normLoad
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorParamRef
+  Name: normLoad
+  StudioPath: 
+  Min: 0
+  Max: 1
+  Default: 0
+  ID:
+    data1: 3984571430
+    data2: 3262048987
+  Type: 0
+  IsGlobal: 0
+  Labels: []
+  Exists: 1
+--- !u!114 &6303700079221700414
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -406,6 +489,30 @@ MonoBehaviour:
   MinDistance: 1
   MaxDistance: 20
   Length: 0
+--- !u!114 &6805564166100380095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
+  m_Name: parameter:/SuperCharger/boostIntensity
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorParamRef
+  Name: boostIntensity
+  StudioPath: 
+  Min: 0
+  Max: 1
+  Default: 0
+  ID:
+    data1: 1116084202
+    data2: 2907210357
+  Type: 0
+  IsGlobal: 0
+  Labels: []
+  Exists: 1
 --- !u!114 &7137679806246582161
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -421,10 +528,10 @@ MonoBehaviour:
   Path: ../../../FMOD/CarSim/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 639150004142504552
+  lastModified: 639150116889688013
   FileSizes:
   - Name: Desktop
-    Value: 2417024
+    Value: 28258592
   Exists: 1
 --- !u!114 &7207835416908667786
 MonoBehaviour:
@@ -461,8 +568,32 @@ MonoBehaviour:
   Path: ../../../FMOD/CarSim/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 639150004142551068
+  lastModified: 639150116889723172
   FileSizes:
   - Name: Desktop
-    Value: 1084
+    Value: 1336
+  Exists: 1
+--- !u!114 &8462959468986429622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
+  m_Name: parameter:/CoastalAmbience/SeaProximity
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorParamRef
+  Name: SeaProximity
+  StudioPath: 
+  Min: 0
+  Max: 1
+  Default: 0
+  ID:
+    data1: 1379791950
+    data2: 2245700338
+  Type: 0
+  IsGlobal: 0
+  Labels: []
   Exists: 1
